@@ -108,6 +108,13 @@ function ConvexHabitData(props: { snapshots: SnapshotStore; children: ReactNode 
     [retained, firstLiveMonth],
   );
 
+  // The window whose data came last. When the window moves to a new Day, the old window stays
+  // subscribed until the new one loads, so the screen keeps its data; the engine holds taps until
+  // then (`liveStale`).
+  const [loadedRange, setLoadedRange] = useState<{ from: Day; to: Day } | null>(null);
+  const previousRange =
+    loadedRange !== null && !sameRange(loadedRange, windowRange) ? loadedRange : null;
+
   // One subscription for the user, one for the live window, one for each older Month. The owner's
   // data loads at the same time as the answer of `me`, without waiting for it.
   const queries = useMemo(() => {
@@ -115,15 +122,21 @@ function ConvexHabitData(props: { snapshots: SnapshotStore; children: ReactNode 
     if (!isAuthenticated) return request;
     request.me = { query: api.users.me, args: {} };
     request.days = { query: api.data.days, args: windowRange };
+    if (previousRange !== null) {
+      request.previousDays = { query: api.data.days, args: previousRange };
+    }
     for (const month of olderMonths) {
       request[`month:${month}`] = { query: api.data.month, args: { month } };
     }
     return request;
-  }, [isAuthenticated, windowRange, olderMonths]);
+  }, [isAuthenticated, windowRange, previousRange, olderMonths]);
   const results = useQueries(queries);
 
   const me = resultOf<Me | null>(results.me) ?? undefined;
-  const live = useLatest(userId ?? null, resultOf<Data>(results.days));
+  const current = resultOf<Data>(results.days);
+  if (current !== undefined && loadedRange !== windowRange) setLoadedRange(windowRange);
+  const live = current ?? resultOf<Data>(results.previousDays);
+  const liveStale = current === undefined && live !== undefined;
   const months = useMemo(() => {
     const loaded = new Map<Month, Data>();
     for (const month of olderMonths) {
@@ -163,6 +176,7 @@ function ConvexHabitData(props: { snapshots: SnapshotStore; children: ReactNode 
     userId: userId ?? null,
     me,
     live,
+    liveStale,
     months,
     window: windowRange,
     retainMonth,
@@ -195,17 +209,8 @@ function useToday(): Day {
   return day;
 }
 
-/**
- * The last value that came for `key` (the user). When the live window moves to a new Day, the
- * screen keeps the data of the old window until the new one loads.
- */
-function useLatest<T>(key: string | null, value: T | undefined): T | undefined {
-  const [latest, setLatest] = useState<{ key: string | null; value: T } | null>(null);
-  if (value !== undefined && (latest?.key !== key || latest.value !== value)) {
-    setLatest({ key, value });
-  }
-  if (value !== undefined) return value;
-  return latest?.key === key ? latest.value : undefined;
+function sameRange(a: { from: Day; to: Day }, b: { from: Day; to: Day }): boolean {
+  return a.from === b.from && a.to === b.to;
 }
 
 /** The Months that something shows, with a count of the users of each. */

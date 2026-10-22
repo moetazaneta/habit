@@ -11,10 +11,17 @@ export interface Data {
 export function stateOf(habits: readonly Habit[], ...entryLists: readonly Entry[][]): HabitState {
   const state: HabitState = { habits: {}, entries: {} };
   for (const habit of habits) state.habits[habit.id] = habit;
+  return withEntries(state, ...entryLists);
+}
+
+/** The state with more Entries (of older Months, for example). Same object when there are none. */
+export function withEntries(state: HabitState, ...entryLists: readonly Entry[][]): HabitState {
+  if (entryLists.every((entries) => entries.length === 0)) return state;
+  const next: HabitState = { habits: state.habits, entries: { ...state.entries } };
   for (const entries of entryLists) {
-    for (const entry of entries) state.entries[entryKey(entry.habitId, entry.day)] = entry;
+    for (const entry of entries) next.entries[entryKey(entry.habitId, entry.day)] = entry;
   }
-  return state;
+  return next;
 }
 
 /**

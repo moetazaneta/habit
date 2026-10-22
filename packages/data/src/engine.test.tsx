@@ -227,6 +227,25 @@ describe("perform", () => {
     expect(second.inverse).toEqual(set(read, TODAY));
   });
 
+  test("after the window moves to a new Day, taps wait for the new window and show at once", async () => {
+    const { result, update, sent } = setup({ me: { userId: USER, isOwner: true }, live: liveData });
+    const tomorrow = "2026-10-23" as Day;
+
+    // The new window has not loaded: the screen shows the previous one.
+    update({ window: { from: "2025-11-01" as Day, to: tomorrow }, liveStale: true });
+    act(() => {
+      result.current.perform(set(read, tomorrow));
+    });
+
+    expect(sent).toEqual([]);
+    expect(result.current.source).toBe("live");
+    expect(entryValue(result.current.state, read, tomorrow)).toEqual({ kind: "check" });
+
+    update({ live: { ...liveData }, liveStale: false });
+
+    await waitFor(() => expect(sent.map((s) => s.action)).toEqual([set(read, tomorrow)]));
+  });
+
   test("done rejects when the write fails", async () => {
     const failure = new Error("network");
     const { result } = setup({
@@ -266,5 +285,20 @@ describe("months", () => {
 
     expect(result.current.monthStatus(older)).toBe("ready");
     expect(entryValue(result.current.state, read, "2025-09-03" as Day)).toEqual({ kind: "check" });
+  });
+
+  test("an older Month that loads before the live window shows over the snapshot", async () => {
+    const older = "2025-09" as Month;
+    const { result } = setup({
+      stored: snapshotOf(),
+      months: new Map([[older, { habits: [], entries: [entry("water", "2025-09-03")] }]]),
+    });
+    expect(result.current.monthStatus(older)).toBe("loading");
+
+    await waitFor(() => expect(result.current.source).toBe("snapshot"));
+
+    expect(result.current.monthStatus(older)).toBe("ready");
+    expect(entryValue(result.current.state, water, "2025-09-03" as Day)).toEqual({ kind: "check" });
+    expect(entryValue(result.current.state, water, "2026-10-19" as Day)).toEqual({ kind: "check" });
   });
 });

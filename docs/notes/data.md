@@ -123,6 +123,8 @@ Clerk session tokens of the test users:
 - An older Month (`useMonth`) is `loading`, then `ready`.
 - After a reload, the snapshot shows at about 0.5 s and the live data at about 1.5 s. A tap at the
   snapshot stage waits, goes to the server when the live data comes, and stays.
+- After the Day changes (a clock moved one day forward, then the page woke up), a tap on the new
+  Day shows in the next frame and is confirmed when the new window loads (about 0.5 s).
 - Sign-out clears the snapshot.
 - The web app of web-list runs on `HabitDataProvider` without errors.
 
@@ -148,6 +150,10 @@ Clerk session tokens of the test users:
   access" when `me` answers, and deletes the snapshot.
 - The queries of the data start at the same time as `users.me`, not after it, to save one round
   trip. For a user who is not an owner, `data.days` fails and the provider ignores the error.
+- When the live window moves to a new Day (at midnight, or when the phone wakes up the next
+  morning), the old window stays on screen and subscribed until the new one loads. Taps in that
+  short time wait in the same queue as at start: they show at once and go to the server when the new
+  window comes. An older Month that loads before the live window shows over the snapshot.
 - An older Month stays loaded only while something retains it (`useMonth`). A Month that comes back
   into view loads again.
 - `convex-helpers` 0.1.128 and `convex-test` 0.0.63, not the newest versions: the newest were

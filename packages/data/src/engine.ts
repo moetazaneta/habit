@@ -6,7 +6,7 @@ import type { AuthState, HabitDataApi, PerformResult } from "./api";
 import type { SnapshotStore } from "./snapshot";
 import { SNAPSHOT_VERSION, usableSnapshot } from "./snapshot";
 import type { Data, FlatAction } from "./state";
-import { applySafely, flattenAction, stateOf } from "./state";
+import { applySafely, flattenAction, stateOf, withEntries } from "./state";
 
 /** What `users.me` returns for a signed-in user. */
 export interface Me {
@@ -45,6 +45,12 @@ export interface EngineInputs {
   me: Me | undefined;
   /** The result of `data.days` for the live window; undefined until it comes. */
   live: Data | undefined;
+  /**
+   * True while `live` is the result of the previous window: the window moved to a new Day and the
+   * new window has not loaded yet. Actions then wait in the queue, so that they show at once, also
+   * on the new Day, which the previous result does not cover.
+   */
+  liveStale?: boolean;
   /** The results of `data.month` for the retained Months older than the live window. */
   months: ReadonlyMap<Month, Data>;
   window: { from: Day; to: Day };
@@ -76,6 +82,7 @@ type Stored = { status: "loading" } | { status: "loaded"; value: unknown };
  */
 export function useHabitDataEngine(inputs: EngineInputs): HabitDataApi {
   const { clerkLoaded, userId, me, live, months, window, retainMonth, snapshots } = inputs;
+  const liveStale = inputs.liveStale ?? false;
   const clock = inputs.clock ?? Date.now;
 
   // The snapshot, read once at start.
@@ -131,12 +138,14 @@ export function useHabitDataEngine(inputs: EngineInputs): HabitDataApi {
           ? "snapshot"
           : "none";
 
+  const monthEntries = useMemo(() => [...months.values()].map((data) => data.entries), [months]);
   const liveState = useMemo(
-    () =>
-      live === undefined
-        ? undefined
-        : stateOf(live.habits, live.entries, ...[...months.values()].map((data) => data.entries)),
-    [live, months],
+    () => (live === undefined ? undefined : stateOf(live.habits, live.entries, ...monthEntries)),
+    [live, monthEntries],
+  );
+  const snapshotState = useMemo(
+    () => (snapshot === null ? undefined : withEntries(snapshot.state, ...monthEntries)),
+    [snapshot, monthEntries],
   );
 
   // The Actions that wait for the live data. They show on screen at once.
@@ -146,8 +155,8 @@ export function useHabitDataEngine(inputs: EngineInputs): HabitDataApi {
   const base =
     source === "live" && liveState !== undefined
       ? liveState
-      : source === "snapshot" && snapshot !== null
-        ? snapshot.state
+      : source === "snapshot" && snapshotState !== undefined
+        ? snapshotState
         : EMPTY;
   const state = useMemo(
     () => queued.reduce((s, item) => applySafely(s, item.action, item.now), base),
@@ -156,12 +165,14 @@ export function useHabitDataEngine(inputs: EngineInputs): HabitDataApi {
 
   // `perform` reads the latest values through refs, so that its identity never changes.
   const stateRef = useRef(state);
-  const sourceRef = useRef(source);
+  // Actions go to the server at once only when the data on screen is the current live data.
+  const canSend = source === "live" && !liveStale;
+  const canSendRef = useRef(canSend);
   const sendRef = useRef(inputs.send);
   const clockRef = useRef(clock);
   useLayoutEffect(() => {
     stateRef.current = state;
-    sourceRef.current = source;
+    canSendRef.current = canSend;
     sendRef.current = inputs.send;
     clockRef.current = clock;
   });
@@ -175,29 +186,29 @@ export function useHabitDataEngine(inputs: EngineInputs): HabitDataApi {
     stateRef.current = applySafely(before, flat, now);
 
     let done: Promise<void>;
-    if (sourceRef.current === "live" && queueRef.current.length === 0) {
+    if (canSendRef.current && queueRef.current.length === 0) {
       done = sendRef.current(flat, now).then(() => undefined);
     } else {
-      const { promise, resolve, reject } = Promise.withResolvers<void>();
-      queueRef.current = [...queueRef.current, { action: flat, now, resolve, reject }];
+      done = new Promise<void>((resolve, reject) => {
+        queueRef.current = [...queueRef.current, { action: flat, now, resolve, reject }];
+      });
       setQueued(queueRef.current);
-      done = promise;
     }
     // The caller may ignore `done`; a failed write is then not an unhandled rejection.
     done.catch(() => {});
     return { inverse, done };
   }, []);
 
-  // When the live data comes, the queue goes to the server in order.
+  // When the current live data comes, the queue goes to the server in order.
   useEffect(() => {
-    if (source !== "live" || queueRef.current.length === 0) return;
+    if (!canSend || queueRef.current.length === 0) return;
     const items = queueRef.current;
     queueRef.current = [];
     setQueued([]);
     for (const item of items) {
       sendRef.current(item.action, item.now).then(() => item.resolve(), item.reject);
     }
-  }, [source, queued]);
+  }, [canSend, queued]);
 
   // Without access, the queue fails and the snapshot goes away.
   const lostAccess = auth.status === "signedOut" || auth.status === "noAccess";
@@ -234,7 +245,7 @@ export function useHabitDataEngine(inputs: EngineInputs): HabitDataApi {
   const monthStatus = useCallback(
     (month: Month): "loading" | "ready" => {
       if (month >= firstLiveMonth) return source === "none" ? "loading" : "ready";
-      return months.has(month) ? "ready" : "loading";
+      return source !== "none" && months.has(month) ? "ready" : "loading";
     },
     [firstLiveMonth, source, months],
   );
