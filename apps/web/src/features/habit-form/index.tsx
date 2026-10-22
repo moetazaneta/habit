@@ -6,8 +6,38 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useCloseSheet, useSheetSearch } from "@/components/sheet-search";
 import { useRetained } from "@/components/use-retained";
 
-import { CreateHabitSheet } from "./create-sheet";
-import { EditHabitSheet } from "./edit-sheet";
+// The sheets load on their own, after the first screen, so it does not wait for the form. The app
+// loads them when it is idle, so a tap on "New habit" finds them ready. No React.lazy: its
+// Suspense boundary would hold the reveal for up to 300ms even when the chunk is there.
+type Sheets = typeof import("./sheets");
+let sheets: Sheets | undefined;
+let loading: Promise<Sheets> | undefined;
+
+function loadSheets(): Promise<Sheets> {
+  loading ??= import("./sheets").then((loaded) => (sheets = loaded));
+  return loading;
+}
+
+function usePreloadSheets() {
+  useEffect(() => {
+    if (sheets !== undefined) return;
+    if (typeof window.requestIdleCallback === "function") {
+      const handle = window.requestIdleCallback(() => void loadSheets(), { timeout: 3000 });
+      return () => window.cancelIdleCallback(handle);
+    }
+    const timer = window.setTimeout(() => void loadSheets(), 1500);
+    return () => window.clearTimeout(timer);
+  }, []);
+}
+
+/** The loaded sheets, or undefined while they load (then the sheet opens a moment later). */
+function useSheets(): Sheets | undefined {
+  const [loaded, setLoaded] = useState(sheets);
+  useEffect(() => {
+    if (loaded === undefined) void loadSheets().then(setLoaded);
+  }, [loaded]);
+  return loaded;
+}
 
 /**
  * The create and edit sheet (`?new=true`, `?edit=<habitId>`): a bottom sheet on a phone, a
@@ -15,6 +45,7 @@ import { EditHabitSheet } from "./edit-sheet";
  * animates out, it keeps showing what it showed.
  */
 export function HabitFormSheet() {
+  usePreloadSheets();
   const search = useSheetSearch();
   const current =
     search.edit !== undefined ? `edit:${search.edit}` : search.new === true ? "new" : undefined;
@@ -52,14 +83,19 @@ function SheetHost({
   onExitComplete: () => void;
 }) {
   const closeSheet = useCloseSheet();
+  const loaded = useSheets();
+  if (loaded === undefined) return null;
   if (sheet === "new") {
-    return <CreateHabitSheet open={open} onClose={closeSheet} onExitComplete={onExitComplete} />;
+    return (
+      <loaded.CreateHabitSheet open={open} onClose={closeSheet} onExitComplete={onExitComplete} />
+    );
   }
   return (
     <EditHost
       id={sheet.slice("edit:".length) as HabitId}
       open={open}
       onExitComplete={onExitComplete}
+      EditHabitSheet={loaded.EditHabitSheet}
     />
   );
 }
@@ -68,10 +104,12 @@ function EditHost({
   id,
   open,
   onExitComplete,
+  EditHabitSheet,
 }: {
   id: HabitId;
   open: boolean;
   onExitComplete: () => void;
+  EditHabitSheet: Sheets["EditHabitSheet"];
 }) {
   const habit = useHabit(id);
   const { source } = useHabits();
