@@ -7,7 +7,10 @@ export default defineConfig({
   test: {
     name: "core",
     include: ["src/**/*.test.ts"],
-    // Until the first tests land with the implementation.
-    passWithNoTests: true,
+    env: {
+      // Chile moves its clocks at midnight, so a Day that is computed from a local midnight plus
+      // 24 hours lands on the wrong date here. The tests of the Day math run in this zone.
+      TZ: "America/Santiago",
+    },
   },
 });
