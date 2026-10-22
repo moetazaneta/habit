@@ -48,6 +48,16 @@ async function loadDataProvider(): Promise<DataProvider> {
 
 installCssSprings();
 
+// After a deploy, a tab that was open before it asks for chunks that no longer exist: load the
+// new version instead of showing the router's error. At most once a minute, so a chunk that stays
+// missing cannot reload the page in a loop.
+window.addEventListener("vite:preloadError", () => {
+  const last = Number(sessionStorage.getItem("habit:reloaded-at") ?? 0);
+  if (Date.now() - last < 60_000) return;
+  sessionStorage.setItem("habit:reloaded-at", String(Date.now()));
+  window.location.reload();
+});
+
 const Data = await loadDataProvider();
 const router = createAppRouter();
 
