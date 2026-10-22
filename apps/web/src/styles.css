@@ -592,6 +592,17 @@
     transform: scale(0.96);
   }
 
+  /* The focus ring goes around the disc, not around the touch target, which would crowd the
+     edge of the sheet. */
+  .sheet-close:focus-visible {
+    outline: none;
+  }
+
+  .sheet-close:focus-visible::before {
+    outline: 2px solid var(--ink-3);
+    outline-offset: 2px;
+  }
+
   @media (hover: hover) and (pointer: fine) {
     .sheet-close:hover {
       color: var(--ink);
