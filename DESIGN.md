@@ -298,13 +298,14 @@ shadcn/ui's variables map onto these tokens: `background` is `ground`, `foregrou
 
 - **Display** (600, 2.25rem, 2.75rem line, -0.02em, tabular figures): the typed value in the number input, centered. It steps down to 1.75rem at 7 characters and to 1.375rem at 10, so a long value never runs under the buttons.
 - **Title** (600, 1.0625rem, 1.375rem line, -0.01em): habit names in the list (in `ink-2`) and sheet titles (in `ink`). One line, with an ellipsis.
+- **Page title** (600, 1.5rem, 1.875rem line, -0.02em): the name of a habit on its page, in `ink`. It wraps.
 - **Body** (400, 1rem, 1.25rem line): the dates in the day header (with tabular figures and -0.01em), option labels (at 500), and text fields (with a 1.375rem line).
 - **Control** (600, 0.9375rem, -0.01em): buttons inside sheets and the toast action. The toast message uses the same size at 500.
 - **Description** (400, 0.875rem, 1.25rem line): the line under a sheet title, such as "Today" or "Yesterday". In `ink-3`.
 - **Caption** (400, 0.8125rem, 1rem line): the target or the unit under the number field. In `ink-3`, up to two lines.
 - **Label** (500, 0.75rem, 0.9375rem line): the weekday letter over each date in the day header.
 
-On a phone these are 12, 13, 14, 15, 16, 17 and 36px. The desktop's 20px base scales all of them by 1.25. The stepper buttons use 1.0625rem at 600 with tabular figures. A field never shows text under 16px (`font-size: max(16px, 1rem)`), because iOS zooms into a smaller field and does not zoom back.
+On a phone these are 12, 13, 14, 15, 16, 17, 24 and 36px. The desktop's 20px base scales all of them by 1.25. The stepper buttons use 1.0625rem at 600 with tabular figures. A field never shows text under 16px (`font-size: max(16px, 1rem)`), because iOS zooms into a smaller field and does not zoom back.
 
 ### Named Rules
 
@@ -485,6 +486,20 @@ The create sheet (`?new=true`) and the edit sheet (`?edit=<id>`), in `features/h
 - **Options:** a row per Option: a gauge at the Option's level (scale only), a 3rem emoji field, the label field, a remove button and a drag handle. Rows enter and leave with the morph spring on their height and a fade (a removal fades in 120ms). A dragged row lifts onto `surface` with the elevation. Retired Options wait under the list, struck through in `ink-3`, with Restore.
 - **Taps preview:** under the number fields, up to five 1.25rem gauges show the fill of each tap, and a line counts the taps that fill the day ("reach the limit" for a quit habit).
 - **Icon picker:** a search field (an emoji typed there can be used as it is), Icons or Emoji, and a grid of 2.75rem cells in a fixed-height area that scrolls. The chosen cell takes 18% of the habit color and a ring at 70%.
+
+### Habit page
+
+The page of one habit (`/habits/$habitId`), in `features/habit-page/`.
+
+- **Bar:** back (a bold Phosphor caret in `ink-2`, a 44px target) at the left, "Edit" (1rem at 500 in `ink-2`) at the right; both `ink` under a fine pointer and press to 0.96. The bar has the safe-area inset at the top.
+- **Title:** the habit icon at 1.75rem and the name at 1.5rem, 600, `ink`, -0.02em, 0.75rem apart, the icon on the first line. The name wraps (it is the page's `h1`). The description sits under the name in `ink-3` at 0.9375rem.
+- **Year grid:** 52 Monday weeks of `DaySquare`s that end with the week of today, as wide as the column: the side is the column width over 52, less the gap (0.09375rem), from a container query. The frame is 0.0625rem; the grid does not animate. Each Month is a button over its columns: its label (Label size in `ink-3`; the shown Month in `ink` at 600) and its squares. The labels are short names, or first letters when the grid is narrower than 23rem. Under a fine pointer a Month takes 6% of `ink`.
+- **Calendar:** the Month (Title type) with "Today" (only when another Month shows) and two carets, the weekday letters, and the Days in 7 columns, always 6 rows. A Day is its date (0.75rem at 500, tabular, `ink-3`; today `ink` at 700) over a gauge of up to 2.375rem, never wider than its column less 0.375rem. A choice shows its emoji in the square.
+- **Paging:** the track follows the finger 1:1 with a rubber band at the current Month, and settles with the sheet spring and the finger's speed. A flick (above 0.11 px/ms on average over 16px, still moving at the lift) turns the page. A change from the keyboard is instant. Under reduced motion a new page fades in.
+- **Hold:** a Day presses to 0.95 in 120ms; a hold adds a linear shrink on `scale`, to 0.9 in all, over the time to the paint (200ms) or the input (450ms).
+- **From the list:** the row's icon and name grow into the title (a view transition with the sheet spring); the rest crossfades in 200ms, 180ms under reduced motion, where the plate does not move.
+- **Under edit, on a phone:** the page rises with the sheet spring until the Day is 16px above the input sheet, and comes back when the sheet closes.
+- **Empty state:** a ghost gauge, "This habit is not here" (Title type), a line in `ink-3`, and a "Back to habits" button.
 
 ### Motion grammar
 
