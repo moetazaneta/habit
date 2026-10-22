@@ -5,6 +5,7 @@ import {
   emptyState,
   entryValue,
   invertAction,
+  lastOrder,
   visibleHabits,
   type Action,
   type HabitState,
@@ -55,6 +56,21 @@ describe("entryValue", () => {
     expect(entryValue(state, water.id, day("2026-10-22"))).toBeUndefined();
     expect(entryValue(state, water.id, day("2026-10-20"))).toBeUndefined();
     expect(entryValue(state, "unknown" as HabitId, day("2026-10-21"))).toBeUndefined();
+  });
+});
+
+describe("lastOrder", () => {
+  test("is the largest order of all Habits, also the deleted ones", () => {
+    const state = stateOf([
+      checkHabit({ order: "a1" }),
+      checkHabit({ order: "a3", deletedAt: 5 }),
+      checkHabit({ order: "a2" }),
+    ]);
+    expect(lastOrder(state)).toBe("a3");
+  });
+
+  test("is undefined without Habits", () => {
+    expect(lastOrder(emptyState())).toBeUndefined();
   });
 });
 
@@ -587,6 +603,31 @@ describe("invertAction", () => {
       actions: [
         { type: "setEntry", habitId: meditate.id, day: yesterday, value: { kind: "check" } },
         { type: "clearEntry", habitId: meditate.id, day: today },
+      ],
+    });
+  });
+
+  test("the inverse of nested batches is one flat batch", () => {
+    expect(
+      invertAction(before, {
+        type: "batch",
+        actions: [
+          { type: "clearEntry", habitId: meditate.id, day: yesterday },
+          {
+            type: "batch",
+            actions: [
+              { type: "moveHabit", id: water.id, order: "a5" },
+              { type: "batch", actions: [{ type: "deleteHabit", id: water.id }] },
+            ],
+          },
+        ],
+      }),
+    ).toEqual({
+      type: "batch",
+      actions: [
+        { type: "restoreHabit", id: water.id },
+        { type: "moveHabit", id: water.id, order: "a0" },
+        { type: "setEntry", habitId: meditate.id, day: yesterday, value: { kind: "check" } },
       ],
     });
   });

@@ -37,8 +37,10 @@ describe("orderBetween", () => {
     expect(keys.toSorted((a, b) => (a < b ? -1 : a > b ? 1 : 0))).toEqual(keys);
   });
 
-  test("throws when the two neighbours are the same key", () => {
+  test("for two neighbours with the same key, sorts after both", () => {
+    // A restore can give two Habits the same order. A drop between them must not throw.
     const first = orderBetween();
-    expect(() => orderBetween(first, first)).toThrow();
+    const key = orderBetween(first, first);
+    expect(key > first).toBe(true);
   });
 });

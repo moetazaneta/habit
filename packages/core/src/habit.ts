@@ -69,21 +69,43 @@ export type HabitPatch = Partial<
 };
 
 /**
- * A complete new Habit from a draft: a new id, an order after `lastOrder`, and timestamps. The name
- * and the description are trimmed. (An edit does not trim: each key press applies at once, so a
- * trim would remove the space that the person just typed.)
+ * A complete new Habit from a draft: a new id, an order after `lastOrder`, and timestamps. Give
+ * `lastOrder(state)` as `lastOrder`, so that the order is after the deleted Habits too.
+ *
+ * Only the fields of a Habit of the draft's Kind are copied, so a form that changed the Kind can
+ * leave the fields of the old Kind in its draft. The name and the description are trimmed. (An
+ * edit does not trim: each key press applies at once, so a trim would remove the space that the
+ * person just typed.)
  */
 export function createHabit(
   draft: HabitDraft,
   context: { now: number; lastOrder?: string },
 ): Habit {
-  return {
-    ...draft,
+  const base = {
     id: newId() as HabitId,
     name: draft.name.trim(),
     description: draft.description.trim(),
+    icon: draft.icon,
+    color: draft.color,
+    direction: draft.direction,
     order: orderBetween(context.lastOrder),
     createdAt: context.now,
     updatedAt: context.now,
   };
+  switch (draft.kind) {
+    case "check":
+    case "text":
+      return { ...base, kind: draft.kind };
+    case "number":
+      return {
+        ...base,
+        kind: draft.kind,
+        ...(draft.unit !== undefined && { unit: draft.unit }),
+        ...(draft.target !== undefined && { target: draft.target }),
+        step: draft.step,
+      };
+    case "choice":
+    case "scale":
+      return { ...base, kind: draft.kind, options: draft.options };
+  }
 }

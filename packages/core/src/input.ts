@@ -58,14 +58,15 @@ export function tapResult(
 function addDecimals(a: number, b: number): number {
   const sum = a + b;
   const places = Math.max(decimalPlaces(a), decimalPlaces(b));
-  return places === 0 ? sum : Number(sum.toFixed(places));
+  // toFixed takes a maximum of 100 places; a number that small keeps the plain sum.
+  return places === 0 || places > 100 ? sum : Number(sum.toFixed(places));
 }
 
+/** The count of digits after the point, also for a number in exponent notation such as 1e-7. */
 function decimalPlaces(value: number): number {
-  const text = String(value);
-  // A number in exponent notation, such as 1e-7, keeps the plain sum.
-  if (text.includes("e")) return 0;
-  return text.split(".")[1]?.length ?? 0;
+  const [mantissa = "", exponent = "0"] = String(value).split("e");
+  const fraction = mantissa.split(".")[1]?.length ?? 0;
+  return Math.max(0, fraction - Number(exponent));
 }
 
 /**

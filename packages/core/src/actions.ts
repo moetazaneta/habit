@@ -148,8 +148,9 @@ function withEntry(state: HabitState, entry: Entry): HabitState {
 /**
  * The Action that undoes `action`, computed from the state BEFORE `action`. For example, the
  * inverse of a setEntry over an existing Entry is a setEntry with the old value, and over no Entry
- * it is a clearEntry. The inverse of a batch is the batch of inverses in reverse order. The inverse
- * of a create is a delete. An Action that changes nothing has an empty batch as its inverse.
+ * it is a clearEntry. The inverse of a batch is the batch of inverses in reverse order, flat: it
+ * holds no batches. The inverse of a create is a delete. An Action that changes nothing has an
+ * empty batch as its inverse.
  */
 export function invertAction(state: HabitState, action: Action): Action {
   if (action.type === "batch") {
@@ -157,7 +158,9 @@ export function invertAction(state: HabitState, action: Action): Action {
     let current = state;
     for (const inner of action.actions) {
       const inverse = invertAction(current, inner);
-      if (!isNothing(inverse)) inverses.unshift(inverse);
+      // A batch inverse is flat (an empty one for an Action that changes nothing), so its Actions
+      // join this batch.
+      inverses.unshift(...(inverse.type === "batch" ? inverse.actions : [inverse]));
       // The time is not part of an inverse, so any `now` does.
       current = applyAction(current, inner, 0);
     }
@@ -189,8 +192,17 @@ export function invertAction(state: HabitState, action: Action): Action {
   }
 }
 
-function isNothing(action: Action): boolean {
-  return action.type === "batch" && action.actions.length === 0;
+/**
+ * The largest `order` of all Habits, also the deleted ones, or undefined without Habits. Give it to
+ * `createHabit`, so that a new Habit never gets the order of a deleted Habit that a restore brings
+ * back.
+ */
+export function lastOrder(state: HabitState): string | undefined {
+  let last: string | undefined;
+  for (const habit of Object.values(state.habits)) {
+    if (last === undefined || habit.order > last) last = habit.order;
+  }
+  return last;
 }
 
 /** The Habits that are not deleted, sorted by `order`, then by `id` (a plain comparison of the text). */

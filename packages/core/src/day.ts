@@ -75,7 +75,8 @@ export function daysOfMonth(month: Month): Day[] {
 
 /**
  * The live window of data: from the first Day of the Month `months - 1` months before the Month
- * of `end`, to `end`. With `months = 13` it covers the 12-month grid plus the current month.
+ * of `end`, to `end`. With `months = 13` it covers the 12-month grid plus the current month:
+ * `gridWeeks(end, 52)` always fits in it, but 53 columns can start up to 5 Days before it.
  */
 export function liveWindow(end: Day, months: number): { from: Day; to: Day } {
   return { from: `${addMonths(monthOf(end), -(months - 1))}-01` as Day, to: end };

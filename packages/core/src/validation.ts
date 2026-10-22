@@ -37,6 +37,8 @@ export function validateHabitDraft(draft: HabitDraft): HabitIssue[] {
 
 /** The characters that a person sees (grapheme clusters), so each emoji counts as one. */
 function characterCount(text: string): number {
+  // Without Intl.Segmenter (Firefox before 125), count the code points.
+  if (typeof Intl.Segmenter !== "function") return Array.from(text).length;
   return [...new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(text)].length;
 }
 

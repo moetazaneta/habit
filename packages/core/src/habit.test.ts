@@ -44,6 +44,37 @@ describe("createHabit", () => {
     expect(gym).toMatchObject({ kind: "choice", options });
   });
 
+  test("copies only the fields of a Habit of its Kind", () => {
+    // A form that changed the Kind from number to check can still hold a unit and a Target.
+    const draft = { ...water, kind: "check" } as HabitDraft;
+    const habit = createHabit(draft, { now: 50 });
+    expect(Object.keys(habit).toSorted()).toEqual(
+      [
+        "color",
+        "createdAt",
+        "description",
+        "direction",
+        "icon",
+        "id",
+        "kind",
+        "name",
+        "order",
+        "updatedAt",
+      ].toSorted(),
+    );
+  });
+
+  test("a new Habit is not deleted, also from a draft that was a deleted Habit", () => {
+    const deleted = { ...createHabit(water, { now: 10 }), deletedAt: 20 };
+    expect(createHabit(deleted, { now: 50 })).not.toHaveProperty("deletedAt");
+  });
+
+  test("leaves out the unit and the Target of a number draft that has none", () => {
+    const habit = createHabit({ ...water, unit: undefined, target: undefined }, { now: 50 });
+    expect(habit).not.toHaveProperty("unit");
+    expect(habit).not.toHaveProperty("target");
+  });
+
   test("trims the name and the description", () => {
     const habit = createHabit(
       { ...water, name: "  Water ", description: " Eight glasses\n" },

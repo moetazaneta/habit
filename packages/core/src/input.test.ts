@@ -61,6 +61,17 @@ describe("tapResult", () => {
       expect(tap(0.1, { kind: "number", value: 1.7 })).toEqual({ kind: "number", value: 1.8 });
     });
 
+    test("keeps a tiny Step that JavaScript writes in exponent notation", () => {
+      expect(tap(1e-7, { kind: "number", value: 0.5 })).toEqual({
+        kind: "number",
+        value: 0.5000001,
+      });
+      expect(tap(0.5, { kind: "number", value: 1e-7 })).toEqual({
+        kind: "number",
+        value: 0.5000001,
+      });
+    });
+
     test("writes the Habit and the Day of the tap", () => {
       const water = numberHabit();
       expect(tapResult(water, day("2026-10-20"), undefined, today)).toEqual({
