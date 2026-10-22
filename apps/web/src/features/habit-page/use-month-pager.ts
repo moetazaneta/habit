@@ -2,6 +2,7 @@ import { addMonths, type Month } from "@habit/core";
 import { animate, type AnimationPlaybackControls } from "motion";
 import { useMotionValue } from "motion/react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 
 import { durations, springs } from "@/components/motion";
 
@@ -68,6 +69,8 @@ export function useMonthPager({
   const target = useRef(month);
   const grabbedAt = useRef(0);
   const fadeIn = useRef(false);
+  /** The count of settles: a finish of an older settle does nothing. */
+  const generation = useRef(0);
   /** The last input was a key, not a pointer. */
   const keyboard = useRef(false);
 
@@ -119,10 +122,18 @@ export function useMonthPager({
         target.current = destination;
         onMonthChange(destination);
       }
+      // The new page becomes the shown one, and the track jumps back to 0, in this same task: a
+      // move that comes before React would commit it later must see the new state, or that commit
+      // (and its jump of x) would cut the move short. A slide that a newer one replaced can still
+      // call back when it stops; it must not undo the newer one.
+      const current = ++generation.current;
       const finish = () => {
+        if (current !== generation.current) return;
         animation.current = null;
-        setIncoming(null);
-        setShown(destination);
+        flushSync(() => {
+          setIncoming(null);
+          setShown(destination);
+        });
       };
       animation.current?.stop();
       if (reduceMotion || keyboard.current) {

@@ -44,10 +44,12 @@ function renderPage(
   return router;
 }
 
-/** The button of a Day of the shown Month, by its date: "October 22". */
-async function day(date: string) {
-  const calendar = await screen.findByRole("group", { name: /^\w+ \d{4}$/ });
-  return within(calendar).getByRole("button", { name: new RegExp(`, ${date}:`) });
+/**
+ * The button of a Day of the shown Month, by its date: "October 22". The pages beside the shown
+ * one are hidden, so this waits until a slide to the Month has ended.
+ */
+function day(date: string) {
+  return screen.findByRole("button", { name: new RegExp(`, ${date}:`) });
 }
 
 const wait = (ms: number) => act(() => new Promise((resolve) => setTimeout(resolve, ms)));
@@ -113,7 +115,8 @@ test("a fast swipe on check Days moves to the previous Month and paints nothing"
 
   expect(await screen.findByRole("heading", { name: "September 2026" })).toBeTruthy();
   expect(screen.queryByText(/^Painted/)).toBeNull();
-  await act(() => fireEvent.click(screen.getByRole("button", { name: "Next month" })));
+  // Back while the slide may still run: the page must end on October, not on the slide's Month.
+  fireEvent.click(screen.getByRole("button", { name: "Next month" }));
   expect(await screen.findByRole("heading", { name: "October 2026" })).toBeTruthy();
   expect((await day("October 13")).getAttribute("aria-pressed")).toBe(before);
 });
