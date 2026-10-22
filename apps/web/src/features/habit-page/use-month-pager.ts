@@ -101,9 +101,11 @@ export function useMonthPager({
     const onPointer = () => (keyboard.current = false);
     document.addEventListener("keydown", onKey, true);
     document.addEventListener("pointerdown", onPointer, true);
+    document.addEventListener("wheel", onPointer, { capture: true, passive: true });
     return () => {
       document.removeEventListener("keydown", onKey, true);
       document.removeEventListener("pointerdown", onPointer, true);
+      document.removeEventListener("wheel", onPointer, { capture: true });
     };
   }, []);
 
@@ -195,8 +197,11 @@ export function useMonthPager({
     (velocity: number, flick: -1 | 0 | 1 = 0) => {
       const size = width();
       const indexes = latest.current.slots.map((page) => page.slot);
-      // A swipe to the right shows the page at the left (slot -1).
-      const flicked = indexes.find((slot) => flick !== 0 && slot === -flick);
+      // A swipe to the right shows the page at the left (slot -1). A flick counts only while the
+      // finger still moves its way when it lifts: a peek that stops, or turns back, snaps back.
+      const flicked = indexes.find(
+        (slot) => flick !== 0 && Math.sign(velocity) === flick && slot === -flick,
+      );
       const projected = x.get() + velocity * PROJECTION_S;
       // Never more than one page from the shown one.
       const nearest = Math.round(-projected / size);

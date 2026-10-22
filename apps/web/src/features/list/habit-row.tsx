@@ -101,7 +101,17 @@ export const HabitRow = memo(function HabitRow({
   );
 });
 
-/** A click that navigates in this tab: no modifier key, the main button. */
+/**
+ * A click of a pointer that navigates in this tab: no modifier key, the main button. Enter on the
+ * link (`detail` 0) is the keyboard, which does not animate.
+ */
 function isPlainClick(event: MouseEvent): boolean {
-  return event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
+  return (
+    event.detail !== 0 &&
+    event.button === 0 &&
+    !event.metaKey &&
+    !event.ctrlKey &&
+    !event.shiftKey &&
+    !event.altKey
+  );
 }

@@ -42,7 +42,10 @@ export function useEditedDayInView(page: RefObject<HTMLElement | null>, habitId:
         window.removeEventListener("wheel", stop);
         window.removeEventListener("touchstart", stop);
       };
-      const stop = () => {
+      const stop = (event: Event) => {
+        // A tap or a scroll inside the sheet is not a scroll of the page.
+        if (event.target instanceof Element && event.target.closest(".sheet-popup") !== null)
+          return;
         scroll.current?.stop();
         detach();
       };
