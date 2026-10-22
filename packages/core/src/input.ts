@@ -1,9 +1,8 @@
 import type { Action } from "./actions";
-import type { Day } from "./day";
+import { isFuture, type Day } from "./day";
 import type { EntryValue } from "./entry";
 import type { Habit } from "./habit";
 import type { HabitId } from "./ids";
-import { notImplemented } from "./internal";
 
 /** What a tap on the square of a Day does. */
 export type TapResult =
@@ -25,7 +24,48 @@ export function tapResult(
   current: EntryValue | undefined,
   today: Day,
 ): TapResult {
-  return notImplemented(`tapResult(${habit.kind}, ${day}, ${current?.kind}, ${today})`);
+  if (isFuture(day, today)) return { type: "locked" };
+  const habitId = habit.id;
+  switch (habit.kind) {
+    case "check":
+      return {
+        type: "action",
+        action:
+          current === undefined
+            ? { type: "setEntry", habitId, day, value: { kind: "check" } }
+            : { type: "clearEntry", habitId, day },
+      };
+    case "number": {
+      const value = current?.kind === "number" ? current.value : 0;
+      return {
+        type: "action",
+        action: {
+          type: "setEntry",
+          habitId,
+          day,
+          value: { kind: "number", value: addDecimals(value, habit.step) },
+        },
+      };
+    }
+    case "choice":
+    case "scale":
+    case "text":
+      return { type: "openInput" };
+  }
+}
+
+/** `a + b` without the binary rounding error, so 0.2 + 0.1 is 0.3 and not 0.30000000000000004. */
+function addDecimals(a: number, b: number): number {
+  const sum = a + b;
+  const places = Math.max(decimalPlaces(a), decimalPlaces(b));
+  return places === 0 ? sum : Number(sum.toFixed(places));
+}
+
+function decimalPlaces(value: number): number {
+  const text = String(value);
+  // A number in exponent notation, such as 1e-7, keeps the plain sum.
+  if (text.includes("e")) return 0;
+  return text.split(".")[1]?.length ?? 0;
 }
 
 /**
@@ -43,7 +83,19 @@ export function paintAction(
   today: Day,
   current?: (habitId: HabitId, day: Day) => EntryValue | undefined,
 ): Action {
-  return notImplemented(
-    `paintAction(${habit.kind}, ${days.length}, ${mode}, ${today}, ${typeof current})`,
-  );
+  if (habit.kind !== "check") return { type: "batch", actions: [] };
+  const habitId = habit.id;
+  const actions: Action[] = [];
+  for (const day of new Set(days)) {
+    if (isFuture(day, today)) continue;
+    const alreadyPainted =
+      current !== undefined && (current(habitId, day) !== undefined) === (mode === "set");
+    if (alreadyPainted) continue;
+    actions.push(
+      mode === "set"
+        ? { type: "setEntry", habitId, day, value: { kind: "check" } }
+        : { type: "clearEntry", habitId, day },
+    );
+  }
+  return { type: "batch", actions };
 }
