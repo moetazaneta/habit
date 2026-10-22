@@ -123,6 +123,7 @@ export function NumberInput({
             type="button"
             className="sheet-button flex-1"
             disabled={current === habit.target}
+            aria-label={`Set to the ${targetWord.toLowerCase()}, ${formatQuantity(habit.target, habit.unit)}`}
             onClick={() => set(habit.target!)}
           >
             = {targetWord}

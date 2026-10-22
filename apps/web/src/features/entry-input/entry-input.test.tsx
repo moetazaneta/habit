@@ -37,7 +37,7 @@ test("the number input steps, sets the Target, and clears", async () => {
   fireEvent.click(screen.getByRole("button", { name: "Subtract 1" }));
   fireEvent.click(screen.getByRole("button", { name: "Subtract 1" }));
   expect(field.value).toBe("4");
-  fireEvent.click(screen.getByRole("button", { name: "= Target" }));
+  fireEvent.click(screen.getByRole("button", { name: "Set to the target, 8 glasses" }));
   expect(field.value).toBe("8");
   expect((await square("Water", 4)).getAttribute("aria-label")).toBe(
     `${formatDayLong(today)}: 8 of 8 glasses`,

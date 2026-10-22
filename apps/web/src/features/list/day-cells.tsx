@@ -11,7 +11,7 @@ import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react"
 import { DaySquare } from "@/components/day-square";
 import { describeEntry, formatDayLong } from "@/components/format";
 import { haptic } from "@/components/haptics";
-import { entryRef } from "@/components/sheet-search";
+import { entryRef, useSheetSearch } from "@/components/sheet-search";
 
 /** How long a press on a number square lasts before it opens the input. */
 export const LONG_PRESS_MS = 450;
@@ -76,6 +76,8 @@ export function DayCells({
 }: DayCellsProps) {
   const gesture = useRef<Gesture>({ type: "idle" });
   const [pressed, setPressed] = useState<Day | null>(null);
+  // The Day whose value the input sheet edits: it stays visible above the sheet's scrim.
+  const { entry: editing } = useSheetSearch();
   const [paint, setPaint] = useState<{ mode: "set" | "clear"; days: Day[] } | null>(null);
 
   const reset = () => {
@@ -230,6 +232,7 @@ export function DayCells({
                 intensity={shownIntensity}
                 recorded={painting ? paint.mode === "set" : value !== undefined}
                 data-entry={entryRef(habit.id, day)}
+                data-editing={editing === entryRef(habit.id, day) ? "" : undefined}
               />
             </span>
           </button>
