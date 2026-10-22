@@ -24,3 +24,6 @@ apps/web/.impeccable/mocks/*
 !apps/web/.impeccable/mocks/decision/
 apps/web/.impeccable/mocks/decision/*
 !apps/web/.impeccable/mocks/decision/r3-color-icons.html
+
+# The impeccable finish review's captures: evidence for one review, not source.
+apps/web/.impeccable/review/
