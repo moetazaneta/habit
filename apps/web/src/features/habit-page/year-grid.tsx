@@ -43,7 +43,8 @@ export function YearGrid({ habit, today, entries, month, onSelectMonth }: YearGr
             column.map((day, row) => {
               if (day === null) return <span key={`${column[0]}-${row}`} />;
               const value = entries(habit.id, day);
-              // DaySquare is memoized: a change of one Day renders one square, not 364.
+              // DaySquare is memoized: a change of one Day renders one square, not 364. A grid
+              // this large does not animate: a new Target would pulse every square at once.
               return (
                 <DaySquare
                   key={day}
@@ -51,6 +52,7 @@ export function YearGrid({ habit, today, entries, month, onSelectMonth }: YearGr
                   intensity={intensity(habit, value)}
                   recorded={value !== undefined}
                   size="var(--cell)"
+                  animated={false}
                 />
               );
             }),
