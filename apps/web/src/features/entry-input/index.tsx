@@ -1,6 +1,6 @@
 import { isFuture, type Day, type HabitId } from "@habit/core";
 import { useEntries, useHabit, useHabits } from "@habit/data";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { HabitIcon } from "@/components/habit-icon";
 import { formatDayRelative } from "@/components/format";
@@ -52,8 +52,14 @@ function EntryInput({
   const wide = useIsWide();
   const field = useRef<HTMLElement>(null);
   // The square this input is about, for the desktop popover: the list and the habit page mark
-  // their squares with `data-entry`. Read once, when the input mounts for this entry.
-  const [anchor] = useState(() => document.querySelector(`[data-entry="${CSS.escape(entry)}"]`));
+  // their squares with `data-entry`. Read when the input mounts for this entry, and once more
+  // after that first commit: after a reload with `?entry`, the input and the screen under it
+  // mount together, so the square is not in the document yet while they render.
+  const [anchor, setAnchor] = useState(() => findSquare(entry));
+  useLayoutEffect(() => {
+    if (anchor === null) setAnchor(findSquare(entry));
+    // Only at mount: a square that comes later must not turn an open dialog into a popover.
+  }, []);
 
   const usable =
     habit !== undefined &&
@@ -102,4 +108,8 @@ function EntryInput({
       )}
     </ResponsiveSheet>
   );
+}
+
+function findSquare(entry: string): Element | null {
+  return document.querySelector(`[data-entry="${CSS.escape(entry)}"]`);
 }
