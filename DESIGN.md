@@ -470,6 +470,22 @@ The Options of a choice or a scale Day, as a radio list.
 - **Timing:** a plain message stays 4s, an Undo 6s, and "Couldn't save" with Retry 8s. Only one save error shows at a time.
 - **Reduced motion:** a 180ms fade.
 
+### Habit form (create and edit)
+
+The create sheet (`?new=true`) and the edit sheet (`?edit=<id>`), in `features/habit-form/`. On a desktop the dialog is 25rem wide, not 22rem, so 8 color swatches and the Option rows have room.
+
+- **Steps:** create has two steps, after Family: the icon, the name, the color, the Kind and the Direction; then the fields of a number, choice or scale habit. The icon picker is a step of its own. The old step leaves in 140ms with a 2px blur and a 20px shift away; the new one comes in from the side it lies on with the morph spring and a 220ms fade. The sheet's height morphs between them. Under reduced motion, a crossfade.
+- **Icon tile:** 4.5rem, a 1.25rem squircle, the habit icon at 2.375rem on 16% of the habit color mixed into `surface` (in OKLab: an OKLCH mix turns the tint pink on white). The tint rises from the bottom like a Day, with the fill spring and the gauge's pulse, when the create sheet opens (after 220ms, so the sheet has come up) and when the color changes. A new icon crossfades from 0.9 with a 2px blur.
+- **Fields:** the field fill, a 0.625rem squircle, 3rem tall (the name 3.25rem, at Title type), 0.875rem side padding, the `ink-4` inset ring on focus. A label above a field is 0.875rem at 500 in `ink-3`.
+- **Segmented control:** a radio group on a `surface-2` track with a 0.125rem inset; the chosen segment gets a pill (`surface`, `surface-3` in the dark theme) that slides with the lift spring. The Kind segments put a bold Phosphor icon over a Caption label. A quiet line in `ink-3` under the control says what the choice means, and crossfades when it changes.
+- **Color swatches:** the 16 colors, 8 on a row, each a 72% squircle in its cell. The chosen one gets a 2px `surface` gap and a 2px ring in its color, and a bold check in `ground`.
+- **Primary button:** one per step, the action that ends it ("Next", "Add habit"): `ink` fill, `ground` text, full width, otherwise the default button. Its label crossfades when it changes.
+- **Sticky footer:** the buttons that end a step stick to the bottom of the sheet while a long step scrolls, with a 1rem fade above them. (`MorphHeight` clips with `overflow: clip`, which is not a scroll container, so `position: sticky` works inside it.)
+- **Messages:** a calm line under its field, 0.875rem in `ink-2`, no red, no shake. It opens with the morph spring and fades in.
+- **Options:** a row per Option: a gauge at the Option's level (scale only), a 3rem emoji field, the label field, a remove button and a drag handle. Rows enter and leave with the morph spring on their height and a fade (a removal fades in 120ms). A dragged row lifts onto `surface` with the elevation. Retired Options wait under the list, struck through in `ink-3`, with Restore.
+- **Taps preview:** under the number fields, up to five 1.25rem gauges show the fill of each tap, and a line counts the taps that fill the day ("reach the limit" for a quit habit).
+- **Icon picker:** a search field (an emoji typed there can be used as it is), Icons or Emoji, and a grid of 2.75rem cells in a fixed-height area that scrolls. The chosen cell takes 18% of the habit color and a ring at 70%.
+
 ### Motion grammar
 
 All motion comes from the presets in `@/components/motion`, after Family: springs that settle quickly, a short overshoot when a value rises, and sheets that change their height instead of cutting.
