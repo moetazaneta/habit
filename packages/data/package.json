@@ -8,13 +8,29 @@
     ".": "./src/index.ts",
     "./testing": "./src/testing/index.ts"
   },
+  "scripts": {
+    "convex:dev": "convex dev",
+    "convex:push": "convex dev --once"
+  },
   "dependencies": {
-    "@habit/core": "workspace:*"
+    "@clerk/react": "catalog:",
+    "@habit/core": "workspace:*",
+    "convex": "catalog:",
+    "convex-helpers": "catalog:",
+    "idb-keyval": "catalog:"
   },
   "devDependencies": {
+    "@edge-runtime/vm": "catalog:",
+    "@testing-library/dom": "catalog:",
+    "@testing-library/react": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "convex-test": "catalog:",
+    "fake-indexeddb": "catalog:",
+    "jsdom": "catalog:",
     "react": "catalog:",
+    "react-dom": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:"
