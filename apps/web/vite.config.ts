@@ -12,7 +12,12 @@ export default defineConfig({
   run: {
     // This package's tests as a cached task, so `vp run ready` replays them when nothing they read
     // changed.
-    tasks: { unit: "vp test" },
+    tasks: {
+      unit: "vp test",
+      // The end-to-end check on the real backend (e2e/real-backend.ts). It needs the network and
+      // the Convex CLI's login, so `vp run ready` does not run it, and it is never cached.
+      e2e: { command: "node e2e/real-backend.ts", cache: false },
+    },
   },
   test: {
     name: "web",

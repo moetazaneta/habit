@@ -33,6 +33,7 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "jsdom": "catalog:",
+    "playwright-core": "catalog:",
     "shadcn": "catalog:",
     "tailwindcss": "catalog:",
     "tw-animate-css": "catalog:",
