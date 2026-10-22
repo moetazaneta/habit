@@ -13,7 +13,7 @@ threads use it.
 - **`@habit/core`** (`packages/core`): the domain types and the pure rules. Each function has its
   rule in its doc comment; the stubs throw until the core thread implements them.
 - **`@habit/data`** (`packages/data`): `HabitDataApi` in `src/api.ts` and the hooks `useAuth`,
-  `useHabits`, `useHabit`, `useEntries`, `useMonth`, `usePerform`. The apps use only these hooks
+  `useHabits`, `useHabit`, `useHabitState`, `useEntries`, `useMonth`, `usePerform`. The apps use only these hooks
   and the two providers:
   - `HabitDataProvider`: Convex and Clerk.
   - `FakeHabitDataProvider` from `@habit/data/testing`: in memory, with `demoState(today)`, for

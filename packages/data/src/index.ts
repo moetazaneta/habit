@@ -4,6 +4,7 @@ export {
   useAuth,
   useEntries,
   useHabit,
+  useHabitState,
   useHabits,
   useMonth,
   usePerform,

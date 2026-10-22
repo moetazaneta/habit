@@ -61,6 +61,14 @@ export function useHabit(id: HabitId): Habit | undefined {
   return useApi().state.habits[id];
 }
 
+/**
+ * The whole client state: all Habits (also deleted ones) and the loaded Entries. For the queries of
+ * @habit/core that read more than one Habit or Day, such as `lastOrder` for a new Habit.
+ */
+export function useHabitState(): HabitState {
+  return useApi().state;
+}
+
 /** A function that reads the Entry value of a Habit on a Day from the loaded data. */
 export function useEntries(): (habitId: HabitId, day: Day) => EntryValue | undefined {
   const { state } = useApi();
