@@ -15,8 +15,8 @@
  * starting one), E2E_PORT (default 5433), E2E_HEADED=true (show the browser), E2E_CHROME (the
  * path of a Chrome or Chromium binary, instead of the installed Google Chrome).
  */
-import { execFileSync, spawn, type ChildProcess } from "node:child_process";
-import { mkdirSync } from "node:fs";
+import { execFileSync, spawn } from "node:child_process";
+import { mkdirSync, openSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -73,6 +73,7 @@ async function main() {
       : { executablePath: process.env.E2E_CHROME }),
   });
   try {
+    await warmUp(browser);
     await ownerFlow(browser);
     await ownerAgain(browser);
     await guestFlow(browser);
@@ -83,7 +84,7 @@ async function main() {
     );
   } finally {
     await browser.close();
-    server?.kill("SIGTERM");
+    server?.stop();
   }
 
   if (pageErrors.length > 0) failures.push(`page errors:\n  ${pageErrors.join("\n  ")}`);
@@ -460,26 +461,53 @@ async function tapCalendar(page: Page, day: ReturnType<typeof calendarDay>) {
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
 }
 
-async function startDevServer(): Promise<ChildProcess> {
-  step(`start the dev server on the real backend at ${BASE}`);
+/**
+ * Loads the app once and waits for the network to rest: a dev server that has just started can
+ * optimize its dependencies on the first load and reload the page, which fails a dynamic import
+ * of the run itself.
+ */
+async function warmUp(browser: Browser) {
+  const context = await newContext(browser);
+  const page = await context.newPage();
+  await page.goto(BASE, { waitUntil: "networkidle" });
+  await page.waitForTimeout(1000);
+  await context.close();
+}
+
+/** A dev server of its own, in a process group, so that `stop` ends Vite too, not only vp. */
+async function startDevServer(): Promise<{ stop: () => void }> {
+  if (await answers(BASE)) {
+    throw new Error(`${BASE} answers already: stop that server, or set E2E_URL to use it`);
+  }
+  step(`start the dev server on the real backend at ${BASE} (log: ${join(SHOTS, "dev.log")})`);
+  const log = openSync(join(SHOTS, "dev.log"), "w");
   const server = spawn(
     "vp",
     ["-C", "apps/web", "dev", "--port", String(PORT), "--strictPort", "--host", "127.0.0.1"],
-    { cwd: ROOT, env: { ...process.env, VITE_HABIT_DATA: "convex" }, stdio: "ignore" },
+    {
+      cwd: ROOT,
+      env: { ...process.env, VITE_HABIT_DATA: "convex" },
+      stdio: ["ignore", log, log],
+      detached: true,
+    },
   );
+  const stop = () => {
+    if (server.pid !== undefined) process.kill(-server.pid, "SIGTERM");
+  };
   const until = Date.now() + 30_000;
   while (Date.now() < until) {
-    if (
-      await fetch(BASE).then(
-        (response) => response.ok,
-        () => false,
-      )
-    )
-      return server;
+    if (await answers(BASE)) return { stop };
     await new Promise((resolve) => setTimeout(resolve, 300));
   }
-  server.kill("SIGTERM");
+  stop();
   throw new Error(`the dev server did not start at ${BASE}`);
+}
+
+async function answers(url: string): Promise<boolean> {
+  return fetch(url).then(
+    (response) => response.ok,
+    () => false,
+  );
 }
 
 await main();
