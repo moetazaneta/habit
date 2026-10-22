@@ -1,6 +1,6 @@
 import { CheckIcon } from "@phosphor-icons/react/dist/csr/Check";
 import { CopyIcon } from "@phosphor-icons/react/dist/csr/Copy";
-import { useEffect, useId, useRef, useState } from "react";
+import { Fragment, useEffect, useId, useRef, useState, type ReactNode } from "react";
 
 import { AuthButton } from "@/features/auth/auth-screen";
 import { AuthMark } from "@/features/auth/auth-mark";
@@ -27,7 +27,9 @@ export function NoAccessScreen({ userId, signOut }: { userId: string; signOut: (
           access, run the command below from the root of the repository, then reload this page.
         </p>
         <CopyValue label="User id" value={userId} />
-        <CopyValue label="Command" value={command} />
+        <CopyValue label="Command" value={command}>
+          <CommandText command={command} />
+        </CopyValue>
         <AuthButton
           variant="quiet"
           className="self-start"
@@ -45,7 +47,16 @@ export function NoAccessScreen({ userId, signOut }: { userId: string; signOut: (
 }
 
 /** A value to copy: its label, the value in a code face, and a copy button. */
-function CopyValue({ label, value }: { label: string; value: string }) {
+function CopyValue({
+  label,
+  value,
+  children = value,
+}: {
+  label: string;
+  value: string;
+  /** How the value shows, when not as plain text. */
+  children?: ReactNode;
+}) {
   const [copied, setCopied] = useState(false);
   const reset = useRef<ReturnType<typeof setTimeout>>(undefined);
   const id = useId();
@@ -78,9 +89,35 @@ function CopyValue({ label, value }: { label: string; value: string }) {
           <span aria-hidden>{copied ? "Copied" : "Copy"}</span>
         </button>
       </div>
-      <code className="auth-code">{value}</code>
+      <code className="auth-code">{children}</code>
     </section>
   );
+}
+
+/**
+ * A command that wraps between its words, never inside one: a word with a hyphen stays whole
+ * ("--deployment", the deployment's name), and the list of ids may break after its comma.
+ */
+function CommandText({ command }: { command: string }) {
+  return command.split(" ").map((word, index) => (
+    <Fragment key={index}>
+      {index === 0 ? null : " "}
+      {word.includes("-") ? (
+        <span className="whitespace-nowrap">{word}</span>
+      ) : (
+        word.split(",").map((part, at) => (
+          <Fragment key={at}>
+            {at === 0 ? null : (
+              <>
+                ,<wbr />
+              </>
+            )}
+            {part}
+          </Fragment>
+        ))
+      )}
+    </Fragment>
+  ));
 }
 
 /** Copies text to the clipboard; false when the browser refused. */

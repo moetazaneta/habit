@@ -6,10 +6,10 @@ import { MorphHeight } from "@/components/sheet";
 import { AuthButton, AuthScreen } from "@/features/auth/auth-screen";
 
 /** The test users of the Clerk development instance (docs/notes/data.md). */
-const TEST_USERS = [
-  "habit-owner+clerk_test@example.com",
-  "habit-guest+clerk_test@example.com",
-] as const;
+const TEST_USERS = {
+  owner: "habit-owner+clerk_test@example.com",
+  guest: "habit-guest+clerk_test@example.com",
+} as const;
 
 /**
  * Signed out: the mark, the name, and one action, "Continue with Google". In development a
@@ -127,7 +127,6 @@ function EmailCodeSection({ emailCode }: { emailCode: EmailCodeSignIn }) {
             autoCapitalize="none"
             spellCheck={false}
             placeholder="Email"
-            list={`${ids}-test-users`}
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             aria-invalid={error !== null}
@@ -135,17 +134,15 @@ function EmailCodeSection({ emailCode }: { emailCode: EmailCodeSignIn }) {
             // The person opened this form a moment ago.
             autoFocus
           />
-          <datalist id={`${ids}-test-users`}>
-            {TEST_USERS.map((user) => (
-              <option key={user} value={user} />
-            ))}
-          </datalist>
           {errorLine}
           <AuthButton variant="quiet" type="submit" disabled={busy || email.trim() === ""}>
             {busy ? "Sending…" : "Send code"}
           </AuthButton>
           <p id={`${ids}-note`} className="auth-note">
-            Development only. The test users get the code 424242.
+            Development only. The test users{" "}
+            <TestUser label="owner" onPick={() => setEmail(TEST_USERS.owner)} /> and{" "}
+            <TestUser label="guest" onPick={() => setEmail(TEST_USERS.guest)} /> get the code
+            424242.
           </p>
         </form>
       ) : (
@@ -187,5 +184,19 @@ function EmailCodeSection({ emailCode }: { emailCode: EmailCodeSignIn }) {
         </form>
       )}
     </MorphHeight>
+  );
+}
+
+/** A test user in the note: a tap puts its address in the field. */
+function TestUser({ label, onPick }: { label: string; onPick: () => void }) {
+  return (
+    <button
+      type="button"
+      className="auth-inline-link"
+      aria-label={`Use the ${label} test user`}
+      onClick={onPick}
+    >
+      {label}
+    </button>
   );
 }

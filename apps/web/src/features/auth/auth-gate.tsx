@@ -25,7 +25,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
 
 /**
  * While the sign-in state loads: the bare ground, so a fast start goes straight to its screen
- * without a flash. A slow start fades in the empty mark after a moment, where the sign-in screen
+ * without a flash. A slow start fades in the empty mark after a second, where the sign-in screen
  * will draw it.
  */
 function AuthLoading() {
