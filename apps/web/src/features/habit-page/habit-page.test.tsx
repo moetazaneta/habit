@@ -1,4 +1,4 @@
-import { type Day, type HabitId, type HabitState } from "@habit/core";
+import { emptyState, type Day, type HabitId, type HabitState } from "@habit/core";
 import { HabitDataContext, type AuthState, type HabitDataApi } from "@habit/data";
 import { demoHabitIds, demoState, FakeHabitDataProvider } from "@habit/data/testing";
 import { createMemoryHistory, RouterProvider } from "@tanstack/react-router";
@@ -244,12 +244,20 @@ test.each([
 });
 
 test("until the data comes, the page shows its shape and a way back", async () => {
-  renderPage(demoHabitIds.water, undefined, { auth: "loading" });
+  // The owner is signed in, and neither the snapshot nor the live data is there yet. (While the
+  // sign-in loads, the app shows its own loading screen instead of the page.)
+  renderPage(demoHabitIds.water, (children) => <NoDataYet>{children}</NoDataYet>);
 
   expect(await screen.findByLabelText("Loading the habit")).toBeTruthy();
   expect(screen.getByRole("link", { name: "Back to habits" })).toBeTruthy();
   expect(screen.queryByRole("heading", { name: "This habit is not here" })).toBeNull();
 });
+
+function NoDataYet({ children }: { children: ReactNode }) {
+  const api = use(HabitDataContext)!;
+  const value: HabitDataApi = { ...api, source: "none", state: emptyState() };
+  return <HabitDataContext.Provider value={value}>{children}</HabitDataContext.Provider>;
+}
 
 function LoadingOlderMonths({ children }: { children: ReactNode }) {
   const api = use(HabitDataContext)!;
