@@ -2,6 +2,7 @@ import type { Day, Habit } from "@habit/core";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Link } from "@tanstack/react-router";
+import { useReducedMotion } from "motion/react";
 import { memo, type CSSProperties, type MouseEvent } from "react";
 
 import { HabitIcon } from "@/components/habit-icon";
@@ -31,6 +32,7 @@ export const HabitRow = memo(function HabitRow({
   onPaint,
   shouldIgnoreClick,
 }: HabitRowProps) {
+  const reduceMotion = useReducedMotion() === true;
   const {
     setNodeRef,
     setActivatorNodeRef,
@@ -39,7 +41,12 @@ export const HabitRow = memo(function HabitRow({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: habit.id });
+  } = useSortable({
+    id: habit.id,
+    // The rows that make room, and the drop, move with the app's ease-out; under reduced motion
+    // they move at once (the lifted row still follows the finger).
+    transition: reduceMotion ? null : { duration: 200, easing: "cubic-bezier(0.23, 1, 0.32, 1)" },
+  });
   // The name stays a link: dnd kit's `role="button"` would hide that from screen readers.
   const { role: _role, ...sortableAttributes } = attributes;
 

@@ -299,7 +299,7 @@
 @layer components {
   /*
    * A Day is a gauge: a frame in the habit color at --frame-mix, filled from the bottom to --p
-   * (0 to 1). Empty is the frame alone, in --line; full is solid. The fill moves with a CSS
+   * (0 to 1, a scaleY set inline). Empty is the frame alone, in --line; full is solid. The fill moves with a CSS
    * transition on transform, so a fast series of taps retargets instead of restarting.
    */
   .day-square {
@@ -326,9 +326,12 @@
     position: absolute;
     inset: 0;
     background: var(--c);
-    transform: scaleY(var(--p));
     transform-origin: bottom;
     transition: transform var(--spring-fill, 420ms var(--ease-out));
+  }
+
+  .day-square-fill[data-trend="down"] {
+    transition: transform 200ms var(--ease-out);
   }
 
   .day-square[data-animated="false"] .day-square-fill {
@@ -577,7 +580,7 @@
   }
 
   .sheet-close:active {
-    transform: scale(0.94);
+    transform: scale(0.96);
   }
 
   @media (hover: hover) and (pointer: fine) {
@@ -600,7 +603,7 @@
     /* A fade replaces the slide and the scale; a swipe still follows the finger. */
     .sheet-popup,
     .sheet-popup[data-ending-style] {
-      transition: opacity 180ms ease;
+      transition: opacity 180ms var(--ease-out);
     }
 
     .sheet-popup[data-starting-style],
@@ -611,7 +614,7 @@
 
     .dialog-popup,
     .popover-popup {
-      transition: opacity 180ms ease;
+      transition: opacity 180ms var(--ease-out);
     }
 
     .dialog-popup[data-starting-style],
@@ -674,6 +677,13 @@
   @media (hover: hover) and (pointer: fine) {
     .toast-action:hover {
       background: color-mix(in oklch, var(--toast-ink) 8%, transparent);
+    }
+  }
+
+  /* Sonner drops every transition under reduced motion; a fade stays (it unmounts after 200ms). */
+  @media (prefers-reduced-motion: reduce) {
+    [data-sonner-toaster] [data-sonner-toast] {
+      transition: opacity 180ms var(--ease-out) !important;
     }
   }
 }
@@ -827,7 +837,14 @@
   }
 
   .day-cell[data-pressed] .day-cell-press {
-    transform: scale(0.92);
+    transform: scale(0.95);
+  }
+
+  /* A number square under a held press shrinks for the whole hold, so the wait shows progress
+     toward the input; a release springs back in 120ms. */
+  .day-cells[data-kind="number"] .day-cell[data-pressed] .day-cell-press {
+    transform: scale(0.9);
+    transition: transform 450ms linear;
   }
 
   @media (hover: hover) and (pointer: fine) {
@@ -859,6 +876,10 @@
     .ghost-row:hover .ghost-icon {
       color: var(--ink-2);
     }
+  }
+
+  .ghost-row .habit-row-inner {
+    transition-duration: 120ms;
   }
 
   .ghost-row:active .habit-row-inner {
@@ -893,7 +914,9 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .habit-row[data-dragging] .habit-row-inner {
+    .habit-row[data-dragging] .habit-row-inner,
+    .day-cell[data-pressed] .day-cell-press,
+    .day-cells[data-kind="number"] .day-cell[data-pressed] .day-cell-press {
       transform: none;
     }
   }
@@ -1042,7 +1065,7 @@
     flex: none;
     color: var(--ink);
     opacity: 0;
-    transform: scale(0.6);
+    transform: scale(0.9);
     transition:
       opacity 160ms var(--ease-out),
       transform 160ms var(--ease-out);
@@ -1061,6 +1084,12 @@
   @media (hover: hover) and (pointer: fine) {
     .entry-option:hover {
       background: var(--surface-2);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .entry-option-check {
+      transform: none;
     }
   }
 

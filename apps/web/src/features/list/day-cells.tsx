@@ -15,6 +15,8 @@ import { entryRef } from "@/components/sheet-search";
 
 /** How long a press on a number square lasts before it opens the input. */
 export const LONG_PRESS_MS = 450;
+/** On touch, the pressed look waits this long: a scroll cancels the pointer within it. */
+const TOUCH_PRESS_DELAY_MS = 60;
 /** A press that moves farther than this is not a tap (it is a scroll, or a slip). */
 const SLOP_PX = 10;
 
@@ -41,6 +43,8 @@ type Gesture =
       y: number;
       columns: Column[];
       timer: number | undefined;
+      /** On touch, the press shows after a moment, so a scroll that starts here does not dip. */
+      pressTimer: number | undefined;
     }
   | { type: "paint"; pointerId: number; mode: "set" | "clear"; days: Day[]; columns: Column[] }
   /** The long press opened the input: the rest of this press does nothing. */
@@ -76,7 +80,10 @@ export function DayCells({
 
   const reset = () => {
     const current = gesture.current;
-    if (current.type === "press") window.clearTimeout(current.timer);
+    if (current.type === "press") {
+      window.clearTimeout(current.timer);
+      window.clearTimeout(current.pressTimer);
+    }
     gesture.current = { type: "idle" };
     setPressed(null);
   };
@@ -105,8 +112,12 @@ export function DayCells({
       y: event.clientY,
       columns,
       timer,
+      pressTimer:
+        event.pointerType === "touch"
+          ? window.setTimeout(() => setPressed(day), TOUCH_PRESS_DELAY_MS)
+          : undefined,
     };
-    setPressed(day);
+    if (event.pointerType !== "touch") setPressed(day);
   };
 
   const onPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -120,6 +131,7 @@ export function DayCells({
         !isFuture(over, today)
       ) {
         window.clearTimeout(current.timer);
+        window.clearTimeout(current.pressTimer);
         const mode = entries(habit.id, current.day) === undefined ? "set" : "clear";
         const painted = [current.day, over];
         gesture.current = {
@@ -172,6 +184,7 @@ export function DayCells({
   return (
     <div
       className="day-cells"
+      data-kind={habit.kind}
       role="group"
       aria-label={habit.name}
       onPointerDown={onPointerDown}

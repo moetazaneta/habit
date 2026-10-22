@@ -2,6 +2,7 @@ import type { HabitColor } from "@habit/core";
 import { animate } from "motion";
 import { useReducedMotion } from "motion/react";
 import {
+  memo,
   useLayoutEffect,
   useRef,
   type CSSProperties,
@@ -44,7 +45,7 @@ export interface DaySquareProps extends HTMLAttributes<HTMLSpanElement> {
  * It is only the picture: the screens wrap it in their own button, with a touch target of about
  * 44px, and their own gestures.
  */
-export function DaySquare({
+export const DaySquare = memo(function DaySquare({
   color,
   intensity,
   size,
@@ -71,10 +72,12 @@ export function DaySquare({
     const square = squareRef.current;
     const fill = fillRef.current;
     if (square === null || fill === null) return;
+    // A value that rises springs up; one that falls drains faster, without a bounce.
+    fill.dataset.trend = p > before ? "up" : "down";
     if (reduceMotion) {
       fill.animate([{ opacity: 0.35 }, { opacity: 1 }], {
         duration: durations.fade,
-        easing: "ease-out",
+        easing: EASE_OUT,
       });
       return;
     }
@@ -96,17 +99,18 @@ export function DaySquare({
       style={
         {
           "--c": habitColorVar(color),
-          "--p": p,
           ...(size === undefined ? {} : { "--ds-size": size }),
           ...style,
         } as CSSProperties
       }
     >
-      <span ref={fillRef} className="day-square-fill" />
+      <span ref={fillRef} className="day-square-fill" style={{ transform: `scaleY(${p})` }} />
       {label === undefined ? null : <span className="day-square-label">{label}</span>}
     </span>
   );
-}
+});
+
+const EASE_OUT = "cubic-bezier(0.23, 1, 0.32, 1)";
 
 function clamp01(value: number): number {
   if (!Number.isFinite(value) || value <= 0) return 0;
