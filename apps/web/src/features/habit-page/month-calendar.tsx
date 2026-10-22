@@ -1,6 +1,7 @@
 import {
   addDays,
   addMonths,
+  daysOfMonth,
   intensity,
   isFuture,
   monthOf,
@@ -367,18 +368,7 @@ export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalen
       ?.focus({ preventScroll: true });
   }, [shownMonth, pager.trackRef]);
 
-  const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "PageUp" || event.key === "PageDown") {
-      event.preventDefault();
-      page(event.key === "PageUp" ? -1 : 1);
-      return;
-    }
-    const step = ARROW_STEPS[event.key];
-    const day = dayOfElement(event.target);
-    if (step === undefined || day === null) return;
-    event.preventDefault();
-    const next = addDays(day, step);
-    if (isFuture(next, today)) return;
+  const focusOn = (next: Day) => {
     setFocusDay(next);
     if (monthOf(next) === shownMonth) {
       pager.trackRef.current
@@ -388,6 +378,30 @@ export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalen
       pendingFocus.current = next;
       pager.goTo(monthOf(next));
     }
+  };
+
+  const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    const day = dayOfElement(event.target);
+    if (event.key === "PageUp" || event.key === "PageDown") {
+      event.preventDefault();
+      const direction = event.key === "PageUp" ? -1 : 1;
+      if (day === null) {
+        page(direction);
+        return;
+      }
+      // The same date in the other Month, or its last Day, but never after today.
+      const destination = addMonths(monthOf(day), direction);
+      if (destination > newest) return;
+      const days = daysOfMonth(destination);
+      const sameDate = days[Math.min(Number(day.slice(8)), days.length) - 1]!;
+      focusOn(isFuture(sameDate, today) ? today : sameDate);
+      return;
+    }
+    const step = ARROW_STEPS[event.key];
+    if (step === undefined || day === null) return;
+    event.preventDefault();
+    const next = addDays(day, step);
+    if (!isFuture(next, today)) focusOn(next);
   };
 
   return (

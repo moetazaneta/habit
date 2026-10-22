@@ -6,7 +6,7 @@ import {
   type HabitId,
   type Month,
 } from "@habit/core";
-import { useMemo, type CSSProperties } from "react";
+import { useMemo, useState, type CSSProperties, type KeyboardEvent } from "react";
 
 import { DaySquare } from "@/components/day-square";
 import {
@@ -31,13 +31,45 @@ export interface YearGridProps {
 /**
  * The last 12 months as a GitHub-like grid: a column for each week, Monday at the top, small
  * gauges in the habit color. It takes no input, but each Month over its columns is a button that
- * moves the calendar to that Month.
+ * moves the calendar to that Month. The Months are one Tab stop: the arrows move between them.
  */
 export function YearGrid({ habit, today, entries, month, onSelectMonth }: YearGridProps) {
   const grid = useMemo(() => yearGrid(today), [today]);
+  const [focused, setFocused] = useState<Month | null>(null);
+  const months = grid.months.map((region) => region.month);
+  const tabStop =
+    [focused, month].find((candidate) => candidate !== null && months.includes(candidate)) ??
+    months.at(-1);
+
+  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const index = months.indexOf((event.target as HTMLElement).dataset.month as Month);
+    if (index < 0) return;
+    const next =
+      event.key === "ArrowLeft"
+        ? index - 1
+        : event.key === "ArrowRight"
+          ? index + 1
+          : event.key === "Home"
+            ? 0
+            : event.key === "End"
+              ? months.length - 1
+              : null;
+    if (next === null) return;
+    event.preventDefault();
+    const destination = months[Math.min(Math.max(next, 0), months.length - 1)]!;
+    setFocused(destination);
+    event.currentTarget
+      .querySelector<HTMLElement>(`[data-month="${destination}"]`)
+      ?.focus({ preventScroll: true });
+  };
+
   return (
     <section className="hp-year" aria-label="The last 12 months">
-      <div className="hp-year-inner" style={{ "--weeks": grid.columns.length } as CSSProperties}>
+      <div
+        className="hp-year-inner"
+        style={{ "--weeks": grid.columns.length } as CSSProperties}
+        onKeyDown={onKeyDown}
+      >
         <div className="hp-year-grid" aria-hidden>
           {grid.columns.map((column) =>
             column.map((day, row) => {
@@ -63,6 +95,8 @@ export function YearGrid({ habit, today, entries, month, onSelectMonth }: YearGr
             key={region.month}
             type="button"
             className="hp-year-month"
+            data-month={region.month}
+            tabIndex={region.month === tabStop ? 0 : -1}
             style={{ "--start": region.start, "--span": region.span } as CSSProperties}
             aria-label={formatMonth(region.month)}
             aria-current={region.month === month ? "true" : undefined}

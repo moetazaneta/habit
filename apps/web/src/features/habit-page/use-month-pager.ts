@@ -11,6 +11,8 @@ export interface PagerSlot {
   slot: -1 | 0 | 1;
 }
 
+const EASE_OUT = "cubic-bezier(0.23, 1, 0.32, 1)";
+
 /** How far a release projects the finger's speed, in seconds: a flick goes to the next page. */
 const PROJECTION_S = 0.2;
 
@@ -35,7 +37,8 @@ export interface MonthPager {
  * The paging of the calendar: one Month per page, the newest Month at the right end, older Months
  * to the left without end. The track follows the finger 1:1, has a rubber band where no page is,
  * and settles with the sheet spring, which carries the finger's speed. Under reduced motion a page
- * fades in instead of sliding.
+ * fades in instead of sliding. A change from the keyboard (the arrows, Page Up / Page Down, Enter
+ * on a button) is instant: keyboard navigation does not animate, and the focus can follow at once.
  *
  * The parent owns the Month (`month`, `onMonthChange`): the pager reports a new Month when it
  * starts to settle on it, and slides when `month` changes from outside.
@@ -61,6 +64,8 @@ export function useMonthPager({
   const target = useRef(month);
   const grabbedAt = useRef(0);
   const fadeIn = useRef(false);
+  /** The last input was a key, not a pointer. */
+  const keyboard = useRef(false);
 
   const slots = slotsOf(shown, incoming, newest);
   const latest = useRef({ slots, shown, onMonthChange, reduceMotion });
@@ -84,8 +89,19 @@ export function useMonthPager({
     fadeIn.current = false;
     trackRef.current
       ?.querySelector('[data-slot="0"]')
-      ?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: durations.fade, easing: "ease-out" });
+      ?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: durations.fade, easing: EASE_OUT });
   }, [shown, x]);
+
+  useEffect(() => {
+    const onKey = () => (keyboard.current = true);
+    const onPointer = () => (keyboard.current = false);
+    document.addEventListener("keydown", onKey, true);
+    document.addEventListener("pointerdown", onPointer, true);
+    return () => {
+      document.removeEventListener("keydown", onKey, true);
+      document.removeEventListener("pointerdown", onPointer, true);
+    };
+  }, []);
 
   const width = useCallback(() => viewportRef.current?.clientWidth || 1, []);
 
@@ -103,8 +119,8 @@ export function useMonthPager({
         setShown(destination);
       };
       animation.current?.stop();
-      if (reduceMotion) {
-        fadeIn.current = destination !== shown;
+      if (reduceMotion || keyboard.current) {
+        fadeIn.current = reduceMotion && destination !== shown;
         finish();
         if (destination === shown) x.jump(0);
         return;
@@ -116,6 +132,9 @@ export function useMonthPager({
       animation.current = animate(x, -slot * width(), {
         ...springs.sheet,
         velocity,
+        // Done within a pixel: the tail of the spring must not hold back a tap on the new page.
+        restDelta: 1,
+        restSpeed: 30,
         onComplete: finish,
       });
     },

@@ -181,6 +181,31 @@ test("a Month in the grid moves the calendar there; the arrows and Today page", 
   expect(screen.queryByRole("button", { name: "Today" })).toBeNull();
 });
 
+test("the keyboard moves between Days and Months at once", async () => {
+  renderPage(demoHabitIds.meditate);
+
+  // One Day is the Tab stop of the calendar: today.
+  const today = await day("October 22");
+  expect(today.tabIndex).toBe(0);
+  act(() => today.focus());
+
+  fireEvent.keyDown(today, { key: "ArrowUp" });
+  expect(document.activeElement).toBe(await day("October 15"));
+  fireEvent.keyDown(document.activeElement!, { key: "ArrowUp" });
+  fireEvent.keyDown(document.activeElement!, { key: "ArrowUp" });
+  fireEvent.keyDown(document.activeElement!, { key: "ArrowUp" });
+  // Into September, without a slide to wait for.
+  expect(screen.getByRole("heading", { name: "September 2026" })).toBeTruthy();
+  expect(document.activeElement).toBe(await day("September 24"));
+
+  fireEvent.keyDown(document.activeElement!, { key: "PageUp" });
+  expect(document.activeElement).toBe(await day("August 24"));
+  // Enter on a Day is a tap.
+  const before = (document.activeElement as HTMLElement).getAttribute("aria-pressed");
+  fireEvent.click(document.activeElement!, { detail: 0 });
+  expect((await day("August 24")).getAttribute("aria-pressed")).not.toBe(before);
+});
+
 test("the Days of an older Month take no input until the Month loads", async () => {
   // The fake provider keeps everything in memory; this one says that older Months still load.
   const loading = (children: ReactNode) => <LoadingOlderMonths>{children}</LoadingOlderMonths>;
