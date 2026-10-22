@@ -389,6 +389,21 @@
   }
 }
 
+/* ── The habit icon ─────────────────────────────────────────────────────────────────────────── */
+
+@layer components {
+  /* An icon that loads after its row fades in, so it does not pop. */
+  .habit-icon-late {
+    animation: habit-icon-in 160ms var(--ease-out) both;
+  }
+
+  @keyframes habit-icon-in {
+    from {
+      opacity: 0;
+    }
+  }
+}
+
 /* ── Sheets, dialogs, popovers (ResponsiveSheet) ────────────────────────────────────────────── */
 
 @layer components {
