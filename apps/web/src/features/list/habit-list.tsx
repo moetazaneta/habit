@@ -100,7 +100,17 @@ export function HabitList() {
   };
 
   const announcements = useMemo(() => reorderAnnouncements(habits), [habits]);
-  const shouldIgnoreClick = useCallback(() => performance.now() < ignoreClicksUntil.current, []);
+
+  // The click that ends a mouse drag must not open the habit under the pointer. dnd-kit stops
+  // that click at the document for 50ms, before React sees it, but not its default: the browser
+  // would follow the link's href. A listener on the window comes first and cancels it.
+  useEffect(() => {
+    const onClick = (event: MouseEvent) => {
+      if (performance.now() < ignoreClicksUntil.current) event.preventDefault();
+    };
+    window.addEventListener("click", onClick, { capture: true });
+    return () => window.removeEventListener("click", onClick, { capture: true });
+  }, []);
 
   return (
     <main className="habit-list">
@@ -135,7 +145,6 @@ export function HabitList() {
                   onTap={onTap}
                   onOpenInput={onOpenInput}
                   onPaint={onPaint}
-                  shouldIgnoreClick={shouldIgnoreClick}
                 />
               ))}
             </div>

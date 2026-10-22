@@ -15,8 +15,6 @@ export interface HabitRowProps extends Pick<DayCellsProps, "days" | "today" | "e
   onTap: (habit: Habit, day: Day) => void;
   onOpenInput: (habit: Habit, day: Day) => void;
   onPaint: (habit: Habit, days: Day[], mode: "set" | "clear") => void;
-  /** True right after a reorder ends, so the click that ends it does not open the habit. */
-  shouldIgnoreClick: () => boolean;
 }
 
 /**
@@ -31,7 +29,6 @@ export const HabitRow = memo(function HabitRow({
   onTap,
   onOpenInput,
   onPaint,
-  shouldIgnoreClick,
 }: HabitRowProps) {
   const reduceMotion = useReducedMotion() === true;
   const {
@@ -78,8 +75,7 @@ export const HabitRow = memo(function HabitRow({
           // screens only crossfade.
           viewTransition
           onClick={(event: MouseEvent<HTMLAnchorElement>) => {
-            if (shouldIgnoreClick()) event.preventDefault();
-            else if (!reduceMotion && isPlainClick(event)) markPlate(event.currentTarget);
+            if (!reduceMotion && isPlainClick(event)) markPlate(event.currentTarget);
           }}
         >
           <HabitIcon icon={habit.icon} color={habit.color} />
