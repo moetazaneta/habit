@@ -75,10 +75,10 @@ body.
 | --- | --- | --- |
 | **core**: implement `@habit/core` (test-first), then `FakeHabitDataProvider` and `demoState` | `packages/core/**`, `packages/data/src/testing/**` | now |
 | **data**: Convex dev deployment, Clerk dev instance (Google), schema and functions, `authQuery` / `authMutation`, `HabitDataProvider`, optimistic updates, the IndexedDB snapshot | `packages/data/**` except `src/testing` | now |
-| **web-list**: A, the design foundation; then B, the habit list and the input of a value | `apps/web/src/styles.css`, `apps/web/src/main.tsx`, `apps/web/src/routes/__root.tsx`, `apps/web/src/routes/index.tsx`, `apps/web/src/components/**`, `apps/web/src/features/list/**`, `apps/web/src/features/entry-input/**` | now |
+| **web-list**: A, the design foundation; then B, the habit list and the input of a value | `apps/web/src/styles.css`, `apps/web/src/main.tsx`, `apps/web/src/routes/__root.tsx`, `apps/web/src/routes/index.tsx`, `apps/web/src/components/**`, `apps/web/src/features/list/**`, `apps/web/src/features/entry-input/**`, `DESIGN.md` (written from the built world) | now |
 | **web-habit-page**: the grid of 12 months and the calendar | `apps/web/src/routes/habits.$habitId.tsx`, `apps/web/src/features/habit-page/**` | after web-list A is on `main` |
 | **web-habit-form**: create and edit (sheet on a phone, dialog on a desktop), delete with undo | `apps/web/src/features/habit-form/**` | after web-list A is on `main` |
-| **integration**: sign-in and "no access" screens, the real provider in the app, an end-to-end check, the finish review, DESIGN.md | `apps/web/src/features/auth/**`, `DESIGN.md` | after data and web-list B |
+| **integration**: sign-in and "no access" screens, the real provider in the app, an end-to-end check, the finish review across the screens | `apps/web/src/features/auth/**` | after data and web-list B |
 
 web-list A must provide, for the other screens: the theme tokens, the font, the squircle utility,
 the palette mapping, `DaySquare` (the gauge), `HabitIcon`, a responsive sheet (a bottom sheet on a
