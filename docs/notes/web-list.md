@@ -54,3 +54,97 @@ fallback. The shadcn variables map onto these tokens, so a shadcn component wear
   velocity. Under reduced motion the fill changes in place with a short fade, and sheets fade.
 - **Fake data knobs.** In fake mode, `VITE_HABIT_FAKE_LATENCY_MS` and `VITE_HABIT_FAKE_FAIL=true`
   (in `apps/web/.env.development.local`, which git ignores) show the pending and the failed states.
+
+## B: the habit list and the input of a value
+
+### What it does
+
+- **The list** (`/`, `features/list/`): a sticky header of the last Days (5 under 640px, 7 from
+  640px), a row per habit, and the ghost "New habit" row (opens `?new=true`). No title on screen;
+  a hidden `h1` "Habits" names the page for screen readers.
+- **Tap** applies `tapResult`: a check toggles, a number adds its Step, a choice, scale or text
+  opens the input.
+- **Drag to paint** (check habits): the first square sets the mode, every square under the finger
+  gets it, and one batch (`paintAction`) is performed on release, with "Painted N days" or
+  "Cleared N days" and Undo.
+- **Long press** (450ms) or a right click (or the context-menu key) on a number square opens the
+  exact value. A held number square shrinks for the whole hold, to show the wait.
+- **Reorder**: a long press (300ms) on the icon or the name lifts the row on touch; with a mouse, a
+  6px drag lifts it; with a keyboard, Space lifts and drops, and Enter opens the habit. One
+  `moveHabit` with `orderBetween` on drop.
+- **A tap on the icon or the name** opens `/habits/<id>`.
+- **Midnight**: the columns move to the new Day while the app is open (`useToday`).
+- **Loading**: a skeleton while `source === "none"`, shown after 300ms so a fast start never
+  flashes it.
+- **No habits**: the create sheet opens by itself, once per visit of the list.
+- **Failed writes**: the screen rolls back (the provider does it) and "Couldn't save" offers Retry,
+  which performs the same Action again.
+- **The input of a value** (`?entry=<habitId>:<day>`, `features/entry-input/`): a bottom sheet on
+  a phone, a popover at the square on a desktop. Number: a field (applies after a 700ms pause, on
+  Enter and on blur), −Step, +Step, "= Target" ("= Limit" for a quit habit) and Clear. Choice and
+  scale: the Options as a radio list (a scale shows each Option's gauge level); a pick applies and
+  closes the sheet after 220ms. Text: a note that applies as the person types; an empty note
+  clears the Day. While the sheet is open, the Day under edit rises above the scrim with a ring in
+  the habit color.
+
+### Decisions and assumptions
+
+- **A recorded zero is data.** A number Entry of 0 (0 cigarettes on a quit habit) draws the frame
+  in the habit color with no fill; a Day with no Entry draws the neutral frame. Both are "frame
+  only", as the owner set, but they differ.
+- **Taps have no Undo toast.** A tap is undone by another tap; the toast is for paints and other
+  bulk changes, as the spec says. A reorder has no toast either.
+- **Choice and scale close after a pick.** Text and number stay open, since they are typed.
+- **The number field applies typed values without a save button** (spec: no save buttons), after a
+  pause or on Enter or blur. An empty field clears the Day only on Enter or blur, not while typing.
+- **"= Target" keeps the spec's label.** Its accessible name says the action and the value ("Set
+  to the target, 8 glasses"), as the finish review asked.
+- **−Step stops at 0**, and does nothing on a Day with no Entry.
+- **The 320px layout** shrinks the gutter to 16px and the squares to 28px, so names keep room.
+- **Haptics** are best effort: `navigator.vibrate` on Android, the switch-control tick on iOS 18
+  Safari, which works only inside a tap (not after the long-press timer).
+- **The link to the habit page is a raw href** (`/habits/<id>`) because the web-habit-page
+  milestone had not added the route yet. When it lands, `habit-row.tsx` can switch to
+  `to="/habits/$habitId"` with `params`.
+- **The habit page can reuse the marking of the Day under edit**: give its squares
+  `data-entry={entryRef(habitId, day)}` (the desktop popover anchors to it) and
+  `data-editing` when `useSheetSearch().entry` names them.
+
+### Verification
+
+- Behaviour tests (`features/list/habit-list.test.tsx`, `features/entry-input/entry-input.test.tsx`)
+  on the fake provider: tap per kind, paint and Undo, Retry after a failed write, the ghost row,
+  the automatic create sheet, the skeleton, midnight, the number and text inputs, a link to an
+  unknown habit.
+- Screenshots at 390×844 and 1280×800 in both themes, every input state, and the worst case at
+  320px (break-ui). In dev fake mode, `?data=worst` (or `empty`, `one`, `many`) swaps the demo
+  data for a break-ui dataset and shows a small switch at the top left.
+- The motion review (review-animations) found 5 defects, all fixed (reduced motion for toasts and
+  the check mark, strong ease-out on fades and the reorder, shallower presses), plus the faster
+  drain, the delayed touch press and the hold progress.
+- impeccable's detector: no findings on the files or on the live page with each sheet open (one
+  placeholder contrast finding was fixed).
+- The finish review, run by a fresh subagent from impeccable's degraded finish-reviewer role (this
+  harness has no shipped impeccable agent), returned "fix" with four items; see "Finish review".
+
+### Open questions for the owner
+
+- **The direction seed.** The finish review could not corroborate `seed:bf31d7351e3e2498` on this
+  machine (the direction round ran in your design session). The build follows the direction you
+  chose by name, so no re-roll was done.
+- **The size of the first load.** The app's JavaScript is about 205 KB gzipped at start (React, the
+  router, Motion, Base UI, dnd kit, Sonner). Lazy-loading the sheets and the reorder could halve
+  it, if the start feels slow on a phone.
+
+### Finish review
+
+Run by a fresh subagent from impeccable's degraded finish-reviewer role (no shipped impeccable
+agent in this harness), on captures in `apps/web/.impeccable/review/` (git ignores them).
+
+- Round 1: **disposition: fix.** Four material fixes: the direction seed could not be
+  corroborated; the Day under edit had no marking; the desktop header had no top inset; "= Target"
+  did not name its action.
+- Round 2 (verdict pass): the marking, the inset and the label were scored **resolved**, with no
+  regressions. The seed stays **unresolved**: it needs the roll output from your direction
+  session, which is not on this machine. **disposition: fix**, for that one provenance item only;
+  the ship it would otherwise give covers the scored fixes, not the whole screen.
