@@ -499,14 +499,15 @@
   }
 }
 
-/* ── The transition from a list row: the plate moves with the sheet spring, and its old and new
-   pictures cross quickly, so the scaled text is never seen for long; the rest of the screen
-   crossfades. ── */
+/* ── The transition from a list row: the plate moves in 320ms with the strong ease-out, and its
+   old and new pictures cross quickly, so the scaled text is never seen for long; the rest of the
+   screen crossfades. It is short on purpose: while it runs, a tap reaches no element of the page
+   (a spring would hold the screen for 550ms to settle its last pixel). ── */
 
 ::view-transition-group(habit-plate-icon),
 ::view-transition-group(habit-plate-name) {
-  animation-duration: var(--plate-duration, 420ms);
-  animation-timing-function: var(--plate-easing, ease-out);
+  animation-duration: 320ms;
+  animation-timing-function: var(--ease-out);
 }
 
 ::view-transition-old(habit-plate-icon),

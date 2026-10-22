@@ -497,7 +497,7 @@ The page of one habit (`/habits/$habitId`), in `features/habit-page/`.
 - **Calendar:** the Month (Title type) with "Today" (only when another Month shows) and two carets, the weekday letters, and the Days in 7 columns, always 6 rows. A Day is its date (0.75rem at 500, tabular, `ink-3`; today `ink` at 700) over a gauge of up to 2.375rem, never wider than its column less 0.375rem. A choice shows its emoji in the square.
 - **Paging:** the track follows the finger 1:1 with a rubber band at the current Month, and settles with the sheet spring and the finger's speed. A flick (above 0.11 px/ms on average over 16px, still moving at the lift) turns the page. A change from the keyboard is instant. Under reduced motion a new page fades in.
 - **Hold:** a Day presses to 0.95 in 120ms; a hold adds a linear shrink on `scale`, to 0.9 in all, over the time to the paint (200ms) or the input (450ms).
-- **From the list:** the row's icon and name grow into the title (a view transition with the sheet spring); the rest crossfades in 200ms, 180ms under reduced motion, where the plate does not move.
+- **From the list:** the row's icon and name grow into the title (a view transition, 320ms with `--ease-out`; a finger that lands during it ends it, and its tap goes to the page); the rest crossfades in 200ms, 180ms under reduced motion, where the plate does not move.
 - **Under edit, on a phone:** the page rises with the sheet spring until the Day is 16px above the input sheet, and comes back when the sheet closes.
 - **Empty state:** a ghost gauge, "This habit is not here" (Title type), a line in `ink-3`, and a "Back to habits" button.
 

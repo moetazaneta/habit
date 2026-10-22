@@ -75,7 +75,7 @@ export const HabitRow = memo(function HabitRow({
           // screens only crossfade.
           viewTransition
           onClick={(event: MouseEvent<HTMLAnchorElement>) => {
-            if (!reduceMotion && isPlainClick(event)) markPlate(event.currentTarget);
+            if (isPlainClick(event)) markPlate(event.currentTarget, { plate: !reduceMotion });
           }}
         >
           <HabitIcon icon={habit.icon} color={habit.color} />

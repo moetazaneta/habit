@@ -55,7 +55,10 @@ The route is `apps/web/src/routes/habits.$habitId.tsx`. The page is in
   On a phone the page rises with the sheet's spring until the Day is just above the sheet, and
   comes back when the sheet closes.
 - **From the list.** A tap on a row's name opens the page with a view transition: the row's icon and
-  name grow into the title with the sheet spring, and the rest crossfades in 200 ms. Only list to
+  name grow into the title in 320 ms with the strong ease-out, and the rest crossfades in 200 ms.
+  While a view transition runs, the browser gives every tap to the document
+  (docs/notes/integration.md). So a finger that lands during the transition ends it at once, and
+  its tap clicks the control under it when the page is in place: a quick tap on a Day counts. Only list to
   page animates (the way back is the back gesture, which on iOS slides the page already). Under
   reduced motion the screens only crossfade. A browser without view transitions navigates
   without it.
@@ -141,6 +144,13 @@ these:
 - the haptics
 - the view transition in Safari 18
 - the page that rises above the input sheet, with the keyboard open (the text Kind).
+
+## Findings of the integration milestone
+
+- **The flaky test** ("a fast swipe on check Days…") was a real bug of the calendar: a slide that
+  a newer move replaced still called back when it stopped, and its finish showed the old Month
+  under the new title. Each slide now has a number, and only the newest one finishes (`32e84c9`).
+- **A tap lost during the transition from the list:** fixed as described under "From the list".
 
 ## A mistake on the way
 
