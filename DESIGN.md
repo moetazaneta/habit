@@ -315,7 +315,7 @@ shadcn/ui's variables map onto these tokens: `background` is `ground`, `foregrou
 - **Description** (400, 0.875rem, 1.25rem line): the line under a sheet title, such as "Today" or "Yesterday". In `ink-3`.
 - **Caption** (400, 0.8125rem, 1rem line): the target or the unit under the number field. In `ink-3`, up to two lines.
 - **Label** (500, 0.75rem, 0.9375rem line): the weekday letter over each date in the day header.
-- **Code** (IBM Plex Mono, 400, 0.9375rem, 1.5rem line): a value to copy, such as the user id and the command on the "no access" screen, in `ink`. It breaks anywhere.
+- **Code** (IBM Plex Mono, 400, 0.9375rem, 1.5rem line): a value to copy, such as the user id and the command on the "no access" screen, in `ink`. It breaks between words; a list of ids may break after a comma, and only a word wider than the column breaks inside.
 
 On a phone these are 12, 13, 14, 15, 16, 17, 24 and 36px. The desktop's 20px base scales all of them by 1.25. The stepper buttons use 1.0625rem at 600 with tabular figures. A field never shows text under 16px (`font-size: max(16px, 1rem)`), because iOS zooms into a smaller field and does not zoom back.
 
