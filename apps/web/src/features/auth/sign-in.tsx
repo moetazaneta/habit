@@ -45,7 +45,7 @@ export function SignInScreen({
             signIn();
           }}
         >
-          <GoogleLogoIcon weight="bold" className="size-5" aria-hidden />
+          <GoogleLogoIcon weight="bold" className="size-4.5" aria-hidden />
           {opening ? "Opening Google…" : "Continue with Google"}
         </AuthButton>
         {import.meta.env.DEV && emailCode !== undefined ? (
@@ -98,7 +98,7 @@ function EmailCodeSection({ emailCode }: { emailCode: EmailCodeSignIn }) {
   const errorId = `${ids}-error`;
   const errorLine =
     error === null ? null : (
-      <p id={errorId} role="alert" className="text-[0.9375rem] text-ink-2">
+      <p id={errorId} role="alert" className="auth-message">
         {error}
       </p>
     );
@@ -144,13 +144,13 @@ function EmailCodeSection({ emailCode }: { emailCode: EmailCodeSignIn }) {
           <AuthButton variant="quiet" type="submit" disabled={busy || email.trim() === ""}>
             {busy ? "Sending…" : "Send code"}
           </AuthButton>
-          <p id={`${ids}-note`} className="text-center text-[0.875rem] text-ink-3">
+          <p id={`${ids}-note`} className="auth-note">
             Development only. The test users get the code 424242.
           </p>
         </form>
       ) : (
         <form className="flex flex-col gap-3 pt-5" onSubmit={verifyCode} noValidate>
-          <p className="text-center text-[0.9375rem] text-ink-3">
+          <p className="auth-note">
             Enter the code sent to
             <span className="block text-ink-2 [overflow-wrap:anywhere]">{step.email}</span>
           </p>
