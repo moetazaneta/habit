@@ -2,6 +2,7 @@ import { createRootRoute, Outlet } from "@tanstack/react-router";
 
 import { validateSheetSearch } from "@/components/sheet-search";
 import { AppToaster } from "@/components/toast";
+import { AuthGate } from "@/features/auth/auth-gate";
 import { EntryInputSheet } from "@/features/entry-input";
 import { HabitFormSheet } from "@/features/habit-form";
 
@@ -15,9 +16,12 @@ export const Route = createRootRoute({
 function Root() {
   return (
     <>
-      <Outlet />
-      <HabitFormSheet />
-      <EntryInputSheet />
+      {/* Only the owner gets the screens; the other states of the sign-in get their own. */}
+      <AuthGate>
+        <Outlet />
+        <HabitFormSheet />
+        <EntryInputSheet />
+      </AuthGate>
       <AppToaster />
     </>
   );

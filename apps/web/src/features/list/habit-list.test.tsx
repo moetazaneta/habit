@@ -125,7 +125,8 @@ test("with no habits yet, the create sheet opens by itself", async () => {
 });
 
 test("until the data comes, the list shows a skeleton", async () => {
-  renderApp("/", { auth: "loading" });
+  // The owner is signed in, and neither the snapshot nor the live data is there yet.
+  renderApp("/", {}, { source: "none", state: emptyState() });
 
   expect(await screen.findByLabelText("Loading habits")).toBeTruthy();
   expect(screen.queryByRole("button", { name: "New habit" })).toBeNull();
