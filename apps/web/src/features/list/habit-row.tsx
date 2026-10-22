@@ -7,6 +7,7 @@ import { memo, type CSSProperties, type MouseEvent } from "react";
 
 import { HabitIcon } from "@/components/habit-icon";
 import { habitColorStyle } from "@/components/palette";
+import { markPlate } from "@/features/habit-page/plate-transition";
 import { DayCells, type DayCellsProps } from "@/features/list/day-cells";
 
 export interface HabitRowProps extends Pick<DayCellsProps, "days" | "today" | "entries"> {
@@ -73,8 +74,11 @@ export const HabitRow = memo(function HabitRow({
           {...sortableAttributes}
           {...listeners}
           aria-roledescription="habit, long press to reorder"
-          onClick={(event: MouseEvent) => {
+          // The icon and the name grow into the title of the habit page.
+          viewTransition={!reduceMotion}
+          onClick={(event: MouseEvent<HTMLAnchorElement>) => {
             if (shouldIgnoreClick()) event.preventDefault();
+            else if (isPlainClick(event)) markPlate(event.currentTarget);
           }}
         >
           <HabitIcon icon={habit.icon} color={habit.color} />
@@ -95,3 +99,8 @@ export const HabitRow = memo(function HabitRow({
     </div>
   );
 });
+
+/** A click that navigates in this tab: no modifier key, the main button. */
+function isPlainClick(event: MouseEvent): boolean {
+  return event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
+}

@@ -92,6 +92,15 @@
     text-wrap: balance;
   }
 
+  /* The plate of the list row grows into this title (plate-transition.ts). */
+  .hp-identity-icon {
+    view-transition-name: habit-plate-icon;
+  }
+
+  .hp-name {
+    view-transition-name: habit-plate-name;
+  }
+
   .hp-description {
     margin: 0.125rem var(--gutter) 0 calc(var(--gutter) + var(--hp-icon) + 0.75rem);
     color: var(--ink-3);
@@ -458,4 +467,28 @@
       transform: none;
     }
   }
+}
+
+/* ── The transition from a list row: the plate moves with the sheet spring, and its old and new
+   pictures cross quickly, so the scaled text is never seen for long; the rest of the screen
+   crossfades. ── */
+
+::view-transition-group(habit-plate-icon),
+::view-transition-group(habit-plate-name) {
+  animation-duration: var(--plate-duration, 420ms);
+  animation-timing-function: var(--plate-easing, ease-out);
+}
+
+::view-transition-old(habit-plate-icon),
+::view-transition-new(habit-plate-icon),
+::view-transition-old(habit-plate-name),
+::view-transition-new(habit-plate-name) {
+  animation-duration: 180ms;
+  animation-timing-function: var(--ease-out);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+  animation-timing-function: var(--ease-out);
 }

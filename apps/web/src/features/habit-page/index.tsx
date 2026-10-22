@@ -44,7 +44,12 @@ function HabitDetail({ habit }: { habit: Habit }) {
         </button>
       </PageBar>
       <header className="hp-identity">
-        <HabitIcon icon={habit.icon} color={habit.color} size="var(--hp-icon)" />
+        <HabitIcon
+          icon={habit.icon}
+          color={habit.color}
+          size="var(--hp-icon)"
+          className="hp-identity-icon"
+        />
         {/* A name or a description in a right-to-left script reads in its own direction. */}
         <h1 className="hp-name" dir="auto">
           {habit.name}
