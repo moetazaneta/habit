@@ -66,10 +66,8 @@ export const HabitRow = memo(function HabitRow({
       <div className="habit-row-inner">
         <Link
           ref={setActivatorNodeRef}
-          // The page of the habit. A raw href until the web-habit-page milestone adds the
-          // `/habits/$habitId` route, then a typed `to` with `params`.
-          to="."
-          href={`/habits/${encodeURIComponent(habit.id)}`}
+          to="/habits/$habitId"
+          params={{ habitId: habit.id }}
           className="habit-row-head"
           draggable={false}
           {...sortableAttributes}

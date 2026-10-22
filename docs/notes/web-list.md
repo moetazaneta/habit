@@ -103,9 +103,8 @@ fallback. The shadcn variables map onto these tokens, so a shadcn component wear
 - **The 320px layout** shrinks the gutter to 16px and the squares to 28px, so names keep room.
 - **Haptics** are best effort: `navigator.vibrate` on Android, the switch-control tick on iOS 18
   Safari, which works only inside a tap (not after the long-press timer).
-- **The link to the habit page is a raw href** (`/habits/<id>`) because the web-habit-page
-  milestone had not added the route yet. When it lands, `habit-row.tsx` can switch to
-  `to="/habits/$habitId"` with `params`.
+- **The link to the habit page** was a raw href until the web-habit-page milestone added the
+  route; it is now the typed `to="/habits/$habitId"`.
 - **The habit page can reuse the marking of the Day under edit**: give its squares
   `data-entry={entryRef(habitId, day)}` (the desktop popover anchors to it) and
   `data-editing` when `useSheetSearch().entry` names them.
