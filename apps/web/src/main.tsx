@@ -12,9 +12,9 @@ import "@/styles.css";
 type DataProvider = (props: { children: ReactNode }) => ReactNode;
 
 /**
- * `VITE_HABIT_DATA=fake` runs the app on the in-memory provider with the demo data (the dev
- * default, in .env.development); otherwise the app uses the real backend. The fake provider loads
- * only in fake mode, so it never ships in a real build.
+ * The app runs on the real backend (`VITE_HABIT_DATA=convex`, the dev default in
+ * .env.development). `VITE_HABIT_DATA=fake` runs it on the in-memory provider with the demo data.
+ * The fake provider loads only in fake mode, so it never ships in a real build.
  */
 async function loadDataProvider(): Promise<DataProvider> {
   if (import.meta.env.VITE_HABIT_DATA !== "fake") return HabitDataProvider;
