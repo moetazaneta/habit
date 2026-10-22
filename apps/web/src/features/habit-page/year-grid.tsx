@@ -9,7 +9,12 @@ import {
 import { useMemo, type CSSProperties } from "react";
 
 import { DaySquare } from "@/components/day-square";
-import { formatMonth, formatMonthShort, yearGrid } from "@/features/habit-page/months";
+import {
+  formatMonth,
+  formatMonthNarrow,
+  formatMonthShort,
+  yearGrid,
+} from "@/features/habit-page/months";
 
 /** A Month gets its short name over the grid only when it has this many columns. */
 const LABEL_MIN_COLUMNS = 3;
@@ -63,7 +68,8 @@ export function YearGrid({ habit, today, entries, month, onSelectMonth }: YearGr
           >
             {region.span >= LABEL_MIN_COLUMNS ? (
               <span className="hp-year-month-label" aria-hidden>
-                {formatMonthShort(region.month)}
+                <span className="hp-year-month-short">{formatMonthShort(region.month)}</span>
+                <span className="hp-year-month-narrow">{formatMonthNarrow(region.month)}</span>
               </span>
             ) : null}
           </button>

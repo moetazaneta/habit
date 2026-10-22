@@ -7,9 +7,6 @@
 @layer components {
   .habit-page {
     --hp-icon: 1.75rem;
-    /* The calendar: a gauge under the date, in a row tall enough for a 44px touch target. */
-    --cal-square: 2.375rem;
-    --cal-row: 4rem;
     max-width: 600px;
     margin: 0 auto;
     /* Room under the calendar for the toast. */
@@ -155,6 +152,22 @@
     transition: color 160ms ease;
   }
 
+  /* "Oct" needs about 2.2em of a 4-column Month: on a narrow grid, or with large text, the
+     Months take their first letter. */
+  .hp-year-month-narrow {
+    display: none;
+  }
+
+  @container (inline-size < 20rem) {
+    .hp-year-month-short {
+      display: none;
+    }
+
+    .hp-year-month-narrow {
+      display: inline;
+    }
+  }
+
   .hp-year-month[aria-current] .hp-year-month-label {
     color: var(--ink);
     font-weight: 650;
@@ -176,15 +189,18 @@
 
   /* ── The calendar ── */
 
+  /* The container of the calendar: a square is as wide as its column allows, also on a 320px
+     phone or with large text. */
   .hp-cal {
     margin-top: 1.75rem;
     padding: 0 var(--gutter);
+    container-type: inline-size;
   }
 
   .hp-cal-head {
     display: flex;
     align-items: center;
-    height: 2.75rem;
+    min-height: 2.75rem;
     margin-right: -0.75rem;
   }
 
@@ -255,6 +271,9 @@
 
   /* The pages slide edge to edge of the column, so the clip is at its edges, not at the gutter. */
   .hp-cal-viewport {
+    /* A gauge under its date, in a row tall enough for a 44px touch target. */
+    --cal-square: min(2.375rem, 100cqw / 7 - 0.375rem);
+    --cal-row: calc(var(--cal-square) + 1.625rem);
     position: relative;
     height: calc(var(--cal-row) * 6);
     margin: 0.25rem calc(-1 * var(--gutter)) 0;

@@ -45,10 +45,15 @@ function HabitDetail({ habit }: { habit: Habit }) {
       </PageBar>
       <header className="hp-identity">
         <HabitIcon icon={habit.icon} color={habit.color} size="var(--hp-icon)" />
-        <h1 className="hp-name">{habit.name}</h1>
+        {/* A name or a description in a right-to-left script reads in its own direction. */}
+        <h1 className="hp-name" dir="auto">
+          {habit.name}
+        </h1>
       </header>
       {habit.description.trim() === "" ? null : (
-        <p className="hp-description">{habit.description}</p>
+        <p className="hp-description" dir="auto">
+          {habit.description}
+        </p>
       )}
       <YearGrid
         habit={habit}

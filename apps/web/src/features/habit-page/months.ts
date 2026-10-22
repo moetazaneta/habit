@@ -15,12 +15,6 @@ export function monthWeeks(month: Month): (Day | null)[][] {
   return Array.from({ length: cells.length / 7 }, (_, row) => cells.slice(row * 7, row * 7 + 7));
 }
 
-/** The count of Months from `from` to `to`: positive when `to` is later. */
-export function monthsBetween(from: Month, to: Month): number {
-  const index = (month: Month) => Number(month.slice(0, 4)) * 12 + Number(month.slice(5, 7));
-  return index(to) - index(from);
-}
-
 /** A Month of the grid of 12 months: the columns whose Monday is in it. */
 export interface GridMonth {
   month: Month;
@@ -57,6 +51,7 @@ export function yearGrid(today: Day, weeks = 52): YearGrid {
 
 const monthLong = new Intl.DateTimeFormat("en", { month: "long", year: "numeric" });
 const monthShort = new Intl.DateTimeFormat("en", { month: "short" });
+const monthNarrow = new Intl.DateTimeFormat("en", { month: "narrow" });
 
 function monthDate(month: Month): Date {
   return new Date(Number(month.slice(0, 4)), Number(month.slice(5, 7)) - 1, 1);
@@ -70,4 +65,9 @@ export function formatMonth(month: Month): string {
 /** "Oct". */
 export function formatMonthShort(month: Month): string {
   return monthShort.format(monthDate(month));
+}
+
+/** "O". */
+export function formatMonthNarrow(month: Month): string {
+  return monthNarrow.format(monthDate(month));
 }

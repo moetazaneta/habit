@@ -27,10 +27,14 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-function renderPage(habitId: string, wrap: (children: ReactNode) => ReactNode = (c) => c) {
+function renderPage(
+  habitId: string,
+  wrap: (children: ReactNode) => ReactNode = (c) => c,
+  { initial = demoState(TODAY), auth = "ready" as const } = {},
+) {
   const router = createAppRouter(createMemoryHistory({ initialEntries: [`/habits/${habitId}`] }));
   render(
-    <FakeHabitDataProvider today={TODAY} initial={demoState(TODAY)}>
+    <FakeHabitDataProvider today={TODAY} initial={initial} auth={auth}>
       {wrap(<RouterProvider router={router} />)}
     </FakeHabitDataProvider>,
   );
@@ -192,13 +196,28 @@ test("the Days of an older Month take no input until the Month loads", async () 
   expect(first.getAttribute("aria-label")).toMatch(/: loading$/);
 });
 
-test("an unknown habit shows a way back", async () => {
-  renderPage("019a0000-0000-7000-8000-999999999999" as HabitId);
+test.each([
+  ["an unknown", "019a0000-0000-7000-8000-999999999999" as HabitId],
+  ["a deleted", demoHabitIds.water],
+])("%s habit shows a way back", async (_case, habitId) => {
+  const initial = demoState(TODAY);
+  const water = initial.habits[demoHabitIds.water]!;
+  initial.habits[demoHabitIds.water] = { ...water, deletedAt: 1 };
+  renderPage(habitId, undefined, { initial });
 
   expect(await screen.findByRole("heading", { name: "This habit is not here" })).toBeTruthy();
+  expect(screen.queryByRole("heading", { name: "Water" })).toBeNull();
   for (const link of screen.getAllByRole("link", { name: "Back to habits" })) {
     expect(link.getAttribute("href")).toBe("/");
   }
+});
+
+test("until the data comes, the page shows its shape and a way back", async () => {
+  renderPage(demoHabitIds.water, undefined, { auth: "loading" });
+
+  expect(await screen.findByLabelText("Loading the habit")).toBeTruthy();
+  expect(screen.getByRole("link", { name: "Back to habits" })).toBeTruthy();
+  expect(screen.queryByRole("heading", { name: "This habit is not here" })).toBeNull();
 });
 
 function LoadingOlderMonths({ children }: { children: ReactNode }) {
