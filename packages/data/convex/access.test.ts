@@ -3,7 +3,7 @@ import type { Day, Habit, HabitId } from "@habit/core";
 import { convexTest } from "convex-test";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vite-plus/test";
 
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import schema from "./schema";
 import { modules } from "./test.setup";
 
@@ -150,5 +150,30 @@ describe("days and month", () => {
   test("month rejects text that is not a Month", async () => {
     const { owner } = setup();
     await expect(owner.query(api.data.month, { month: "2025-1" })).rejects.toThrow(/badMonth/);
+  });
+});
+
+describe("admin.deleteUserData", () => {
+  test("deletes all rows of one user and keeps the others'", async () => {
+    const { t, owner } = setup();
+    const other = t.withIdentity({ subject: OTHER_OWNER });
+    for (const [caller, id] of [
+      [owner, "mine"],
+      [other, "theirs"],
+    ] as const) {
+      await caller.mutation(api.data.perform, {
+        action: { type: "createHabit", habit: habit(id) },
+        now: 1,
+      });
+    }
+
+    expect(await t.mutation(internal.admin.deleteUserData, { userId: OWNER })).toEqual({
+      habits: 1,
+      entries: 0,
+    });
+
+    const range = { from: "2026-01-01" as Day, to: "2026-12-31" as Day };
+    expect((await owner.query(api.data.days, range)).habits).toEqual([]);
+    expect((await other.query(api.data.days, range)).habits).toHaveLength(1);
   });
 });

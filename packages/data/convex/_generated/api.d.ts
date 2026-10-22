@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as admin from "../admin.js";
 import type * as data from "../data.js";
 import type * as functions from "../functions.js";
 import type * as range from "../range.js";
@@ -21,6 +22,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  admin: typeof admin;
   data: typeof data;
   functions: typeof functions;
   range: typeof range;

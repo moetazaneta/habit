@@ -70,6 +70,14 @@ export function HabitDataProvider(props: {
 
 function SsoCallback(): ReactNode {
   const clerk = useClerk();
+  const { isLoaded, isSignedIn } = useAuth();
+  // Opened with no sign-in in progress, as from a bookmark: the user is signed in already.
+  const checked = useRef(false);
+  useEffect(() => {
+    if (!isLoaded || checked.current) return;
+    checked.current = true;
+    if (isSignedIn) location.replace("/");
+  }, [isLoaded, isSignedIn]);
   return (
     <HandleSSOCallback
       navigateToApp={({ decorateUrl }) => {
