@@ -15,3 +15,10 @@ dist
 
 # AI agent worktrees.
 .claude/worktrees/
+
+# The impeccable design tool's decision mocks. Only the chosen sketch is kept: the build of the
+# habit list matches it.
+apps/web/.impeccable/mocks/*
+!apps/web/.impeccable/mocks/decision/
+apps/web/.impeccable/mocks/decision/*
+!apps/web/.impeccable/mocks/decision/r3-color-icons.html

@@ -1,0 +1,25 @@
+{
+  "name": "@habit/data",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The data layer: the Convex backend and the React hooks that the apps use. The only package that knows Convex (ADR 0001).",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./testing": "./src/testing/index.ts"
+  },
+  "dependencies": {
+    "@habit/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "react": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "catalog:"
+  }
+}

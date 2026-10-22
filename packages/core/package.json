@@ -1,0 +1,16 @@
+{
+  "name": "@habit/core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The domain of Habit: types and rules in plain TypeScript, without React or a backend.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
+  }
+}

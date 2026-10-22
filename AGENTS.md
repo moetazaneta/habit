@@ -62,7 +62,8 @@ A Vite+ workspace on pnpm.
 | Package                     | What goes in it                                                            |
 | --------------------------- | -------------------------------------------------------------------------- |
 | `apps/web` (`@habit/web`) | The web app: a React SPA with TanStack Router, Tailwind CSS and shadcn/ui. |
-| `packages/*`                | Code that is not part of one app, such as a core layer. None yet.          |
+| `packages/core` (`@habit/core`) | The domain: types and pure rules, no React, no backend. |
+| `packages/data` (`@habit/data`) | The Convex backend and the React hooks; the only package that knows Convex (ADR 0001). |
 
 - **An app holds only what is particular to it**, such as its screens. Code that is not part of
   one app goes in a package under `packages/`, named `@habit/<name>`, even while only one app
@@ -98,6 +99,8 @@ A Vite+ workspace on pnpm.
 # Docs
 
 - Docs live in [`docs/`](./docs) as Markdown, in English.
+- The v1 spec is [`docs/v1.md`](./docs/v1.md); the build plan, with the contracts, the ownership of
+  files and the merge protocol, is [`docs/build-plan.md`](./docs/build-plan.md).
 - Write plainly: say what something does and why, in short sentences. No marketing tone.
 
 # Testing
