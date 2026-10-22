@@ -1,0 +1,295 @@
+import type { HabitColor, HabitIcon as HabitIconValue } from "@habit/core";
+import { MagnifyingGlassIcon } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
+import { XIcon } from "@phosphor-icons/react/dist/csr/X";
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+
+import { HabitIcon, PHOSPHOR_ICON_GROUPS, preloadHabitIcons } from "@/components/habit-icon";
+import { habitColorStyle } from "@/components/palette";
+import { cn } from "@/lib/utils";
+
+import { fieldClass, Segmented, SectionLabel } from "./controls";
+import { firstEmoji, HABIT_EMOJI, searchEmoji, searchIcons } from "./icon-search";
+
+const ALL_ICONS: HabitIconValue[] = PHOSPHOR_ICON_GROUPS.flatMap((group) =>
+  group.names.map((name) => ({ type: "phosphor" as const, name })),
+);
+
+/**
+ * The icon picker: the curated Phosphor icons by group, or a short list of emoji, and one search
+ * field over both. Any emoji typed into the search (from the emoji keyboard) can be used as it is.
+ * A tap picks and goes back.
+ */
+export function IconPicker({
+  value,
+  color,
+  onPick,
+  autoFocus,
+}: {
+  value: HabitIconValue;
+  color: HabitColor;
+  onPick: (icon: HabitIconValue) => void;
+  /** Focus the search field: on a desktop, where no keyboard covers the grid. */
+  autoFocus: boolean;
+}) {
+  const [query, setQuery] = useState("");
+  const [tab, setTab] = useState<"icons" | "emoji">(value.type === "emoji" ? "emoji" : "icons");
+  const search = useRef<HTMLInputElement>(null);
+
+  // Load every icon of the catalog now (each is a small chunk), so the grid fills at once.
+  useEffect(() => preloadHabitIcons(ALL_ICONS), []);
+  useEffect(() => {
+    if (autoFocus) search.current?.focus();
+  }, [autoFocus]);
+
+  const trimmed = query.trim();
+  const typedEmoji = firstEmoji(trimmed);
+  const icons = trimmed === "" ? [] : searchIcons(trimmed);
+  const emoji = trimmed === "" ? [] : searchEmoji(trimmed);
+
+  return (
+    <div className="flex flex-col gap-3" style={habitColorStyle(color)}>
+      <div className="relative">
+        <MagnifyingGlassIcon
+          aria-hidden
+          className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-[1.125rem] text-ink-3"
+        />
+        <input
+          ref={search}
+          type="search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          aria-label="Search icons, or type an emoji"
+          placeholder="Search, or type an emoji"
+          autoComplete="off"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          enterKeyHint="search"
+          onKeyDown={(event) => {
+            if (event.key !== "Enter") return;
+            event.preventDefault();
+            const first: HabitIconValue | undefined =
+              typedEmoji !== undefined
+                ? { type: "emoji", emoji: typedEmoji }
+                : icons[0] !== undefined
+                  ? { type: "phosphor", name: icons[0] }
+                  : emoji[0] !== undefined
+                    ? { type: "emoji", emoji: emoji[0] }
+                    : undefined;
+            if (first !== undefined) onPick(first);
+          }}
+          className={cn(fieldClass, "pr-11 pl-10 [&::-webkit-search-cancel-button]:hidden")}
+        />
+        {query === "" ? null : (
+          <button
+            type="button"
+            onClick={() => {
+              setQuery("");
+              search.current?.focus();
+            }}
+            aria-label="Clear the search"
+            className="absolute top-1/2 right-1 grid size-10 -translate-y-1/2 place-items-center rounded-full text-ink-3 hover:text-ink"
+          >
+            <XIcon weight="bold" aria-hidden className="text-[0.875rem]" />
+          </button>
+        )}
+      </div>
+
+      {trimmed === "" ? (
+        <Segmented
+          label="Icon type"
+          hideLabel
+          value={tab}
+          onChange={setTab}
+          options={[
+            { value: "icons", label: "Icons" },
+            { value: "emoji", label: "Emoji" },
+          ]}
+        />
+      ) : null}
+
+      <div
+        className="-mx-1 h-[min(21rem,46dvh)] overflow-y-auto overscroll-contain px-1 pb-1"
+        onKeyDown={moveFocusInGrid}
+      >
+        {trimmed !== "" ? (
+          <SearchResults
+            query={trimmed}
+            typedEmoji={typedEmoji}
+            icons={icons}
+            emoji={emoji}
+            value={value}
+            color={color}
+            onPick={onPick}
+          />
+        ) : tab === "icons" ? (
+          PHOSPHOR_ICON_GROUPS.map((group) => (
+            <section key={group.label} className="mb-3">
+              <SectionLabel>{group.label}</SectionLabel>
+              <Grid>
+                {group.names.map((name) => (
+                  <IconCell
+                    key={name}
+                    icon={{ type: "phosphor", name }}
+                    value={value}
+                    color={color}
+                    onPick={onPick}
+                  />
+                ))}
+              </Grid>
+            </section>
+          ))
+        ) : (
+          <>
+            <Grid>
+              {HABIT_EMOJI.map((entry) => (
+                <IconCell
+                  key={entry.emoji}
+                  icon={{ type: "emoji", emoji: entry.emoji }}
+                  value={value}
+                  color={color}
+                  onPick={onPick}
+                />
+              ))}
+            </Grid>
+            <p className="mt-3 px-1 text-[0.875rem] leading-5 text-ink-3">
+              For any other emoji, type it into the search.
+            </p>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SearchResults({
+  query,
+  typedEmoji,
+  icons,
+  emoji,
+  value,
+  color,
+  onPick,
+}: {
+  query: string;
+  typedEmoji: string | undefined;
+  icons: string[];
+  emoji: string[];
+  value: HabitIconValue;
+  color: HabitColor;
+  onPick: (icon: HabitIconValue) => void;
+}) {
+  const extra = typedEmoji !== undefined && !emoji.includes(typedEmoji) ? [typedEmoji] : [];
+  if (icons.length === 0 && emoji.length === 0 && extra.length === 0) {
+    return (
+      <p className="px-1 pt-2 text-[0.9375rem] leading-6 text-ink-3">
+        No icon for “{query}”. Try another word, or type an emoji.
+      </p>
+    );
+  }
+  return (
+    <Grid>
+      {extra.map((char) => (
+        <IconCell
+          key={`typed-${char}`}
+          icon={{ type: "emoji", emoji: char }}
+          value={value}
+          color={color}
+          onPick={onPick}
+        />
+      ))}
+      {icons.map((name) => (
+        <IconCell
+          key={name}
+          icon={{ type: "phosphor", name }}
+          value={value}
+          color={color}
+          onPick={onPick}
+        />
+      ))}
+      {emoji.map((char) => (
+        <IconCell
+          key={char}
+          icon={{ type: "emoji", emoji: char }}
+          value={value}
+          color={color}
+          onPick={onPick}
+        />
+      ))}
+    </Grid>
+  );
+}
+
+function Grid({ children }: { children: ReactNode }) {
+  return (
+    <div role="group" className="grid grid-cols-[repeat(auto-fill,minmax(2.75rem,1fr))] gap-1">
+      {children}
+    </div>
+  );
+}
+
+function IconCell({
+  icon,
+  value,
+  color,
+  onPick,
+}: {
+  icon: HabitIconValue;
+  value: HabitIconValue;
+  color: HabitColor;
+  onPick: (icon: HabitIconValue) => void;
+}) {
+  const selected =
+    icon.type === value.type &&
+    (icon.type === "emoji"
+      ? icon.emoji === (value as { emoji: string }).emoji
+      : icon.name === (value as { name: string }).name);
+  return (
+    <button
+      type="button"
+      data-icon-cell=""
+      onClick={() => onPick(icon)}
+      aria-label={icon.type === "emoji" ? icon.emoji : humanize(icon.name)}
+      aria-pressed={selected}
+      className={cn(
+        "grid aspect-square min-h-11 place-items-center squircle-[0.75rem] transition-[background-color,scale] duration-150 ease-out active:scale-[0.92] hover:bg-surface-2",
+        selected &&
+          "bg-[color-mix(in_oklab,var(--c)_18%,var(--surface))] shadow-[inset_0_0_0_0.09375rem_color-mix(in_oklab,var(--c)_70%,transparent)] hover:bg-[color-mix(in_oklab,var(--c)_18%,var(--surface))]",
+      )}
+    >
+      <HabitIcon icon={icon} color={color} size="1.625rem" />
+    </button>
+  );
+}
+
+function humanize(name: string): string {
+  const words = name.replaceAll("-", " ");
+  return words[0]!.toUpperCase() + words.slice(1);
+}
+
+/** The arrow keys move the focus between the cells of the grid, as in a native picker. */
+function moveFocusInGrid(event: KeyboardEvent<HTMLDivElement>) {
+  const keys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+  const current = event.target as HTMLElement;
+  if (!keys.includes(event.key) || !current.hasAttribute("data-icon-cell")) return;
+  const cells = Array.from(event.currentTarget.querySelectorAll<HTMLElement>("[data-icon-cell]"));
+  const index = cells.indexOf(current);
+  const columns = Math.max(
+    1,
+    Array.from(current.parentElement?.children ?? []).filter(
+      (cell) => (cell as HTMLElement).offsetTop === current.offsetTop,
+    ).length,
+  );
+  const by =
+    event.key === "ArrowLeft"
+      ? -1
+      : event.key === "ArrowRight"
+        ? 1
+        : event.key === "ArrowUp"
+          ? -columns
+          : columns;
+  const next = cells[index + by];
+  if (next === undefined) return;
+  event.preventDefault();
+  next.focus();
+}

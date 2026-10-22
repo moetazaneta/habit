@@ -261,7 +261,9 @@ export function MorphHeight({ children, className }: { children: ReactNode; clas
 
   return (
     <motion.div
-      className={cn("overflow-hidden", className)}
+      // `clip`, not `hidden`: it clips the same, but it is not a scroll container, so a sticky
+      // footer inside sticks to the sheet's own scroll.
+      className={cn("overflow-clip", className)}
       initial={false}
       animate={{ height }}
       transition={reduceMotion ? { duration: 0 } : springs.morph}
