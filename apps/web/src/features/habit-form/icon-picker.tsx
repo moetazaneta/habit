@@ -252,7 +252,7 @@ function IconCell({
       aria-label={icon.type === "emoji" ? icon.emoji : humanize(icon.name)}
       aria-pressed={selected}
       className={cn(
-        "grid aspect-square min-h-11 place-items-center squircle-[0.75rem] transition-[background-color,scale] duration-150 ease-out active:scale-[0.95] hover:bg-surface-2",
+        "grid aspect-square min-h-11 place-items-center squircle-[0.625rem] transition-[background-color,scale] duration-150 ease-out active:scale-[0.95] hover:bg-surface-2",
         selected &&
           "bg-[color-mix(in_oklab,var(--c)_18%,var(--surface))] shadow-[inset_0_0_0_0.09375rem_color-mix(in_oklab,var(--c)_70%,transparent)] hover:bg-[color-mix(in_oklab,var(--c)_18%,var(--surface))]",
       )}

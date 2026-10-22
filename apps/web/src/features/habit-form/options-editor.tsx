@@ -166,7 +166,7 @@ export function OptionsEditor(props: OptionsEditorProps) {
         <button
           type="button"
           onClick={add}
-          className="flex h-11 w-full items-center gap-2 squircle-[0.75rem] px-3.5 text-[1rem] font-medium text-ink-2 transition-[background-color,scale] duration-150 ease-out hover:bg-surface-2 active:scale-[0.98]"
+          className="flex h-11 w-full items-center gap-2 squircle-[0.625rem] px-3.5 text-[1rem] font-medium text-ink-2 transition-[background-color,scale] duration-150 ease-out hover:bg-surface-2 active:scale-[0.98]"
         >
           <PlusIcon weight="bold" aria-hidden className="size-4" />
           Add option

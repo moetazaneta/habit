@@ -11,9 +11,12 @@ import { cn } from "@/lib/utils";
 
 import { FADE_IN, rowPresence } from "./presence";
 
-/** A filled field on the sheet: no border, a squircle, 16px or more so iOS does not zoom. */
+/**
+ * A field on the sheet, as DESIGN.md has it: the `field` fill, a 0.625rem squircle, an inset ring
+ * in `ink-4` on focus, and 16px or more so iOS does not zoom.
+ */
 export const fieldClass =
-  "h-12 w-full min-w-0 squircle-[0.75rem] bg-surface-2 px-3.5 text-ink outline-none transition-[background-color,box-shadow] duration-150 placeholder:text-ink-3 focus-visible:shadow-[inset_0_0_0_0.09375rem_var(--ink-3)] focus-visible:outline-none";
+  "h-12 w-full min-w-0 squircle-[0.625rem] bg-field px-3.5 text-ink outline-none transition-[box-shadow] duration-[120ms] placeholder:text-ink-3 focus-visible:shadow-[inset_0_0_0_0.09375rem_var(--ink-4)] focus-visible:outline-none";
 
 /** The label of a group of controls, such as "Color". Quiet, never an eyebrow above a heading. */
 export function SectionLabel({
@@ -187,7 +190,10 @@ export function ColorSwatches({
   );
 }
 
-/** A plain button in the sheet's language: the primary one is solid ink, the others quiet. */
+/**
+ * A button of the sheet (DESIGN.md, "Buttons"). The primary one, the single action that ends a
+ * step, is solid `ink` on `ground`; the quiet one is the usual `surface-2` button.
+ */
 export function SheetButton({
   variant = "primary",
   className,
@@ -199,8 +205,10 @@ export function SheetButton({
       type="button"
       {...rest}
       className={cn(
-        "flex h-12 items-center justify-center gap-2 squircle-[0.875rem] px-5 text-[0.9375rem] font-semibold tracking-[-0.01em] transition-[scale,background-color,opacity] duration-150 ease-out active:scale-[0.97] disabled:opacity-40 disabled:active:scale-100",
-        variant === "primary" ? "bg-ink text-ground" : "bg-surface-2 text-ink hover:bg-surface-3",
+        "flex h-11 items-center justify-center gap-1.5 squircle-[0.625rem] px-4 text-[0.9375rem] font-semibold tracking-[-0.01em] transition-[scale,background-color,opacity] duration-[120ms] ease-out active:scale-[0.97] disabled:opacity-40 disabled:active:scale-100",
+        variant === "primary"
+          ? "bg-ink text-ground"
+          : "bg-surface-2 text-ink hover:bg-surface-3 active:bg-surface-3",
         className,
       )}
     >

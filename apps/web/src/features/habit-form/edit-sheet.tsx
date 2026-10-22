@@ -230,7 +230,7 @@ export function EditHabitSheet({
             <div className="flex flex-col gap-4">
               <div>
                 <SectionLabel>Kind</SectionLabel>
-                <div className="flex h-12 items-center gap-2.5 squircle-[0.75rem] bg-surface-2 px-3.5 text-ink-2">
+                <div className="flex h-6 items-center gap-2 text-ink-2">
                   <span aria-hidden className="grid text-ink-3 [&>svg]:size-[1.125rem]">
                     {KIND_ICONS[form.kind]}
                   </span>
