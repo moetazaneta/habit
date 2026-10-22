@@ -16,6 +16,11 @@
     padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
   }
 
+  /* While the input sheet edits a Day on a phone: room to scroll the Day above the sheet. */
+  .habit-page[data-editing] {
+    padding-bottom: 75dvh;
+  }
+
   /* ── The bar ── */
 
   .hp-bar {

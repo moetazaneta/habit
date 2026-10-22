@@ -2,13 +2,14 @@ import { monthOf, type Habit, type HabitId, type Month } from "@habit/core";
 import { useEntries, useHabit, useHabits } from "@habit/data";
 import { CaretLeftIcon } from "@phosphor-icons/react/dist/csr/CaretLeft";
 import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
-import { useState, type MouseEvent, type ReactNode } from "react";
+import { useRef, useState, type MouseEvent, type ReactNode } from "react";
 
 import { DaySquare } from "@/components/day-square";
 import { HabitIcon } from "@/components/habit-icon";
 import { habitColorStyle } from "@/components/palette";
 import { useOpenSheet } from "@/components/sheet-search";
 import { MonthCalendar } from "@/features/habit-page/month-calendar";
+import { useEditedDayInView } from "@/features/habit-page/use-edited-day-in-view";
 import { YearGrid } from "@/features/habit-page/year-grid";
 import { useToday } from "@/features/list/use-today";
 
@@ -32,9 +33,11 @@ function HabitDetail({ habit }: { habit: Habit }) {
   const entries = useEntries();
   const openSheet = useOpenSheet();
   const [month, setMonth] = useState<Month>(() => monthOf(today));
+  const page = useRef<HTMLElement>(null);
+  useEditedDayInView(page, habit.id);
 
   return (
-    <main className="habit-page" style={habitColorStyle(habit.color)}>
+    <main ref={page} className="habit-page" style={habitColorStyle(habit.color)}>
       <PageBar>
         <button type="button" className="hp-bar-text" onClick={() => openSheet({ edit: habit.id })}>
           Edit

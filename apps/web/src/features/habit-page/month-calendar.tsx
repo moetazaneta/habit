@@ -32,7 +32,7 @@ import { useAct } from "@/components/act";
 import { DaySquare } from "@/components/day-square";
 import { dayOfMonth, describeEntry, formatDayLong } from "@/components/format";
 import { haptic } from "@/components/haptics";
-import { entryRef, useOpenSheet } from "@/components/sheet-search";
+import { entryRef, useOpenSheet, useSheetSearch } from "@/components/sheet-search";
 import { CALENDAR_ROWS, formatMonth, monthWeeks } from "@/features/habit-page/months";
 import { useMonthPager } from "@/features/habit-page/use-month-pager";
 import { LONG_PRESS_MS } from "@/features/list/day-cells";
@@ -106,6 +106,8 @@ export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalen
   const entries = useEntries();
   const act = useAct();
   const openSheet = useOpenSheet();
+  // The Day whose value the input sheet edits: it stays visible above the sheet's scrim.
+  const { entry: editing } = useSheetSearch();
   const reduceMotion = useReducedMotion() === true;
   const pager = useMonthPager({ month, newest, onMonthChange, reduceMotion });
   const gesture = useRef<Gesture>({ type: "idle" });
@@ -459,6 +461,7 @@ export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalen
               pressed={slot === 0 ? pressed : null}
               paint={slot === 0 ? paint : null}
               tabDay={slot === 0 ? tabDay : null}
+              editing={slot === 0 ? editing : undefined}
             />
           ))}
         </div>
@@ -483,6 +486,8 @@ interface MonthPageProps {
   pressed: Pressed | null;
   paint: Paint | null;
   tabDay: Day | null;
+  /** The `?entry` of the input sheet, if one is open. */
+  editing: string | undefined;
 }
 
 /**
@@ -498,6 +503,7 @@ const MonthPage = memo(function MonthPage({
   pressed,
   paint,
   tabDay,
+  editing,
 }: MonthPageProps) {
   const loading = useMonth(month) === "loading";
   const weeks = useMemo(() => monthWeeks(month), [month]);
@@ -530,6 +536,7 @@ const MonthPage = memo(function MonthPage({
               pressed={pressed?.day === day ? (pressed.hold ?? "tap") : null}
               painted={paint !== null && paint.days.includes(day) ? paint.mode : null}
               tabbable={tabDay === day}
+              editing={editing === entryRef(habit.id, day)}
             />
           ),
         )}
@@ -549,6 +556,7 @@ function CalendarDay({
   pressed,
   painted,
   tabbable,
+  editing,
 }: {
   habit: Habit;
   day: Day;
@@ -558,6 +566,7 @@ function CalendarDay({
   pressed: "tap" | "paint" | "input" | null;
   painted: "set" | "clear" | null;
   tabbable: boolean;
+  editing: boolean;
 }) {
   const future = isFuture(day, today);
   const level = painted === null ? intensity(habit, value) : painted === "set" ? 1 : 0;
@@ -591,6 +600,7 @@ function CalendarDay({
           variant={future ? "future" : "day"}
           label={painted === null ? optionMark(habit, value) : undefined}
           data-entry={entryRef(habit.id, day)}
+          data-editing={editing ? "" : undefined}
         />
       </span>
     </button>
