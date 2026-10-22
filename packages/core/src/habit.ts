@@ -1,6 +1,6 @@
 import type { HabitColor } from "./palette";
-import type { HabitId, OptionId } from "./ids";
-import { notImplemented } from "./internal";
+import { newId, type HabitId, type OptionId } from "./ids";
+import { orderBetween } from "./order";
 
 export type Kind = "check" | "number" | "choice" | "scale" | "text";
 
@@ -68,10 +68,22 @@ export type HabitPatch = Partial<
   options?: Option[];
 };
 
-/** A complete new Habit from a draft: a new id, an order after `lastOrder`, and timestamps. */
+/**
+ * A complete new Habit from a draft: a new id, an order after `lastOrder`, and timestamps. The name
+ * and the description are trimmed. (An edit does not trim: each key press applies at once, so a
+ * trim would remove the space that the person just typed.)
+ */
 export function createHabit(
   draft: HabitDraft,
   context: { now: number; lastOrder?: string },
 ): Habit {
-  return notImplemented(`createHabit(${draft.name}, ${context.now})`);
+  return {
+    ...draft,
+    id: newId() as HabitId,
+    name: draft.name.trim(),
+    description: draft.description.trim(),
+    order: orderBetween(context.lastOrder),
+    createdAt: context.now,
+    updatedAt: context.now,
+  };
 }
