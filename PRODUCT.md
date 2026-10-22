@@ -9,8 +9,8 @@ web
 ## Stack
 
 A Vite+ workspace on pnpm: a React SPA with TanStack Router, Tailwind CSS and shadcn/ui
-(base-nova, on Base UI). The backend is Convex. Clerk does the sign-in (Google first). The app is
-an installable PWA, served as a static SPA from Vercel. A custom domain is not chosen yet.
+(base-nova, on Base UI). The backend is Convex. Clerk does the sign-in (Google first). v1 is a
+mobile-first web app, served as a static SPA from Vercel. A custom domain is not chosen yet.
 
 ## Users
 
@@ -50,7 +50,8 @@ The look stays quiet, but each interaction has a considered detail or animation.
 - One user (the owner), with a sign-in. The app is online-first: each change shows immediately,
   and the server confirms it later. Offline use is not in v1, but the data model keeps it
   possible.
-- Planned for v2: archive, and import and export of the data.
+- Planned for v2: archive, import and export of the data, an installable PWA, and an undo
+  history with Cmd+Z.
 - Undecided, and maybe never: streaks and statistics. Later: reminders and widgets.
 - The UI language is English. The theme (light or dark) follows the system setting.
 
