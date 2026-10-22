@@ -1,0 +1,247 @@
+import { Dialog } from "@base-ui/react/dialog";
+import { Drawer } from "@base-ui/react/drawer";
+import { Popover } from "@base-ui/react/popover";
+import { XIcon } from "@phosphor-icons/react/dist/csr/X";
+import { motion, useReducedMotion } from "motion/react";
+import { useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+
+import { springs } from "@/components/motion";
+import { useIsWide } from "@/components/use-media-query";
+import { cn } from "@/lib/utils";
+
+export interface ResponsiveSheetProps {
+  open: boolean;
+  /** Called with false when the person dismisses the sheet (swipe, backdrop, Escape, close button). */
+  onOpenChange: (open: boolean) => void;
+  /** The accessible name, shown as the heading unless `hideTitle`. */
+  title: ReactNode;
+  hideTitle?: boolean;
+  description?: ReactNode;
+  /** On a desktop: a centered dialog (the default), or a popover at `anchor`. */
+  desktop?: "dialog" | "popover";
+  /** The element the desktop popover points at. Without one, the popover becomes a dialog. */
+  anchor?: Element | null;
+  /** Called when the close animation has finished: the moment to drop retained content. */
+  onExitComplete?: () => void;
+  /** The element to focus when the sheet opens. Default: the first focusable element. */
+  initialFocus?: RefObject<HTMLElement | null>;
+  className?: string;
+  children: ReactNode;
+}
+
+/**
+ * One sheet for every form and input: a bottom sheet on a phone (swipe down to dismiss), and on a
+ * desktop a centered dialog or a popover at an element. The content changes its height with a
+ * spring instead of a cut, so a sheet can move between steps (as in Family).
+ *
+ * The URL owns `open` (`?new`, `?edit`, `?entry`): pass `open` from the search params and close
+ * with `useCloseSheet()`, so the back gesture closes the sheet too.
+ */
+export function ResponsiveSheet(props: ResponsiveSheetProps) {
+  const wide = useIsWide();
+  if (!wide) return <BottomSheet {...props} />;
+  if (props.desktop === "popover" && props.anchor) return <AnchoredPopover {...props} />;
+  return <CenteredDialog {...props} />;
+}
+
+function BottomSheet({
+  open,
+  onOpenChange,
+  title,
+  hideTitle,
+  description,
+  onExitComplete,
+  initialFocus,
+  className,
+  children,
+}: ResponsiveSheetProps) {
+  return (
+    <Drawer.Root
+      open={open}
+      onOpenChange={onOpenChange}
+      onOpenChangeComplete={(isOpen) => {
+        if (!isOpen) onExitComplete?.();
+      }}
+    >
+      <Drawer.Portal>
+        <Drawer.Backdrop className="sheet-backdrop" />
+        <Drawer.Viewport className="sheet-viewport">
+          <Drawer.VirtualKeyboardProvider>
+            <Drawer.Popup
+              className={cn("sheet-popup", className)}
+              {...(initialFocus === undefined ? {} : { initialFocus })}
+            >
+              <div className="sheet-handle" aria-hidden />
+              <Drawer.Content>
+                <MorphHeight>
+                  <SheetHeader
+                    title={<Drawer.Title className={titleClass(hideTitle)}>{title}</Drawer.Title>}
+                    close={
+                      <Drawer.Close className="sheet-close" aria-label="Close">
+                        <XIcon weight="bold" />
+                      </Drawer.Close>
+                    }
+                  />
+                  {description === undefined ? null : (
+                    <Drawer.Description className="sheet-description">
+                      {description}
+                    </Drawer.Description>
+                  )}
+                  <div className="sheet-body">{children}</div>
+                </MorphHeight>
+              </Drawer.Content>
+            </Drawer.Popup>
+          </Drawer.VirtualKeyboardProvider>
+        </Drawer.Viewport>
+      </Drawer.Portal>
+    </Drawer.Root>
+  );
+}
+
+function CenteredDialog({
+  open,
+  onOpenChange,
+  title,
+  hideTitle,
+  description,
+  onExitComplete,
+  initialFocus,
+  className,
+  children,
+}: ResponsiveSheetProps) {
+  return (
+    <Dialog.Root
+      open={open}
+      onOpenChange={onOpenChange}
+      onOpenChangeComplete={(isOpen) => {
+        if (!isOpen) onExitComplete?.();
+      }}
+    >
+      <Dialog.Portal>
+        <Dialog.Backdrop className="dialog-backdrop" />
+        <Dialog.Viewport className="dialog-viewport">
+          <Dialog.Popup
+            className={cn("dialog-popup", className)}
+            {...(initialFocus === undefined ? {} : { initialFocus })}
+          >
+            <MorphHeight>
+              <SheetHeader
+                title={<Dialog.Title className={titleClass(hideTitle)}>{title}</Dialog.Title>}
+                close={
+                  <Dialog.Close className="sheet-close" aria-label="Close">
+                    <XIcon weight="bold" />
+                  </Dialog.Close>
+                }
+              />
+              {description === undefined ? null : (
+                <Dialog.Description className="sheet-description">{description}</Dialog.Description>
+              )}
+              <div className="sheet-body">{children}</div>
+            </MorphHeight>
+          </Dialog.Popup>
+        </Dialog.Viewport>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
+function AnchoredPopover({
+  open,
+  onOpenChange,
+  title,
+  hideTitle,
+  description,
+  anchor,
+  onExitComplete,
+  initialFocus,
+  className,
+  children,
+}: ResponsiveSheetProps) {
+  return (
+    <Popover.Root
+      open={open}
+      onOpenChange={onOpenChange}
+      onOpenChangeComplete={(isOpen) => {
+        if (!isOpen) onExitComplete?.();
+      }}
+    >
+      <Popover.Portal>
+        <Popover.Positioner
+          anchor={anchor ?? null}
+          side="bottom"
+          align="center"
+          sideOffset={10}
+          collisionPadding={16}
+          className="z-50"
+        >
+          <Popover.Popup
+            className={cn("popover-popup", className)}
+            {...(initialFocus === undefined ? {} : { initialFocus })}
+          >
+            <MorphHeight>
+              <SheetHeader
+                title={<Popover.Title className={titleClass(hideTitle)}>{title}</Popover.Title>}
+                close={
+                  <Popover.Close className="sheet-close" aria-label="Close">
+                    <XIcon weight="bold" />
+                  </Popover.Close>
+                }
+              />
+              {description === undefined ? null : (
+                <Popover.Description className="sheet-description">
+                  {description}
+                </Popover.Description>
+              )}
+              <div className="sheet-body">{children}</div>
+            </MorphHeight>
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+}
+
+function SheetHeader({ title, close }: { title: ReactNode; close: ReactNode }) {
+  return (
+    <div className="sheet-header">
+      {title}
+      {close}
+    </div>
+  );
+}
+
+function titleClass(hidden: boolean | undefined): string {
+  return hidden === true ? "sr-only" : "sheet-title";
+}
+
+/**
+ * Animates its height to its content's height with the morph spring, so a sheet grows and shrinks
+ * between steps instead of jumping. Under reduced motion the height changes at once.
+ */
+export function MorphHeight({ children, className }: { children: ReactNode; className?: string }) {
+  const inner = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState<number | "auto">("auto");
+  const reduceMotion = useReducedMotion() === true;
+
+  useLayoutEffect(() => {
+    const element = inner.current;
+    if (element === null || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(([entry]) => {
+      const size = entry?.borderBoxSize[0]?.blockSize;
+      if (size !== undefined) setHeight(size);
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <motion.div
+      className={cn("overflow-hidden", className)}
+      initial={false}
+      animate={{ height }}
+      transition={reduceMotion ? { duration: 0 } : springs.morph}
+    >
+      <div ref={inner}>{children}</div>
+    </motion.div>
+  );
+}

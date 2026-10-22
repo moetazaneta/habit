@@ -2,26 +2,41 @@
 @import "tailwindcss" source(".");
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
+@import "@fontsource-variable/ibm-plex-sans";
 
-@custom-variant dark (&:is(.dark *));
+/*
+ * The world: "Quiet standard". A ground with no surfaces (pure black in the dark theme, white in
+ * the light theme), space instead of lines, and color only where it is data: the habit icons and
+ * the Day gauges. The theme follows the system setting, so `dark:` is the media query.
+ */
+
+@theme {
+  --font-sans: "IBM Plex Sans Variable", ui-sans-serif, system-ui, sans-serif;
+
+  /* Strong curves for UI motion (the animate skill's tokens). */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
 
 @theme inline {
   --font-heading: var(--font-sans);
-  --font-sans: "Geist Variable", sans-serif;
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
+
+  --color-ground: var(--ground);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: var(--ink-4);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-toast: var(--toast);
+  --color-toast-ink: var(--toast-ink);
+  /* The color of the habit in scope: an element sets `--c` (see habitColorStyle). */
+  --color-habit: var(--c);
+
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -49,83 +64,592 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ── Tokens: light theme (the default) ─────────────────────────────────────────────────────── */
+
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  color-scheme: light dark;
+
+  --ground: oklch(1 0 0);
+  /* Text, from strongest to quietest. All four meet WCAG AA on the ground. */
+  --ink: oklch(0.232 0.004 286);
+  --ink-2: oklch(0.403 0.008 286); /* habit names: slightly dimmed */
+  --ink-3: oklch(0.54 0.008 286); /* the day header, secondary text */
+  --ink-4: oklch(0.557 0.008 286); /* the ghost row */
+  /* The frame of an empty Day, and dashed ghosts. */
+  --line: oklch(0.896 0.005 286);
+  --line-strong: oklch(0.831 0.007 286);
+  /* Raised surfaces: sheets, dialogs, popovers, and the fields inside them. */
+  --surface: oklch(1 0 0);
+  --surface-2: oklch(0.962 0.003 286);
+  --surface-3: oklch(0.935 0.005 286);
+  --backdrop: oklch(0 0 0 / 0.2);
+  --elevation: 0 0.5rem 2rem oklch(0 0 0 / 0.12), 0 0.0625rem 0.25rem oklch(0 0 0 / 0.06);
+  /* The toast capsule: inverted on white, so an Undo is never missed. */
+  --toast: oklch(0.232 0.004 286);
+  --toast-ink: oklch(0.963 0.007 286);
+
+  /*
+   * The habit palette, light: the owner's dark values darkened (L about 0.64, the same chroma), so
+   * every full square has 3.3:1 against white and the intensity steps stay clear.
+   */
+  --habit-rose: oklch(0.654 0.09 19.4); /* #c27a7a 3.30:1 */
+  --habit-apricot: oklch(0.649 0.086 59.9); /* #b68258 3.32:1 */
+  --habit-ochre: oklch(0.647 0.092 78); /* #ad874a 3.31:1 */
+  --habit-sand: oklch(0.645 0.062 79); /* #a28a62 3.31:1 */
+  --habit-mustard: oklch(0.643 0.095 100.4); /* #9a8e46 3.32:1 */
+  --habit-olive: oklch(0.638 0.096 125.9); /* #7d9654 3.30:1 */
+  --habit-green: oklch(0.635 0.076 151.4); /* #679873 3.33:1 */
+  --habit-jade: oklch(0.636 0.073 172.7); /* #599986 3.32:1 */
+  --habit-teal: oklch(0.635 0.068 192); /* #569895 3.32:1 */
+  --habit-sky: oklch(0.637 0.084 223.9); /* #4c96b1 3.33:1 */
+  --habit-blue: oklch(0.645 0.098 254.1); /* #6390c9 3.30:1 */
+  --habit-slate: oklch(0.644 0.04 264.3); /* #818ea6 3.31:1 */
+  --habit-violet: oklch(0.654 0.101 299.4); /* #9982c5 3.31:1 */
+  --habit-mauve: oklch(0.653 0.065 336.3); /* #aa819f 3.31:1 */
+  --habit-raspberry: oklch(0.657 0.094 358.2); /* #c07891 3.31:1 */
+  --habit-stone: oklch(0.643 0.012 67.6); /* #928c86 3.32:1 */
+  /* How much of the habit color the frame of a partial Day takes. */
+  --frame-mix: 40%;
+
+  /* The list's measures, in rem, so the desktop's 20px base scales them by 1.25. */
+  --gutter: 1.25rem;
+  --row: 3.375rem;
+  --icon: 1.375rem;
+  --square: 1.875rem;
+  --square-gap: 0.375rem;
+
+  /* `squircle-*` and the gauges: a superellipse needs a larger radius than a circle arc. */
+  --squircle-k: 1;
+
+  /* shadcn/ui's names, mapped onto the world, for any shadcn component. */
+  --background: var(--ground);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--ground);
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--ink);
+  --muted: var(--surface-2);
+  --muted-foreground: var(--ink-3);
+  --accent: var(--surface-2);
+  --accent-foreground: var(--ink);
+  --destructive: var(--habit-rose);
+  --border: var(--line);
+  --input: var(--line-strong);
+  --ring: var(--ink-3);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+/* ── Tokens: dark theme ─────────────────────────────────────────────────────────────────────── */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: oklch(0 0 0);
+    --ink: oklch(0.963 0.007 286); /* #f2f2f7 */
+    --ink-2: oklch(0.787 0.007 286); /* #b9b9be */
+    --ink-3: oklch(0.648 0.007 286); /* #8e8e93 */
+    --ink-4: oklch(0.588 0.006 286); /* #7c7c80 */
+    --line: oklch(0.294 0.004 286); /* #2c2c2e */
+    --line-strong: oklch(0.349 0.003 286); /* #3a3a3c */
+    --surface: oklch(0.227 0.004 286); /* #1c1c1e */
+    --surface-2: oklch(0.294 0.004 286);
+    --surface-3: oklch(0.349 0.003 286);
+    --backdrop: oklch(0 0 0 / 0.6);
+    /* On black, a lighter surface is the elevation; a shadow would not show. */
+    --elevation: 0 0 0 0.0625rem oklch(1 0 0 / 0.04);
+    --toast: oklch(0.227 0.004 286); /* #1c1c1e */
+    --toast-ink: oklch(0.963 0.007 286);
+
+    /* The owner's muted palette (docs/build-plan.md), as OKLCH. */
+    --habit-rose: oklch(0.704 0.086 19.4); /* #d08a8a */
+    --habit-apricot: oklch(0.753 0.082 59.9); /* #d6a37a */
+    --habit-ochre: oklch(0.739 0.087 78); /* #c9a46a */
+    --habit-sand: oklch(0.717 0.059 79); /* #b8a07a */
+    --habit-mustard: oklch(0.751 0.091 100.4); /* #bbb06b */
+    --habit-olive: oklch(0.748 0.091 125.9); /* #9fb878 */
+    --habit-green: oklch(0.707 0.073 151.4); /* #7fae8a */
+    --habit-jade: oklch(0.72 0.069 172.7); /* #76b3a0 */
+    --habit-teal: oklch(0.739 0.065 192); /* #79b8b5 */
+    --habit-sky: oklch(0.721 0.08 223.9); /* #6ab0ca */
+    --habit-blue: oklch(0.679 0.094 254.1); /* #6f9bd1 */
+    --habit-slate: oklch(0.688 0.038 264.3); /* #8f9bb3 */
+    --habit-violet: oklch(0.694 0.096 299.4); /* #a58fd0 */
+    --habit-mauve: oklch(0.735 0.061 336.3); /* #c39bb8 */
+    --habit-raspberry: oklch(0.681 0.09 358.2); /* #c68198 */
+    --habit-stone: oklch(0.699 0.011 67.6); /* #a39d97 */
+    --frame-mix: 35%;
+  }
 }
+
+@supports (corner-shape: squircle) {
+  :root {
+    --squircle-k: 1.75;
+  }
+}
+
+/*
+ * Squircle corners: `corner-shape: squircle` (superellipse(2)) with a plain radius as the
+ * fallback. The value is the fallback radius; where the browser draws superellipses, the radius
+ * grows by 1.75 so the corner looks as soft as the circle arc it replaces.
+ * From the owner's utility in tem.sh, with the `@supports` test fixed: it tested
+ * `border-radius: superellipse(1.5)`, which no browser matches.
+ */
+@utility squircle-* {
+  --squircle-multiplier: 1;
+  @supports (corner-shape: squircle) {
+    --squircle-multiplier: 1.75;
+  }
+  border-radius: calc(var(--squircle-multiplier) * --value(--radius-*));
+  border-radius: calc(var(--squircle-multiplier) * --value([*]));
+  corner-shape: squircle;
+}
+
+@utility squircle-full {
+  border-radius: calc(infinity * 1px);
+  corner-shape: superellipse(1.5);
+}
+
+/* ── Base ───────────────────────────────────────────────────────────────────────────────────── */
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    scrollbar-color: var(--line-strong) transparent;
+    scrollbar-width: thin;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
+
   html {
-    @apply font-sans;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    /* An app, not a document: no pull-to-refresh and no rubber band of the whole page. */
+    overscroll-behavior: none;
+    caret-color: var(--ink);
+  }
+
+  /* A desktop gets the phone layout with more room: a 20px base scales every rem by 1.25. */
+  @media (min-width: 40rem) {
+    html {
+      font-size: 125%;
+    }
+  }
+
+  body {
+    min-height: 100dvh;
+    background: var(--ground);
+    color: var(--ink);
+  }
+
+  ::selection {
+    background: color-mix(in oklch, var(--ink) 24%, transparent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ink-3);
+    outline-offset: 2px;
+  }
+
+  /* iOS zooms into a field under 16px and never zooms back. */
+  input,
+  textarea,
+  select {
+    font-size: max(16px, 1rem);
+  }
+
+  button,
+  a,
+  [role="button"] {
+    touch-action: manipulation;
+  }
+
+  /* A long press on a control must not select its label or open a callout. */
+  button,
+  [role="button"] {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+}
+
+/* ── The Day gauge (DaySquare) ──────────────────────────────────────────────────────────────── */
+
+@layer components {
+  /*
+   * A Day is a gauge: a frame in the habit color at --frame-mix, filled from the bottom to --p
+   * (0 to 1). Empty is the frame alone, in --line; full is solid. The fill moves with a CSS
+   * transition on transform, so a fast series of taps retargets instead of restarting.
+   */
+  .day-square {
+    --ds-size: var(--square);
+    position: relative;
+    display: block;
+    flex: none;
+    width: var(--ds-size);
+    height: var(--ds-size);
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: calc(var(--ds-size) * 0.19 * var(--squircle-k));
+    corner-shape: squircle;
+    box-shadow: inset 0 0 0 var(--ds-frame, 0.09375rem)
+      color-mix(in oklch, var(--c) var(--frame-mix), transparent);
+    transition: box-shadow 160ms var(--ease-out);
+  }
+
+  .day-square[data-state="empty"] {
+    box-shadow: inset 0 0 0 var(--ds-frame, 0.09375rem) var(--line);
+  }
+
+  .day-square-fill {
+    position: absolute;
+    inset: 0;
+    background: var(--c);
+    transform: scaleY(var(--p));
+    transform-origin: bottom;
+    transition: transform var(--spring-fill, 420ms var(--ease-out));
+  }
+
+  .day-square[data-animated="false"] .day-square-fill {
+    transition: none;
+  }
+
+  .day-square-label {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: calc(var(--ds-size) * 0.5);
+    line-height: 1;
+    color: var(--c);
+  }
+
+  .day-square[data-state="full"] .day-square-label {
+    color: var(--ground);
+  }
+
+  /* The ghost of a Day that does not exist yet: dashed, no data. */
+  .day-square[data-variant="ghost"] {
+    box-shadow: none;
+    border: 0.0625rem dashed var(--line);
+  }
+
+  .day-square[data-variant="ghost"] .day-square-fill {
+    display: none;
+  }
+
+  /* A future Day is locked: a faint frame, no fill. */
+  .day-square[data-variant="future"] {
+    box-shadow: inset 0 0 0 var(--ds-frame, 0.09375rem) var(--line);
+    opacity: 0.45;
+  }
+
+  .day-square[data-variant="future"] .day-square-fill {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* The fill changes in place; DaySquare fades it in instead of moving it. */
+    .day-square-fill {
+      transition: none;
+    }
+  }
+}
+
+/* ── Sheets, dialogs, popovers (ResponsiveSheet) ────────────────────────────────────────────── */
+
+@layer components {
+  /* Phone: a bottom sheet that floats above the home indicator, as in Family. */
+  .sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    min-height: 100dvh;
+    background: var(--backdrop);
+    opacity: calc(1 - var(--drawer-swipe-progress, 0));
+    transition: opacity 400ms var(--ease-drawer);
+  }
+
+  .sheet-backdrop[data-starting-style],
+  .sheet-backdrop[data-ending-style] {
+    opacity: 0;
+  }
+
+  .sheet-backdrop[data-swiping] {
+    transition-duration: 0ms;
+  }
+
+  .sheet-backdrop[data-ending-style] {
+    transition-duration: calc(var(--drawer-swipe-strength, 1) * 400ms);
+  }
+
+  .sheet-viewport {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0 0.5rem calc(0.5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .sheet-popup {
+    position: relative;
+    width: 100%;
+    max-width: 30rem;
+    max-height: calc(100dvh - 3rem - env(safe-area-inset-top, 0px));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--surface);
+    color: var(--ink);
+    border-radius: calc(1.25rem * var(--squircle-k));
+    corner-shape: squircle;
+    box-shadow: var(--elevation);
+    outline: none;
+    transform: translateY(var(--drawer-swipe-movement-y, 0px));
+    transition: transform var(--spring-sheet, 450ms var(--ease-drawer));
+  }
+
+  .sheet-popup[data-starting-style],
+  .sheet-popup[data-ending-style] {
+    transform: translateY(calc(100% + 0.5rem + env(safe-area-inset-bottom, 0px)));
+  }
+
+  .sheet-popup[data-ending-style] {
+    transition: transform calc(var(--drawer-swipe-strength, 1) * 400ms) var(--ease-drawer);
+  }
+
+  .sheet-popup[data-swiping] {
+    transition-duration: 0ms;
+    user-select: none;
+  }
+
+  .sheet-handle {
+    width: 2.25rem;
+    height: 0.3125rem;
+    margin: 0.5rem auto 0;
+    border-radius: 999px;
+    background: var(--line-strong);
+  }
+
+  /* Desktop: a centered dialog. */
+  .dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    background: var(--backdrop);
+    transition: opacity 200ms var(--ease-out);
+  }
+
+  .dialog-backdrop[data-starting-style],
+  .dialog-backdrop[data-ending-style] {
+    opacity: 0;
+  }
+
+  .dialog-viewport {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 1.5rem;
+  }
+
+  .dialog-popup {
+    width: min(22rem, 100%);
+    max-height: calc(100dvh - 3rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--surface);
+    color: var(--ink);
+    border-radius: calc(1rem * var(--squircle-k));
+    corner-shape: squircle;
+    box-shadow: var(--elevation);
+    outline: none;
+    transition:
+      transform 200ms var(--ease-out),
+      opacity 200ms var(--ease-out);
+  }
+
+  .dialog-popup[data-starting-style],
+  .dialog-popup[data-ending-style] {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  /* Desktop: a popover at the element it is about (a Day square). */
+  .popover-popup {
+    width: min(17rem, calc(100vw - 2rem));
+    background: var(--surface);
+    color: var(--ink);
+    border-radius: calc(0.875rem * var(--squircle-k));
+    corner-shape: squircle;
+    box-shadow: var(--elevation);
+    outline: none;
+    transform-origin: var(--transform-origin);
+    transition:
+      transform 180ms var(--ease-out),
+      opacity 180ms var(--ease-out);
+  }
+
+  .popover-popup[data-starting-style],
+  .popover-popup[data-ending-style] {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  .sheet-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 3rem;
+    padding: 0.5rem 0.75rem 0 1.25rem;
+  }
+
+  .sheet-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    line-height: 1.375rem;
+    letter-spacing: -0.01em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .sheet-header > .sr-only + .sheet-close {
+    margin-left: auto;
+  }
+
+  .sheet-close {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    color: var(--ink-3);
+    font-size: 0.875rem;
+    border-radius: 999px;
+    transition:
+      color 120ms ease,
+      transform 120ms var(--ease-out);
+  }
+
+  /* A 28px disc inside a 44px touch target. */
+  .sheet-close::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 999px;
+    background: var(--surface-2);
+  }
+
+  .sheet-close:active {
+    transform: scale(0.94);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .sheet-close:hover {
+      color: var(--ink);
+    }
+  }
+
+  .sheet-description {
+    padding: 0 1.25rem;
+    color: var(--ink-3);
+    font-size: 0.9375rem;
+    line-height: 1.375rem;
+  }
+
+  .sheet-body {
+    padding: 0.75rem 1.25rem 1.25rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* A fade replaces the slide and the scale; a swipe still follows the finger. */
+    .sheet-popup,
+    .sheet-popup[data-ending-style] {
+      transition: opacity 180ms ease;
+    }
+
+    .sheet-popup[data-starting-style],
+    .sheet-popup[data-ending-style] {
+      opacity: 0;
+      transform: translateY(var(--drawer-swipe-movement-y, 0px));
+    }
+
+    .dialog-popup,
+    .popover-popup {
+      transition: opacity 180ms ease;
+    }
+
+    .dialog-popup[data-starting-style],
+    .dialog-popup[data-ending-style],
+    .popover-popup[data-starting-style],
+    .popover-popup[data-ending-style] {
+      transform: none;
+    }
+  }
+}
+
+/* ── Toasts (Sonner, headless) ──────────────────────────────────────────────────────────────── */
+
+@layer components {
+  .toast-capsule {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    width: fit-content;
+    max-width: calc(100vw - 2rem);
+    height: 2.875rem;
+    margin: 0 auto;
+    padding: 0 0.5rem 0 1.375rem;
+    background: var(--toast);
+    color: var(--toast-ink);
+    border-radius: calc(infinity * 1px);
+    corner-shape: superellipse(1.5);
+    font-size: 0.9375rem;
+    line-height: 1.25rem;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+
+  .toast-capsule[data-action="false"] {
+    padding-right: 1.375rem;
+  }
+
+  .toast-message {
+    overflow: hidden;
+    font-weight: 500;
+    text-overflow: ellipsis;
+  }
+
+  .toast-action {
+    flex: none;
+    height: 2.25rem;
+    padding: 0 0.875rem;
+    font-weight: 600;
+    border-radius: calc(infinity * 1px);
+    transition:
+      background-color 120ms ease,
+      transform 120ms var(--ease-out);
+  }
+
+  .toast-action:active {
+    transform: scale(0.96);
+    background: color-mix(in oklch, var(--toast-ink) 12%, transparent);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .toast-action:hover {
+      background: color-mix(in oklch, var(--toast-ink) 8%, transparent);
+    }
   }
 }

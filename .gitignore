@@ -12,6 +12,8 @@ dist
 .env
 .env.*
 !.env.example
+# The web app's dev defaults (the data mode), with no secrets.
+!apps/web/.env.development
 
 # AI agent worktrees.
 .claude/worktrees/

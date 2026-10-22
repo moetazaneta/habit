@@ -9,4 +9,19 @@ configure({ asyncUtilTimeout: 5000 });
 // navigation.
 if (typeof window !== "undefined") window.scrollTo = () => {};
 
+// jsdom has no `matchMedia`, which Sonner and the responsive sheet read. No query matches: a phone,
+// in the light theme, with motion allowed.
+if (typeof window !== "undefined" && typeof window.matchMedia !== "function") {
+  window.matchMedia = (query: string): MediaQueryList => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => false,
+  });
+}
+
 afterEach(cleanup);
