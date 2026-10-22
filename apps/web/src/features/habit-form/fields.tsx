@@ -4,73 +4,158 @@ import { CheckIcon } from "@phosphor-icons/react/dist/csr/Check";
 import { HashIcon } from "@phosphor-icons/react/dist/csr/Hash";
 import { ListBulletsIcon } from "@phosphor-icons/react/dist/csr/ListBullets";
 import { TextAaIcon } from "@phosphor-icons/react/dist/csr/TextAa";
+import { animate } from "motion";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useId, type InputHTMLAttributes, type ReactNode, type Ref } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type InputHTMLAttributes,
+  type ReactNode,
+  type Ref,
+} from "react";
 
 import { DaySquare } from "@/components/day-square";
 import { HabitIcon } from "@/components/habit-icon";
-import { springs } from "@/components/motion";
+import { PULSE_VELOCITY, springs } from "@/components/motion";
 import { habitColorStyle } from "@/components/palette";
 import { cn } from "@/lib/utils";
 
 import { FieldMessage, fieldClass, Segmented, type SegmentOption } from "./controls";
 import { parseDecimal, tapsToFill, type FormState } from "./draft";
+import { EASE_OUT, FADE_IN, FADE_OUT } from "./presence";
 
 /**
  * The icon of the habit, large, on a tile tinted with its color: the one place in the form where
- * the habit already looks like itself. A tap opens the icon picker. A new icon or color crossfades.
+ * the habit already looks like itself. A tap opens the icon picker. The tint rises from the bottom
+ * like the fill of a Day, with the same small pulse, when the create sheet opens and when the color
+ * changes; a new icon crossfades. Under reduced motion both fade.
  */
 export function IconTile({
   icon,
   color,
   onClick,
   size = "large",
+  fillOnMount = false,
 }: {
   icon: HabitIconValue;
   color: HabitColor;
   /** Without it, the tile is only a picture (inside another control). */
   onClick?: () => void;
   size?: "large" | "small";
+  /** Let the tint rise when the tile appears: the welcome of a new habit. */
+  fillOnMount?: boolean;
 }) {
   const reduceMotion = useReducedMotion() === true;
+  const tile = useRef<HTMLElement>(null);
   const key = icon.type === "emoji" ? `e:${icon.emoji}` : `p:${icon.name}`;
   const large = size === "large";
   const className = cn(
-    "relative grid flex-none place-items-center overflow-hidden bg-[color-mix(in_oklab,var(--c)_16%,var(--surface))] transition-[background-color,scale] duration-200 ease-out",
+    "relative isolate grid flex-none place-items-center overflow-hidden transition-[scale] duration-150 ease-out",
     large ? "size-[4.5rem] squircle-[1.25rem]" : "size-11 squircle-[0.75rem]",
   );
+
+  // The pulse of a rising fill, as DaySquare does it: a spring from rest, started with a velocity.
+  const pulse = useCallback(() => {
+    if (!reduceMotion && tile.current !== null) {
+      animate(tile.current, { scale: 1 }, { ...springs.pulse, velocity: PULSE_VELOCITY });
+    }
+  }, [reduceMotion]);
+
   const content = (
-    <AnimatePresence initial={false} mode="popLayout">
-      <motion.span
-        key={key}
-        className="grid place-items-center"
-        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.6, filter: "blur(4px)" }}
-        animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-        exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.6, filter: "blur(4px)" }}
-        transition={reduceMotion ? { duration: 0.18 } : springs.fill}
-      >
-        <HabitIcon icon={icon} color={color} size={large ? "2.375rem" : "1.5rem"} />
-      </motion.span>
-    </AnimatePresence>
+    <>
+      <TileFill color={color} fillOnMount={fillOnMount} onRise={pulse} />
+      <AnimatePresence initial={false} mode="popLayout">
+        <motion.span
+          key={key}
+          className="grid place-items-center"
+          initial={
+            reduceMotion
+              ? { opacity: 0 }
+              : { opacity: 0, transform: "scale(0.9)", filter: "blur(2px)" }
+          }
+          animate={{
+            opacity: 1,
+            transform: "scale(1)",
+            filter: "blur(0px)",
+            transition: reduceMotion ? FADE_IN : springs.fill,
+          }}
+          // A suggestion can change at each key press: the old icon leaves fast, so none pile up.
+          exit={
+            reduceMotion
+              ? { opacity: 0, transition: FADE_OUT }
+              : { opacity: 0, transform: "scale(0.9)", filter: "blur(2px)", transition: FADE_OUT }
+          }
+        >
+          <HabitIcon icon={icon} color={color} size={large ? "2.375rem" : "1.5rem"} />
+        </motion.span>
+      </AnimatePresence>
+    </>
   );
   if (onClick === undefined) {
     return (
-      <span aria-hidden style={habitColorStyle(color)} className={className}>
+      <span ref={tile} aria-hidden className={className}>
         {content}
       </span>
     );
   }
   return (
     <button
+      ref={(element) => {
+        tile.current = element;
+      }}
       type="button"
       onClick={onClick}
       aria-label="Change icon"
-      style={habitColorStyle(color)}
       className={cn(className, "active:scale-[0.95]")}
     >
       {content}
     </button>
   );
+}
+
+/** How long the welcome waits, so the fill rises after the sheet has come up, not under it. */
+const WELCOME_DELAY_S = 0.22;
+
+/**
+ * The tint of the tile, as layers: a new color rises over the old one from the bottom, with the
+ * fill spring of the Day gauges.
+ */
+function TileFill({
+  color,
+  fillOnMount,
+  onRise,
+}: {
+  color: HabitColor;
+  fillOnMount: boolean;
+  onRise: () => void;
+}) {
+  const reduceMotion = useReducedMotion() === true;
+  const [layers, setLayers] = useState(() => [{ color, key: 0, rise: fillOnMount }]);
+  const last = layers[layers.length - 1]!;
+  if (last.color !== color) setLayers([last, { color, key: last.key + 1, rise: true }]);
+
+  useEffect(() => {
+    if (!last.rise) return;
+    const timer = window.setTimeout(onRise, last.key === 0 ? WELCOME_DELAY_S * 1000 : 0);
+    return () => window.clearTimeout(timer);
+  }, [last, onRise]);
+
+  return layers.map((layer) => (
+    <motion.span
+      key={layer.key}
+      aria-hidden
+      className="absolute inset-0 -z-10 origin-bottom bg-[color-mix(in_oklab,var(--c)_16%,var(--surface))]"
+      style={habitColorStyle(layer.color)}
+      initial={layer.rise ? (reduceMotion ? { opacity: 0 } : { transform: "scaleY(0)" }) : false}
+      animate={reduceMotion ? { opacity: 1 } : { transform: "scaleY(1)" }}
+      transition={
+        reduceMotion ? FADE_IN : { ...springs.fill, delay: layer.key === 0 ? WELCOME_DELAY_S : 0 }
+      }
+    />
+  ));
 }
 
 /** A text field with a visible label above it, and its message under it. */
@@ -247,7 +332,7 @@ function Hint({ id, children }: { id: string; children: ReactNode }) {
           initial={{ opacity: 0, filter: reduceMotion ? "blur(0px)" : "blur(2px)" }}
           animate={{ opacity: 1, filter: "blur(0px)" }}
           exit={{ opacity: 0, filter: reduceMotion ? "blur(0px)" : "blur(2px)" }}
-          transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
+          transition={{ duration: 0.16, ease: EASE_OUT }}
         >
           {children}
         </motion.p>

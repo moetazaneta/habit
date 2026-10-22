@@ -9,6 +9,8 @@ import { springs } from "@/components/motion";
 import { habitColorVar } from "@/components/palette";
 import { cn } from "@/lib/utils";
 
+import { FADE_IN, rowPresence } from "./presence";
+
 /** A filled field on the sheet: no border, a squircle, 16px or more so iOS does not zoom. */
 export const fieldClass =
   "h-12 w-full min-w-0 squircle-[0.75rem] bg-surface-2 px-3.5 text-ink outline-none transition-[background-color,box-shadow] duration-150 placeholder:text-ink-3 focus-visible:shadow-[inset_0_0_0_0.09375rem_var(--ink-3)] focus-visible:outline-none";
@@ -49,11 +51,8 @@ export function FieldMessage({ id, message }: { id: string; message: string | un
           key="message"
           id={id}
           role="status"
-          className="overflow-hidden text-[0.875rem] leading-5 text-ink-2"
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          exit={{ opacity: 0, height: 0 }}
-          transition={reduceMotion ? { duration: 0.18 } : springs.morph}
+          className="text-[0.875rem] leading-5 text-ink-2"
+          {...rowPresence(reduceMotion)}
         >
           <span className="block pt-1.5">{message}</span>
         </motion.p>
@@ -70,7 +69,7 @@ export interface SegmentOption<T extends string> {
 
 /**
  * A segmented control (a radio group): a pill slides to the chosen segment with the lift spring.
- * Arrow keys move the choice, as in any radio group. Under reduced motion the pill moves at once.
+ * Arrow keys move the choice, as in any radio group. Under reduced motion the pill fades in place.
  */
 export function Segmented<T extends string>({
   label,
@@ -110,16 +109,18 @@ export function Segmented<T extends string>({
             key={option.value}
             value={option.value}
             className={cn(
-              "relative isolate flex min-w-0 select-none items-center justify-center squircle-[0.625rem] text-ink-3 transition-[color,scale] duration-150 data-checked:text-ink active:scale-[0.97] data-disabled:active:scale-100",
+              "relative isolate flex min-w-0 touch-manipulation select-none items-center justify-center squircle-[0.625rem] text-ink-3 transition-[color,scale] duration-150 ease-out data-checked:text-ink active:scale-[0.97] data-disabled:active:scale-100",
               tall ? "h-14 flex-col gap-0.5" : "h-10 gap-1.5",
             )}
           >
             {option.value === value ? (
               <motion.span
-                layoutId={pillId}
+                layoutId={reduceMotion ? undefined : pillId}
                 aria-hidden
                 className="absolute inset-0 -z-10 squircle-[0.625rem] bg-surface shadow-[0_0.0625rem_0.1875rem_oklch(0_0_0/0.1)] dark:bg-surface-3"
-                transition={reduceMotion ? { duration: 0 } : springs.lift}
+                initial={reduceMotion ? { opacity: 0 } : false}
+                animate={{ opacity: 1 }}
+                transition={reduceMotion ? FADE_IN : springs.lift}
               />
             ) : null}
             {option.icon === undefined ? null : (
@@ -169,10 +170,10 @@ export function ColorSwatches({
             key={color}
             value={color}
             aria-label={COLOR_NAMES[color]}
-            className="group grid aspect-square min-h-10 place-items-center"
+            className="group grid aspect-square min-h-10 touch-manipulation place-items-center"
             style={{ "--c": habitColorVar(color) } as CSSProperties}
           >
-            <span className="grid size-[72%] place-items-center squircle-[0.5rem] bg-habit text-ground shadow-[0_0_0_0_var(--surface),0_0_0_0_var(--c)] transition-[box-shadow,scale] duration-200 ease-out group-active:scale-[0.92] group-data-checked:shadow-[0_0_0_0.125rem_var(--surface),0_0_0_0.25rem_var(--c)]">
+            <span className="grid size-[72%] place-items-center squircle-[0.5rem] bg-habit text-ground shadow-[0_0_0_0_var(--surface),0_0_0_0_var(--c)] transition-[box-shadow,scale] duration-150 ease-out group-active:scale-[0.95] group-data-checked:shadow-[0_0_0_0.125rem_var(--surface),0_0_0_0.25rem_var(--c)]">
               <CheckIcon
                 weight="bold"
                 aria-hidden

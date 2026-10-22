@@ -21,12 +21,12 @@ import { flushSync } from "react-dom";
 
 import { DaySquare } from "@/components/day-square";
 import { haptic } from "@/components/haptics";
-import { springs } from "@/components/motion";
 import { cn } from "@/lib/utils";
 
 import { FieldMessage, fieldClass, SectionLabel } from "./controls";
 import { OPTION_LIMITS, offered, retired, scaleIntensity } from "./draft";
 import { firstEmoji } from "./icon-search";
+import { rowPresence } from "./presence";
 
 export interface OptionsEditorProps {
   kind: "choice" | "scale";
@@ -176,14 +176,18 @@ export function OptionsEditor(props: OptionsEditorProps) {
           {kind === "scale" ? "A scale has 5 options at most." : "12 options at most."}
         </p>
       )}
-      {gone.length === 0 ? null : (
-        <RetiredOptions
-          options={gone}
-          canRestore={shown.length < limits.max}
-          onRestore={props.onRestore}
-          reduceMotion={reduceMotion}
-        />
-      )}
+      <AnimatePresence initial={false}>
+        {gone.length === 0 ? null : (
+          <motion.div key="retired" {...rowPresence(reduceMotion)}>
+            <RetiredOptions
+              options={gone}
+              canRestore={shown.length < limits.max}
+              onRestore={props.onRestore}
+              reduceMotion={reduceMotion}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -219,7 +223,11 @@ function OptionRow({
   onEnter: () => void;
 }) {
   const { setNodeRef, setActivatorNodeRef, listeners, transform, transition, isDragging } =
-    useSortable({ id: option.id });
+    useSortable({
+      id: option.id,
+      // The neighbours make room with the app's ease-out; under reduced motion they move at once.
+      transition: reduceMotion ? null : { duration: 200, easing: "cubic-bezier(0.23, 1, 0.32, 1)" },
+    });
   const name = option.label.trim() || `option ${index + 1}`;
 
   const onHandleKey = (event: KeyboardEvent<HTMLButtonElement>) => {
@@ -230,12 +238,7 @@ function OptionRow({
   };
 
   return (
-    <motion.li
-      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0, overflow: "hidden" }}
-      animate={{ opacity: 1, height: "auto", transitionEnd: { overflow: "visible" } }}
-      exit={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0, overflow: "hidden" }}
-      transition={reduceMotion ? { duration: 0.18 } : springs.morph}
-    >
+    <motion.li {...rowPresence(reduceMotion)}>
       <div
         ref={setNodeRef}
         style={{ transform: CSS.Translate.toString(transform), transition }}
@@ -279,7 +282,7 @@ function OptionRow({
             onClick={() => onRemove(option.id)}
             disabled={!canRemove}
             aria-label={`Remove ${name}`}
-            className="grid size-11 flex-none place-items-center rounded-full text-ink-3 transition-[color,scale,opacity] duration-150 ease-out hover:text-ink active:scale-[0.92] disabled:opacity-30 disabled:active:scale-100"
+            className="grid size-11 flex-none place-items-center rounded-full text-ink-3 transition-[color,scale,opacity] duration-150 ease-out hover:text-ink active:scale-[0.95] disabled:opacity-30 disabled:active:scale-100"
           >
             <XIcon weight="bold" aria-hidden className="text-[1rem]" />
           </button>
@@ -363,7 +366,7 @@ function RetiredOptions({
 }) {
   const labelId = useId();
   return (
-    <div className="mt-4">
+    <div className="pt-4">
       <SectionLabel id={labelId}>Retired</SectionLabel>
       <p className="-mt-1 mb-2 text-[0.875rem] leading-5 text-ink-3">
         Past days keep these. New days don't offer them.
@@ -371,15 +374,7 @@ function RetiredOptions({
       <ul role="list" aria-labelledby={labelId} className="flex flex-col">
         <AnimatePresence initial={false}>
           {options.map((option) => (
-            <motion.li
-              key={option.id}
-              initial={
-                reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0, overflow: "hidden" }
-              }
-              animate={{ opacity: 1, height: "auto", transitionEnd: { overflow: "visible" } }}
-              exit={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0, overflow: "hidden" }}
-              transition={reduceMotion ? { duration: 0.18 } : springs.morph}
-            >
+            <motion.li key={option.id} {...rowPresence(reduceMotion)}>
               <div className="flex h-11 items-center gap-3 px-1">
                 <span className="w-6 flex-none text-center text-[1.125rem]" aria-hidden>
                   {option.emoji ?? ""}

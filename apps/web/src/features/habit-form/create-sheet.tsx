@@ -42,6 +42,7 @@ import {
 import { IconPicker } from "./icon-picker";
 import { suggestIcon } from "./icon-search";
 import { OptionsEditor } from "./options-editor";
+import { FADE_IN } from "./presence";
 import { Steps } from "./steps";
 
 type Step = "basics" | "details" | "icon";
@@ -70,6 +71,8 @@ export function CreateHabitSheet({
   const [firstRun] = useState(() => habits.length === 0);
   const [form, setForm] = useState<FormState>(() => newForm(nextColor(habits)));
   const [iconPicked, setIconPicked] = useState(false);
+  // The tile's tint rises once, when the sheet opens, not each time the first step comes back.
+  const [leftFirstStep, setLeftFirstStep] = useState(false);
   const [step, setStep] = useState<Step>("basics");
   const [direction, setDirection] = useState<1 | -1>(1);
   const [attempted, setAttempted] = useState({ basics: false, details: false });
@@ -83,6 +86,7 @@ export function CreateHabitSheet({
   const hasDetails = form.kind === "number" || form.kind === "choice" || form.kind === "scale";
 
   const go = (next: Step, by: 1 | -1) => {
+    setLeftFirstStep(true);
     setDirection(by);
     setStep(next);
   };
@@ -143,7 +147,12 @@ export function CreateHabitSheet({
         {step === "basics" ? (
           <div className="flex flex-col gap-5">
             <div className="flex justify-center pt-1">
-              <IconTile icon={form.icon} color={form.color} onClick={() => go("icon", 1)} />
+              <IconTile
+                icon={form.icon}
+                color={form.color}
+                onClick={() => go("icon", 1)}
+                fillOnMount={!leftFirstStep}
+              />
             </div>
             <NameFields
               name={form.name}
@@ -291,10 +300,18 @@ function ButtonLabel({ label }: { label: string }) {
       <AnimatePresence initial={false} mode="popLayout">
         <motion.span
           key={label}
-          initial={{ opacity: 0, transform: reduceMotion ? "none" : "translateY(0.375rem)" }}
-          animate={{ opacity: 1, transform: "translateY(0rem)" }}
-          exit={{ opacity: 0, transform: reduceMotion ? "none" : "translateY(-0.375rem)" }}
-          transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+          initial={
+            reduceMotion
+              ? { opacity: 0 }
+              : { opacity: 0, transform: "translateY(0.375rem)", filter: "blur(2px)" }
+          }
+          animate={{ opacity: 1, transform: "translateY(0rem)", filter: "blur(0px)" }}
+          exit={
+            reduceMotion
+              ? { opacity: 0 }
+              : { opacity: 0, transform: "translateY(-0.375rem)", filter: "blur(2px)" }
+          }
+          transition={FADE_IN}
         >
           {label}
         </motion.span>
