@@ -128,9 +128,6 @@ fallback. The shadcn variables map onto these tokens, so a shadcn component wear
 
 ### Open questions for the owner
 
-- **The direction seed.** The finish review could not corroborate `seed:bf31d7351e3e2498` on this
-  machine (the direction round ran in your design session). The build follows the direction you
-  chose by name, so no re-roll was done.
 - **The size of the first load.** The app's JavaScript is about 205 KB gzipped at start (React, the
   router, Motion, Base UI, dnd kit, Sonner). Lazy-loading the sheets and the reorder could halve
   it, if the start feels slow on a phone.
@@ -147,3 +144,11 @@ agent in this harness), on captures in `apps/web/.impeccable/review/` (git ignor
   regressions. The seed stays **unresolved**: it needs the roll output from your direction
   session, which is not on this machine. **disposition: fix**, for that one provenance item only;
   the ship it would otherwise give covers the scored fixes, not the whole screen.
+- Seed corroborated: the direction round's seed record is
+  `/Users/moe/repos/potom/habit/apps/web/.impeccable/questions/seeds/bf31d7351e3e2498.json` (in the
+  root checkout; git ignores it). It records three direction rounds in Operate mode, each picked in
+  the picker, the third with the "safer" register, which matches FORM ("the first of three safer
+  candidates in re-roll round 2"). The item is closed. Nothing else is open: **disposition: ship**,
+  for the scored fixes and the closed provenance item.
+- DESIGN.md and its sidecar `apps/web/.impeccable/design.json` were written afterward by a fresh
+  subagent from impeccable's degraded documenter role, from the built code.

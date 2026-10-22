@@ -1,0 +1,1251 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-22T19:38:18.286Z",
+  "title": "Design System: Habit",
+  "extensions": {
+    "colorMeta": {
+      "ground": {
+        "role": "neutral",
+        "displayName": "Pure Ground (light)",
+        "canonical": "oklch(1 0 0)",
+        "tonalRamp": [
+          "oklch(0.15 0 0)",
+          "oklch(0.264 0 0)",
+          "oklch(0.379 0 0)",
+          "oklch(0.493 0 0)",
+          "oklch(0.607 0 0)",
+          "oklch(0.721 0 0)",
+          "oklch(0.836 0 0)",
+          "oklch(0.95 0 0)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink (light)",
+        "canonical": "oklch(0.232 0.004 286)",
+        "tonalRamp": [
+          "oklch(0.15 0.004 286)",
+          "oklch(0.264 0.004 286)",
+          "oklch(0.379 0.004 286)",
+          "oklch(0.493 0.004 286)",
+          "oklch(0.607 0.004 286)",
+          "oklch(0.721 0.004 286)",
+          "oklch(0.836 0.004 286)",
+          "oklch(0.95 0.004 286)"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Dimmed Ink (light)",
+        "canonical": "oklch(0.403 0.008 286)",
+        "tonalRamp": [
+          "oklch(0.15 0.008 286)",
+          "oklch(0.264 0.008 286)",
+          "oklch(0.379 0.008 286)",
+          "oklch(0.493 0.008 286)",
+          "oklch(0.607 0.008 286)",
+          "oklch(0.721 0.008 286)",
+          "oklch(0.836 0.008 286)",
+          "oklch(0.95 0.008 286)"
+        ]
+      },
+      "ink-3": {
+        "role": "neutral",
+        "displayName": "Quiet Ink (light)",
+        "canonical": "oklch(0.54 0.008 286)",
+        "tonalRamp": [
+          "oklch(0.15 0.008 286)",
+          "oklch(0.264 0.008 286)",
+          "oklch(0.379 0.008 286)",
+          "oklch(0.493 0.008 286)",
+          "oklch(0.607 0.008 286)",
+          "oklch(0.721 0.008 286)",
+          "oklch(0.836 0.008 286)",
+          "oklch(0.95 0.008 286)"
+        ]
+      },
+      "ink-4": {
+        "role": "neutral",
+        "displayName": "Faint Ink (light)",
+        "canonical": "oklch(0.557 0.008 286)",
+        "tonalRamp": [
+          "oklch(0.15 0.008 286)",
+          "oklch(0.264 0.008 286)",
+          "oklch(0.379 0.008 286)",
+          "oklch(0.493 0.008 286)",
+          "oklch(0.607 0.008 286)",
+          "oklch(0.721 0.008 286)",
+          "oklch(0.836 0.008 286)",
+          "oklch(0.95 0.008 286)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line (light)",
+        "canonical": "oklch(0.896 0.005 286)",
+        "tonalRamp": [
+          "oklch(0.15 0.005 286)",
+          "oklch(0.264 0.005 286)",
+          "oklch(0.379 0.005 286)",
+          "oklch(0.493 0.005 286)",
+          "oklch(0.607 0.005 286)",
+          "oklch(0.721 0.005 286)",
+          "oklch(0.836 0.005 286)",
+          "oklch(0.95 0.005 286)"
+        ]
+      },
+      "line-strong": {
+        "role": "neutral",
+        "displayName": "Strong Line (light)",
+        "canonical": "oklch(0.831 0.007 286)",
+        "tonalRamp": [
+          "oklch(0.15 0.007 286)",
+          "oklch(0.264 0.007 286)",
+          "oklch(0.379 0.007 286)",
+          "oklch(0.493 0.007 286)",
+          "oklch(0.607 0.007 286)",
+          "oklch(0.721 0.007 286)",
+          "oklch(0.836 0.007 286)",
+          "oklch(0.95 0.007 286)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface (light)",
+        "canonical": "oklch(1 0 0)",
+        "tonalRamp": [
+          "oklch(0.15 0 0)",
+          "oklch(0.264 0 0)",
+          "oklch(0.379 0 0)",
+          "oklch(0.493 0 0)",
+          "oklch(0.607 0 0)",
+          "oklch(0.721 0 0)",
+          "oklch(0.836 0 0)",
+          "oklch(0.95 0 0)"
+        ]
+      },
+      "surface-2": {
+        "role": "neutral",
+        "displayName": "Surface 2 (light)",
+        "canonical": "oklch(0.962 0.003 286)",
+        "tonalRamp": [
+          "oklch(0.15 0.003 286)",
+          "oklch(0.264 0.003 286)",
+          "oklch(0.379 0.003 286)",
+          "oklch(0.493 0.003 286)",
+          "oklch(0.607 0.003 286)",
+          "oklch(0.721 0.003 286)",
+          "oklch(0.836 0.003 286)",
+          "oklch(0.95 0.003 286)"
+        ]
+      },
+      "surface-3": {
+        "role": "neutral",
+        "displayName": "Surface 3 (light)",
+        "canonical": "oklch(0.935 0.005 286)",
+        "tonalRamp": [
+          "oklch(0.15 0.005 286)",
+          "oklch(0.264 0.005 286)",
+          "oklch(0.379 0.005 286)",
+          "oklch(0.493 0.005 286)",
+          "oklch(0.607 0.005 286)",
+          "oklch(0.721 0.005 286)",
+          "oklch(0.836 0.005 286)",
+          "oklch(0.95 0.005 286)"
+        ]
+      },
+      "field": {
+        "role": "neutral",
+        "displayName": "Field (light)",
+        "canonical": "oklch(0.962 0.003 286)",
+        "tonalRamp": [
+          "oklch(0.15 0.003 286)",
+          "oklch(0.264 0.003 286)",
+          "oklch(0.379 0.003 286)",
+          "oklch(0.493 0.003 286)",
+          "oklch(0.607 0.003 286)",
+          "oklch(0.721 0.003 286)",
+          "oklch(0.836 0.003 286)",
+          "oklch(0.95 0.003 286)"
+        ]
+      },
+      "backdrop": {
+        "role": "neutral",
+        "displayName": "Backdrop (light)",
+        "canonical": "oklch(0 0 0 / 0.2)",
+        "tonalRamp": [
+          "oklch(0.15 0 0 / 0.2)",
+          "oklch(0.264 0 0 / 0.2)",
+          "oklch(0.379 0 0 / 0.2)",
+          "oklch(0.493 0 0 / 0.2)",
+          "oklch(0.607 0 0 / 0.2)",
+          "oklch(0.721 0 0 / 0.2)",
+          "oklch(0.836 0 0 / 0.2)",
+          "oklch(0.95 0 0 / 0.2)"
+        ]
+      },
+      "toast": {
+        "role": "neutral",
+        "displayName": "Toast (light)",
+        "canonical": "oklch(0.232 0.004 286)",
+        "tonalRamp": [
+          "oklch(0.15 0.004 286)",
+          "oklch(0.264 0.004 286)",
+          "oklch(0.379 0.004 286)",
+          "oklch(0.493 0.004 286)",
+          "oklch(0.607 0.004 286)",
+          "oklch(0.721 0.004 286)",
+          "oklch(0.836 0.004 286)",
+          "oklch(0.95 0.004 286)"
+        ]
+      },
+      "toast-ink": {
+        "role": "neutral",
+        "displayName": "Toast Ink (light)",
+        "canonical": "oklch(0.963 0.007 286)",
+        "tonalRamp": [
+          "oklch(0.15 0.007 286)",
+          "oklch(0.264 0.007 286)",
+          "oklch(0.379 0.007 286)",
+          "oklch(0.493 0.007 286)",
+          "oklch(0.607 0.007 286)",
+          "oklch(0.721 0.007 286)",
+          "oklch(0.836 0.007 286)",
+          "oklch(0.95 0.007 286)"
+        ]
+      },
+      "ground-dark": {
+        "role": "neutral",
+        "displayName": "Pure Ground (dark)",
+        "canonical": "oklch(0 0 0)",
+        "tonalRamp": [
+          "oklch(0.15 0 0)",
+          "oklch(0.264 0 0)",
+          "oklch(0.379 0 0)",
+          "oklch(0.493 0 0)",
+          "oklch(0.607 0 0)",
+          "oklch(0.721 0 0)",
+          "oklch(0.836 0 0)",
+          "oklch(0.95 0 0)"
+        ]
+      },
+      "ink-dark": {
+        "role": "neutral",
+        "displayName": "Ink (dark)",
+        "canonical": "oklch(0.963 0.007 286)",
+        "tonalRamp": [
+          "oklch(0.15 0.007 286)",
+          "oklch(0.264 0.007 286)",
+          "oklch(0.379 0.007 286)",
+          "oklch(0.493 0.007 286)",
+          "oklch(0.607 0.007 286)",
+          "oklch(0.721 0.007 286)",
+          "oklch(0.836 0.007 286)",
+          "oklch(0.95 0.007 286)"
+        ]
+      },
+      "ink-2-dark": {
+        "role": "neutral",
+        "displayName": "Dimmed Ink (dark)",
+        "canonical": "oklch(0.787 0.007 286)",
+        "tonalRamp": [
+          "oklch(0.15 0.007 286)",
+          "oklch(0.264 0.007 286)",
+          "oklch(0.379 0.007 286)",
+          "oklch(0.493 0.007 286)",
+          "oklch(0.607 0.007 286)",
+          "oklch(0.721 0.007 286)",
+          "oklch(0.836 0.007 286)",
+          "oklch(0.95 0.007 286)"
+        ]
+      },
+      "ink-3-dark": {
+        "role": "neutral",
+        "displayName": "Quiet Ink (dark)",
+        "canonical": "oklch(0.648 0.007 286)",
+        "tonalRamp": [
+          "oklch(0.15 0.007 286)",
+          "oklch(0.264 0.007 286)",
+          "oklch(0.379 0.007 286)",
+          "oklch(0.493 0.007 286)",
+          "oklch(0.607 0.007 286)",
+          "oklch(0.721 0.007 286)",
+          "oklch(0.836 0.007 286)",
+          "oklch(0.95 0.007 286)"
+        ]
+      },
+      "ink-4-dark": {
+        "role": "neutral",
+        "displayName": "Faint Ink (dark)",
+        "canonical": "oklch(0.588 0.006 286)",
+        "tonalRamp": [
+          "oklch(0.15 0.006 286)",
+          "oklch(0.264 0.006 286)",
+          "oklch(0.379 0.006 286)",
+          "oklch(0.493 0.006 286)",
+          "oklch(0.607 0.006 286)",
+          "oklch(0.721 0.006 286)",
+          "oklch(0.836 0.006 286)",
+          "oklch(0.95 0.006 286)"
+        ]
+      },
+      "line-dark": {
+        "role": "neutral",
+        "displayName": "Line (dark)",
+        "canonical": "oklch(0.294 0.004 286)",
+        "tonalRamp": [
+          "oklch(0.15 0.004 286)",
+          "oklch(0.264 0.004 286)",
+          "oklch(0.379 0.004 286)",
+          "oklch(0.493 0.004 286)",
+          "oklch(0.607 0.004 286)",
+          "oklch(0.721 0.004 286)",
+          "oklch(0.836 0.004 286)",
+          "oklch(0.95 0.004 286)"
+        ]
+      },
+      "line-strong-dark": {
+        "role": "neutral",
+        "displayName": "Strong Line (dark)",
+        "canonical": "oklch(0.349 0.003 286)",
+        "tonalRamp": [
+          "oklch(0.15 0.003 286)",
+          "oklch(0.264 0.003 286)",
+          "oklch(0.379 0.003 286)",
+          "oklch(0.493 0.003 286)",
+          "oklch(0.607 0.003 286)",
+          "oklch(0.721 0.003 286)",
+          "oklch(0.836 0.003 286)",
+          "oklch(0.95 0.003 286)"
+        ]
+      },
+      "surface-dark": {
+        "role": "neutral",
+        "displayName": "Surface (dark)",
+        "canonical": "oklch(0.227 0.004 286)",
+        "tonalRamp": [
+          "oklch(0.15 0.004 286)",
+          "oklch(0.264 0.004 286)",
+          "oklch(0.379 0.004 286)",
+          "oklch(0.493 0.004 286)",
+          "oklch(0.607 0.004 286)",
+          "oklch(0.721 0.004 286)",
+          "oklch(0.836 0.004 286)",
+          "oklch(0.95 0.004 286)"
+        ]
+      },
+      "surface-2-dark": {
+        "role": "neutral",
+        "displayName": "Surface 2 (dark)",
+        "canonical": "oklch(0.294 0.004 286)",
+        "tonalRamp": [
+          "oklch(0.15 0.004 286)",
+          "oklch(0.264 0.004 286)",
+          "oklch(0.379 0.004 286)",
+          "oklch(0.493 0.004 286)",
+          "oklch(0.607 0.004 286)",
+          "oklch(0.721 0.004 286)",
+          "oklch(0.836 0.004 286)",
+          "oklch(0.95 0.004 286)"
+        ]
+      },
+      "surface-3-dark": {
+        "role": "neutral",
+        "displayName": "Surface 3 (dark)",
+        "canonical": "oklch(0.349 0.003 286)",
+        "tonalRamp": [
+          "oklch(0.15 0.003 286)",
+          "oklch(0.264 0.003 286)",
+          "oklch(0.379 0.003 286)",
+          "oklch(0.493 0.003 286)",
+          "oklch(0.607 0.003 286)",
+          "oklch(0.721 0.003 286)",
+          "oklch(0.836 0.003 286)",
+          "oklch(0.95 0.003 286)"
+        ]
+      },
+      "field-dark": {
+        "role": "neutral",
+        "displayName": "Field (dark)",
+        "canonical": "oklch(0 0 0)",
+        "tonalRamp": [
+          "oklch(0.15 0 0)",
+          "oklch(0.264 0 0)",
+          "oklch(0.379 0 0)",
+          "oklch(0.493 0 0)",
+          "oklch(0.607 0 0)",
+          "oklch(0.721 0 0)",
+          "oklch(0.836 0 0)",
+          "oklch(0.95 0 0)"
+        ]
+      },
+      "backdrop-dark": {
+        "role": "neutral",
+        "displayName": "Backdrop (dark)",
+        "canonical": "oklch(0 0 0 / 0.6)",
+        "tonalRamp": [
+          "oklch(0.15 0 0 / 0.6)",
+          "oklch(0.264 0 0 / 0.6)",
+          "oklch(0.379 0 0 / 0.6)",
+          "oklch(0.493 0 0 / 0.6)",
+          "oklch(0.607 0 0 / 0.6)",
+          "oklch(0.721 0 0 / 0.6)",
+          "oklch(0.836 0 0 / 0.6)",
+          "oklch(0.95 0 0 / 0.6)"
+        ]
+      },
+      "toast-dark": {
+        "role": "neutral",
+        "displayName": "Toast (dark)",
+        "canonical": "oklch(0.227 0.004 286)",
+        "tonalRamp": [
+          "oklch(0.15 0.004 286)",
+          "oklch(0.264 0.004 286)",
+          "oklch(0.379 0.004 286)",
+          "oklch(0.493 0.004 286)",
+          "oklch(0.607 0.004 286)",
+          "oklch(0.721 0.004 286)",
+          "oklch(0.836 0.004 286)",
+          "oklch(0.95 0.004 286)"
+        ]
+      },
+      "toast-ink-dark": {
+        "role": "neutral",
+        "displayName": "Toast Ink (dark)",
+        "canonical": "oklch(0.963 0.007 286)",
+        "tonalRamp": [
+          "oklch(0.15 0.007 286)",
+          "oklch(0.264 0.007 286)",
+          "oklch(0.379 0.007 286)",
+          "oklch(0.493 0.007 286)",
+          "oklch(0.607 0.007 286)",
+          "oklch(0.721 0.007 286)",
+          "oklch(0.836 0.007 286)",
+          "oklch(0.95 0.007 286)"
+        ]
+      },
+      "habit-rose": {
+        "role": "primary",
+        "displayName": "Rose (light)",
+        "canonical": "oklch(0.654 0.09 19.4)",
+        "tonalRamp": [
+          "oklch(0.15 0.09 19.4)",
+          "oklch(0.264 0.09 19.4)",
+          "oklch(0.379 0.09 19.4)",
+          "oklch(0.493 0.09 19.4)",
+          "oklch(0.607 0.09 19.4)",
+          "oklch(0.721 0.09 19.4)",
+          "oklch(0.836 0.09 19.4)",
+          "oklch(0.95 0.09 19.4)"
+        ]
+      },
+      "habit-apricot": {
+        "role": "primary",
+        "displayName": "Apricot (light)",
+        "canonical": "oklch(0.649 0.086 59.9)",
+        "tonalRamp": [
+          "oklch(0.15 0.086 59.9)",
+          "oklch(0.264 0.086 59.9)",
+          "oklch(0.379 0.086 59.9)",
+          "oklch(0.493 0.086 59.9)",
+          "oklch(0.607 0.086 59.9)",
+          "oklch(0.721 0.086 59.9)",
+          "oklch(0.836 0.086 59.9)",
+          "oklch(0.95 0.086 59.9)"
+        ]
+      },
+      "habit-ochre": {
+        "role": "primary",
+        "displayName": "Ochre (light)",
+        "canonical": "oklch(0.647 0.092 78)",
+        "tonalRamp": [
+          "oklch(0.15 0.092 78)",
+          "oklch(0.264 0.092 78)",
+          "oklch(0.379 0.092 78)",
+          "oklch(0.493 0.092 78)",
+          "oklch(0.607 0.092 78)",
+          "oklch(0.721 0.092 78)",
+          "oklch(0.836 0.092 78)",
+          "oklch(0.95 0.092 78)"
+        ]
+      },
+      "habit-sand": {
+        "role": "primary",
+        "displayName": "Sand (light)",
+        "canonical": "oklch(0.645 0.062 79)",
+        "tonalRamp": [
+          "oklch(0.15 0.062 79)",
+          "oklch(0.264 0.062 79)",
+          "oklch(0.379 0.062 79)",
+          "oklch(0.493 0.062 79)",
+          "oklch(0.607 0.062 79)",
+          "oklch(0.721 0.062 79)",
+          "oklch(0.836 0.062 79)",
+          "oklch(0.95 0.062 79)"
+        ]
+      },
+      "habit-mustard": {
+        "role": "primary",
+        "displayName": "Mustard (light)",
+        "canonical": "oklch(0.643 0.095 100.4)",
+        "tonalRamp": [
+          "oklch(0.15 0.095 100.4)",
+          "oklch(0.264 0.095 100.4)",
+          "oklch(0.379 0.095 100.4)",
+          "oklch(0.493 0.095 100.4)",
+          "oklch(0.607 0.095 100.4)",
+          "oklch(0.721 0.095 100.4)",
+          "oklch(0.836 0.095 100.4)",
+          "oklch(0.95 0.095 100.4)"
+        ]
+      },
+      "habit-olive": {
+        "role": "primary",
+        "displayName": "Olive (light)",
+        "canonical": "oklch(0.638 0.096 125.9)",
+        "tonalRamp": [
+          "oklch(0.15 0.096 125.9)",
+          "oklch(0.264 0.096 125.9)",
+          "oklch(0.379 0.096 125.9)",
+          "oklch(0.493 0.096 125.9)",
+          "oklch(0.607 0.096 125.9)",
+          "oklch(0.721 0.096 125.9)",
+          "oklch(0.836 0.096 125.9)",
+          "oklch(0.95 0.096 125.9)"
+        ]
+      },
+      "habit-green": {
+        "role": "primary",
+        "displayName": "Green (light)",
+        "canonical": "oklch(0.635 0.076 151.4)",
+        "tonalRamp": [
+          "oklch(0.15 0.076 151.4)",
+          "oklch(0.264 0.076 151.4)",
+          "oklch(0.379 0.076 151.4)",
+          "oklch(0.493 0.076 151.4)",
+          "oklch(0.607 0.076 151.4)",
+          "oklch(0.721 0.076 151.4)",
+          "oklch(0.836 0.076 151.4)",
+          "oklch(0.95 0.076 151.4)"
+        ]
+      },
+      "habit-jade": {
+        "role": "primary",
+        "displayName": "Jade (light)",
+        "canonical": "oklch(0.636 0.073 172.7)",
+        "tonalRamp": [
+          "oklch(0.15 0.073 172.7)",
+          "oklch(0.264 0.073 172.7)",
+          "oklch(0.379 0.073 172.7)",
+          "oklch(0.493 0.073 172.7)",
+          "oklch(0.607 0.073 172.7)",
+          "oklch(0.721 0.073 172.7)",
+          "oklch(0.836 0.073 172.7)",
+          "oklch(0.95 0.073 172.7)"
+        ]
+      },
+      "habit-teal": {
+        "role": "primary",
+        "displayName": "Teal (light)",
+        "canonical": "oklch(0.635 0.068 192)",
+        "tonalRamp": [
+          "oklch(0.15 0.068 192)",
+          "oklch(0.264 0.068 192)",
+          "oklch(0.379 0.068 192)",
+          "oklch(0.493 0.068 192)",
+          "oklch(0.607 0.068 192)",
+          "oklch(0.721 0.068 192)",
+          "oklch(0.836 0.068 192)",
+          "oklch(0.95 0.068 192)"
+        ]
+      },
+      "habit-sky": {
+        "role": "primary",
+        "displayName": "Sky (light)",
+        "canonical": "oklch(0.637 0.084 223.9)",
+        "tonalRamp": [
+          "oklch(0.15 0.084 223.9)",
+          "oklch(0.264 0.084 223.9)",
+          "oklch(0.379 0.084 223.9)",
+          "oklch(0.493 0.084 223.9)",
+          "oklch(0.607 0.084 223.9)",
+          "oklch(0.721 0.084 223.9)",
+          "oklch(0.836 0.084 223.9)",
+          "oklch(0.95 0.084 223.9)"
+        ]
+      },
+      "habit-blue": {
+        "role": "primary",
+        "displayName": "Blue (light)",
+        "canonical": "oklch(0.645 0.098 254.1)",
+        "tonalRamp": [
+          "oklch(0.15 0.098 254.1)",
+          "oklch(0.264 0.098 254.1)",
+          "oklch(0.379 0.098 254.1)",
+          "oklch(0.493 0.098 254.1)",
+          "oklch(0.607 0.098 254.1)",
+          "oklch(0.721 0.098 254.1)",
+          "oklch(0.836 0.098 254.1)",
+          "oklch(0.95 0.098 254.1)"
+        ]
+      },
+      "habit-slate": {
+        "role": "primary",
+        "displayName": "Slate (light)",
+        "canonical": "oklch(0.644 0.04 264.3)",
+        "tonalRamp": [
+          "oklch(0.15 0.04 264.3)",
+          "oklch(0.264 0.04 264.3)",
+          "oklch(0.379 0.04 264.3)",
+          "oklch(0.493 0.04 264.3)",
+          "oklch(0.607 0.04 264.3)",
+          "oklch(0.721 0.04 264.3)",
+          "oklch(0.836 0.04 264.3)",
+          "oklch(0.95 0.04 264.3)"
+        ]
+      },
+      "habit-violet": {
+        "role": "primary",
+        "displayName": "Violet (light)",
+        "canonical": "oklch(0.654 0.101 299.4)",
+        "tonalRamp": [
+          "oklch(0.15 0.101 299.4)",
+          "oklch(0.264 0.101 299.4)",
+          "oklch(0.379 0.101 299.4)",
+          "oklch(0.493 0.101 299.4)",
+          "oklch(0.607 0.101 299.4)",
+          "oklch(0.721 0.101 299.4)",
+          "oklch(0.836 0.101 299.4)",
+          "oklch(0.95 0.101 299.4)"
+        ]
+      },
+      "habit-mauve": {
+        "role": "primary",
+        "displayName": "Mauve (light)",
+        "canonical": "oklch(0.653 0.065 336.3)",
+        "tonalRamp": [
+          "oklch(0.15 0.065 336.3)",
+          "oklch(0.264 0.065 336.3)",
+          "oklch(0.379 0.065 336.3)",
+          "oklch(0.493 0.065 336.3)",
+          "oklch(0.607 0.065 336.3)",
+          "oklch(0.721 0.065 336.3)",
+          "oklch(0.836 0.065 336.3)",
+          "oklch(0.95 0.065 336.3)"
+        ]
+      },
+      "habit-raspberry": {
+        "role": "primary",
+        "displayName": "Raspberry (light)",
+        "canonical": "oklch(0.657 0.094 358.2)",
+        "tonalRamp": [
+          "oklch(0.15 0.094 358.2)",
+          "oklch(0.264 0.094 358.2)",
+          "oklch(0.379 0.094 358.2)",
+          "oklch(0.493 0.094 358.2)",
+          "oklch(0.607 0.094 358.2)",
+          "oklch(0.721 0.094 358.2)",
+          "oklch(0.836 0.094 358.2)",
+          "oklch(0.95 0.094 358.2)"
+        ]
+      },
+      "habit-stone": {
+        "role": "primary",
+        "displayName": "Stone (light)",
+        "canonical": "oklch(0.643 0.012 67.6)",
+        "tonalRamp": [
+          "oklch(0.15 0.012 67.6)",
+          "oklch(0.264 0.012 67.6)",
+          "oklch(0.379 0.012 67.6)",
+          "oklch(0.493 0.012 67.6)",
+          "oklch(0.607 0.012 67.6)",
+          "oklch(0.721 0.012 67.6)",
+          "oklch(0.836 0.012 67.6)",
+          "oklch(0.95 0.012 67.6)"
+        ]
+      },
+      "habit-rose-dark": {
+        "role": "primary",
+        "displayName": "Rose (dark)",
+        "canonical": "oklch(0.704 0.086 19.4)",
+        "tonalRamp": [
+          "oklch(0.15 0.086 19.4)",
+          "oklch(0.264 0.086 19.4)",
+          "oklch(0.379 0.086 19.4)",
+          "oklch(0.493 0.086 19.4)",
+          "oklch(0.607 0.086 19.4)",
+          "oklch(0.721 0.086 19.4)",
+          "oklch(0.836 0.086 19.4)",
+          "oklch(0.95 0.086 19.4)"
+        ]
+      },
+      "habit-apricot-dark": {
+        "role": "primary",
+        "displayName": "Apricot (dark)",
+        "canonical": "oklch(0.753 0.082 59.9)",
+        "tonalRamp": [
+          "oklch(0.15 0.082 59.9)",
+          "oklch(0.264 0.082 59.9)",
+          "oklch(0.379 0.082 59.9)",
+          "oklch(0.493 0.082 59.9)",
+          "oklch(0.607 0.082 59.9)",
+          "oklch(0.721 0.082 59.9)",
+          "oklch(0.836 0.082 59.9)",
+          "oklch(0.95 0.082 59.9)"
+        ]
+      },
+      "habit-ochre-dark": {
+        "role": "primary",
+        "displayName": "Ochre (dark)",
+        "canonical": "oklch(0.739 0.087 78)",
+        "tonalRamp": [
+          "oklch(0.15 0.087 78)",
+          "oklch(0.264 0.087 78)",
+          "oklch(0.379 0.087 78)",
+          "oklch(0.493 0.087 78)",
+          "oklch(0.607 0.087 78)",
+          "oklch(0.721 0.087 78)",
+          "oklch(0.836 0.087 78)",
+          "oklch(0.95 0.087 78)"
+        ]
+      },
+      "habit-sand-dark": {
+        "role": "primary",
+        "displayName": "Sand (dark)",
+        "canonical": "oklch(0.717 0.059 79)",
+        "tonalRamp": [
+          "oklch(0.15 0.059 79)",
+          "oklch(0.264 0.059 79)",
+          "oklch(0.379 0.059 79)",
+          "oklch(0.493 0.059 79)",
+          "oklch(0.607 0.059 79)",
+          "oklch(0.721 0.059 79)",
+          "oklch(0.836 0.059 79)",
+          "oklch(0.95 0.059 79)"
+        ]
+      },
+      "habit-mustard-dark": {
+        "role": "primary",
+        "displayName": "Mustard (dark)",
+        "canonical": "oklch(0.751 0.091 100.4)",
+        "tonalRamp": [
+          "oklch(0.15 0.091 100.4)",
+          "oklch(0.264 0.091 100.4)",
+          "oklch(0.379 0.091 100.4)",
+          "oklch(0.493 0.091 100.4)",
+          "oklch(0.607 0.091 100.4)",
+          "oklch(0.721 0.091 100.4)",
+          "oklch(0.836 0.091 100.4)",
+          "oklch(0.95 0.091 100.4)"
+        ]
+      },
+      "habit-olive-dark": {
+        "role": "primary",
+        "displayName": "Olive (dark)",
+        "canonical": "oklch(0.748 0.091 125.9)",
+        "tonalRamp": [
+          "oklch(0.15 0.091 125.9)",
+          "oklch(0.264 0.091 125.9)",
+          "oklch(0.379 0.091 125.9)",
+          "oklch(0.493 0.091 125.9)",
+          "oklch(0.607 0.091 125.9)",
+          "oklch(0.721 0.091 125.9)",
+          "oklch(0.836 0.091 125.9)",
+          "oklch(0.95 0.091 125.9)"
+        ]
+      },
+      "habit-green-dark": {
+        "role": "primary",
+        "displayName": "Green (dark)",
+        "canonical": "oklch(0.707 0.073 151.4)",
+        "tonalRamp": [
+          "oklch(0.15 0.073 151.4)",
+          "oklch(0.264 0.073 151.4)",
+          "oklch(0.379 0.073 151.4)",
+          "oklch(0.493 0.073 151.4)",
+          "oklch(0.607 0.073 151.4)",
+          "oklch(0.721 0.073 151.4)",
+          "oklch(0.836 0.073 151.4)",
+          "oklch(0.95 0.073 151.4)"
+        ]
+      },
+      "habit-jade-dark": {
+        "role": "primary",
+        "displayName": "Jade (dark)",
+        "canonical": "oklch(0.72 0.069 172.7)",
+        "tonalRamp": [
+          "oklch(0.15 0.069 172.7)",
+          "oklch(0.264 0.069 172.7)",
+          "oklch(0.379 0.069 172.7)",
+          "oklch(0.493 0.069 172.7)",
+          "oklch(0.607 0.069 172.7)",
+          "oklch(0.721 0.069 172.7)",
+          "oklch(0.836 0.069 172.7)",
+          "oklch(0.95 0.069 172.7)"
+        ]
+      },
+      "habit-teal-dark": {
+        "role": "primary",
+        "displayName": "Teal (dark)",
+        "canonical": "oklch(0.739 0.065 192)",
+        "tonalRamp": [
+          "oklch(0.15 0.065 192)",
+          "oklch(0.264 0.065 192)",
+          "oklch(0.379 0.065 192)",
+          "oklch(0.493 0.065 192)",
+          "oklch(0.607 0.065 192)",
+          "oklch(0.721 0.065 192)",
+          "oklch(0.836 0.065 192)",
+          "oklch(0.95 0.065 192)"
+        ]
+      },
+      "habit-sky-dark": {
+        "role": "primary",
+        "displayName": "Sky (dark)",
+        "canonical": "oklch(0.721 0.08 223.9)",
+        "tonalRamp": [
+          "oklch(0.15 0.08 223.9)",
+          "oklch(0.264 0.08 223.9)",
+          "oklch(0.379 0.08 223.9)",
+          "oklch(0.493 0.08 223.9)",
+          "oklch(0.607 0.08 223.9)",
+          "oklch(0.721 0.08 223.9)",
+          "oklch(0.836 0.08 223.9)",
+          "oklch(0.95 0.08 223.9)"
+        ]
+      },
+      "habit-blue-dark": {
+        "role": "primary",
+        "displayName": "Blue (dark)",
+        "canonical": "oklch(0.679 0.094 254.1)",
+        "tonalRamp": [
+          "oklch(0.15 0.094 254.1)",
+          "oklch(0.264 0.094 254.1)",
+          "oklch(0.379 0.094 254.1)",
+          "oklch(0.493 0.094 254.1)",
+          "oklch(0.607 0.094 254.1)",
+          "oklch(0.721 0.094 254.1)",
+          "oklch(0.836 0.094 254.1)",
+          "oklch(0.95 0.094 254.1)"
+        ]
+      },
+      "habit-slate-dark": {
+        "role": "primary",
+        "displayName": "Slate (dark)",
+        "canonical": "oklch(0.688 0.038 264.3)",
+        "tonalRamp": [
+          "oklch(0.15 0.038 264.3)",
+          "oklch(0.264 0.038 264.3)",
+          "oklch(0.379 0.038 264.3)",
+          "oklch(0.493 0.038 264.3)",
+          "oklch(0.607 0.038 264.3)",
+          "oklch(0.721 0.038 264.3)",
+          "oklch(0.836 0.038 264.3)",
+          "oklch(0.95 0.038 264.3)"
+        ]
+      },
+      "habit-violet-dark": {
+        "role": "primary",
+        "displayName": "Violet (dark)",
+        "canonical": "oklch(0.694 0.096 299.4)",
+        "tonalRamp": [
+          "oklch(0.15 0.096 299.4)",
+          "oklch(0.264 0.096 299.4)",
+          "oklch(0.379 0.096 299.4)",
+          "oklch(0.493 0.096 299.4)",
+          "oklch(0.607 0.096 299.4)",
+          "oklch(0.721 0.096 299.4)",
+          "oklch(0.836 0.096 299.4)",
+          "oklch(0.95 0.096 299.4)"
+        ]
+      },
+      "habit-mauve-dark": {
+        "role": "primary",
+        "displayName": "Mauve (dark)",
+        "canonical": "oklch(0.735 0.061 336.3)",
+        "tonalRamp": [
+          "oklch(0.15 0.061 336.3)",
+          "oklch(0.264 0.061 336.3)",
+          "oklch(0.379 0.061 336.3)",
+          "oklch(0.493 0.061 336.3)",
+          "oklch(0.607 0.061 336.3)",
+          "oklch(0.721 0.061 336.3)",
+          "oklch(0.836 0.061 336.3)",
+          "oklch(0.95 0.061 336.3)"
+        ]
+      },
+      "habit-raspberry-dark": {
+        "role": "primary",
+        "displayName": "Raspberry (dark)",
+        "canonical": "oklch(0.681 0.09 358.2)",
+        "tonalRamp": [
+          "oklch(0.15 0.09 358.2)",
+          "oklch(0.264 0.09 358.2)",
+          "oklch(0.379 0.09 358.2)",
+          "oklch(0.493 0.09 358.2)",
+          "oklch(0.607 0.09 358.2)",
+          "oklch(0.721 0.09 358.2)",
+          "oklch(0.836 0.09 358.2)",
+          "oklch(0.95 0.09 358.2)"
+        ]
+      },
+      "habit-stone-dark": {
+        "role": "primary",
+        "displayName": "Stone (dark)",
+        "canonical": "oklch(0.699 0.011 67.6)",
+        "tonalRamp": [
+          "oklch(0.15 0.011 67.6)",
+          "oklch(0.264 0.011 67.6)",
+          "oklch(0.379 0.011 67.6)",
+          "oklch(0.493 0.011 67.6)",
+          "oklch(0.607 0.011 67.6)",
+          "oklch(0.721 0.011 67.6)",
+          "oklch(0.836 0.011 67.6)",
+          "oklch(0.95 0.011 67.6)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The typed value in the number input, centered, with tabular figures. Steps down to 1.75rem at 7 characters and 1.375rem at 10."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Habit names in the list (ink-2) and sheet titles (ink). One line with an ellipsis."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Dates in the day header (tabular, -0.01em), option labels (at 500), text fields (1.375rem line, never under 16px)."
+      },
+      "control": {
+        "displayName": "Control",
+        "purpose": "Buttons inside sheets and the toast action. The toast message uses the same size at 500."
+      },
+      "description": {
+        "displayName": "Description",
+        "purpose": "The line under a sheet title, such as Today or Yesterday, in ink-3."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "The target or unit under the number field, in ink-3, up to two lines."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "The weekday letter over each date in the day header."
+      }
+    },
+    "shadows": [
+      {
+        "name": "elevation-light",
+        "value": "0 0.5rem 2rem oklch(0 0 0 / 0.12), 0 0.0625rem 0.25rem oklch(0 0 0 / 0.06)",
+        "purpose": "Sheets, dialogs, popovers and the lifted row in the light theme, through var(--elevation)."
+      },
+      {
+        "name": "elevation-dark",
+        "value": "0 0 0 0.0625rem oklch(1 0 0 / 0.04)",
+        "purpose": "The same places in the dark theme: a hairline ring; the lighter surface is the elevation."
+      },
+      {
+        "name": "gauge-frame",
+        "value": "inset 0 0 0 var(--ds-frame, 0.09375rem) color-mix(in oklch, var(--c) var(--frame-mix), transparent)",
+        "purpose": "The frame of a zero or partial Day, in the habit color at 40% (light) or 35% (dark). Not depth."
+      },
+      {
+        "name": "gauge-frame-empty",
+        "value": "inset 0 0 0 var(--ds-frame, 0.09375rem) var(--line)",
+        "purpose": "The frame of an empty or future Day; var(--line-strong) under a fine pointer."
+      },
+      {
+        "name": "field-focus",
+        "value": "inset 0 0 0 0.09375rem var(--ink-4)",
+        "purpose": "The focus ring of a text field inside a sheet."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "Every plain transition: presses, fades, the drain, the dialog and popover, the reorder."
+      },
+      {
+        "name": "ease-drawer",
+        "value": "cubic-bezier(0.32, 0.72, 0, 1)",
+        "purpose": "The bottom sheet's exit and its scrim (400ms)."
+      },
+      {
+        "name": "spring-fill",
+        "value": "spring visualDuration 0.38s, bounce 0.24 (CSS: var(--spring-fill), a linear() easing)",
+        "purpose": "A Day gauge's fill when the value rises; retargets on fast taps."
+      },
+      {
+        "name": "spring-sheet",
+        "value": "spring visualDuration 0.42s, bounce 0.1 (CSS: var(--spring-sheet))",
+        "purpose": "Sheets, dialogs and popovers that open, close and move; the habit page's month pager."
+      },
+      {
+        "name": "spring-morph",
+        "value": "spring visualDuration 0.34s, bounce 0.12",
+        "purpose": "A sheet that changes its height between steps (MorphHeight)."
+      },
+      {
+        "name": "spring-pulse",
+        "value": "spring stiffness 600, damping 18, mass 1, start velocity 1.6",
+        "purpose": "The pulse of a square when its value rises: from scale 1 to about 1.04 and back."
+      },
+      {
+        "name": "drain",
+        "value": "200ms cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "A Day gauge's fill when the value falls. No pulse."
+      },
+      {
+        "name": "press",
+        "value": "120ms cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "Press feedback: Day and stepper 0.95, close and toast action 0.96, button 0.97, option 0.985, ghost row 0.99."
+      },
+      {
+        "name": "color",
+        "value": "120ms ease",
+        "purpose": "Color and background changes on hover and press."
+      },
+      {
+        "name": "check",
+        "value": "160ms cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "The option check mark (fade and scale from 0.9) and the gauge frame color."
+      },
+      {
+        "name": "pop",
+        "value": "180ms cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "A popover that enters or leaves (fade and scale from 0.96)."
+      },
+      {
+        "name": "dialog",
+        "value": "200ms cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "A dialog and its backdrop (fade and scale from 0.96); the reorder of rows."
+      },
+      {
+        "name": "hold",
+        "value": "450ms linear",
+        "purpose": "A held number square shrinks to 0.9 over the long-press time, as progress toward the input."
+      },
+      {
+        "name": "touch-press-delay",
+        "value": "60ms",
+        "purpose": "On touch, the pressed look waits so a scroll that starts on a square does not dip it."
+      },
+      {
+        "name": "skeleton",
+        "value": "300ms delay, then 240ms cubic-bezier(0.23, 1, 0.32, 1) fade",
+        "purpose": "The list skeleton never flashes on a fast start."
+      },
+      {
+        "name": "close-after-pick",
+        "value": "220ms",
+        "purpose": "A choice or scale sheet stays open after a pick so the check is seen."
+      },
+      {
+        "name": "reduced-motion-fade",
+        "value": "180ms cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "Under prefers-reduced-motion a fade replaces each movement; a swipe still follows the finger."
+      },
+      {
+        "name": "toast-duration",
+        "value": "4000ms message, 6000ms Undo, 8000ms Couldn't save",
+        "purpose": "How long each toast stays."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "narrow-max",
+        "value": "359px"
+      },
+      {
+        "name": "wide-min",
+        "value": "640px"
+      },
+      {
+        "name": "column",
+        "value": "600px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Day gauge (DaySquare)",
+      "kind": "custom",
+      "refersTo": "day-square",
+      "description": "The signature gauge of one Day, in its seven states: empty, zero, partial, full, ghost, future, and editing.",
+      "html": "<div class=\"ds-gauges\" style=\"--c: var(--habit-green, oklch(0.635 0.076 151.4))\"><figure class=\"ds-gauges-item\"><button type=\"button\" class=\"ds-gauges-cell\" aria-label=\"empty\"><span class=\"ds-gauges-day\" data-state=\"empty\"></span></button><figcaption>empty</figcaption></figure><figure class=\"ds-gauges-item\"><button type=\"button\" class=\"ds-gauges-cell\" aria-label=\"zero\"><span class=\"ds-gauges-day\" data-state=\"zero\"></span></button><figcaption>zero</figcaption></figure><figure class=\"ds-gauges-item\"><button type=\"button\" class=\"ds-gauges-cell\" aria-label=\"partial\"><span class=\"ds-gauges-day\" data-state=\"partial\" style=\"--p: 0.5\"></span></button><figcaption>partial</figcaption></figure><figure class=\"ds-gauges-item\"><button type=\"button\" class=\"ds-gauges-cell\" aria-label=\"full\"><span class=\"ds-gauges-day\" data-state=\"full\" style=\"--p: 1\"></span></button><figcaption>full</figcaption></figure><figure class=\"ds-gauges-item\"><button type=\"button\" class=\"ds-gauges-cell\" aria-label=\"ghost\"><span class=\"ds-gauges-day\" data-state=\"ghost\"></span></button><figcaption>ghost</figcaption></figure><figure class=\"ds-gauges-item\"><button type=\"button\" class=\"ds-gauges-cell\" aria-label=\"future\" disabled><span class=\"ds-gauges-day\" data-state=\"future\"></span></button><figcaption>future</figcaption></figure><figure class=\"ds-gauges-item\"><button type=\"button\" class=\"ds-gauges-cell\" aria-label=\"editing\"><span class=\"ds-gauges-day\" data-state=\"editing\" style=\"--p: 0.6\"></span></button><figcaption>editing</figcaption></figure></div>",
+      "css": ".ds-gauges { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; font-family: var(--font-sans, \"IBM Plex Sans Variable\", ui-sans-serif, system-ui, sans-serif); } @supports (corner-shape: squircle) { .ds-gauges { --squircle-k: 1.75; } } .ds-gauges-item { margin: 0; display: grid; justify-items: center; gap: 0.25rem; } .ds-gauges-item figcaption { color: var(--ink-3, oklch(0.54 0.008 286)); font-size: 0.75rem; font-weight: 500; line-height: 0.9375rem; } .ds-gauges-day { position: relative; display: block; box-sizing: border-box; width: var(--square, 1.875rem); height: var(--square, 1.875rem); overflow: hidden; isolation: isolate; border-radius: calc(var(--square, 1.875rem) * 0.19 * var(--squircle-k, 1)); corner-shape: squircle; box-shadow: inset 0 0 0 0.09375rem color-mix(in oklch, var(--c) var(--frame-mix, 40%), transparent); transition: transform 120ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 160ms cubic-bezier(0.23, 1, 0.32, 1); } .ds-gauges-day::before { content: \"\"; position: absolute; inset: 0; background: var(--c); transform: scaleY(var(--p, 0)); transform-origin: bottom; transition: transform 420ms cubic-bezier(0.23, 1, 0.32, 1); } .ds-gauges-day[data-state=\"empty\"] { box-shadow: inset 0 0 0 0.09375rem var(--line, oklch(0.896 0.005 286)); } .ds-gauges-day[data-state=\"ghost\"] { box-shadow: none; border: 0.0625rem dashed var(--line, oklch(0.896 0.005 286)); } .ds-gauges-day[data-state=\"future\"] { box-shadow: inset 0 0 0 0.09375rem var(--line, oklch(0.896 0.005 286)); opacity: 0.45; } .ds-gauges-cell { display: grid; place-items: center; width: calc(var(--square, 1.875rem) + var(--square-gap, 0.375rem)); height: var(--row, 3.375rem); padding: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; } .ds-gauges-cell:disabled { cursor: default; } .ds-gauges-cell:focus-visible { outline: 2px solid var(--ink-3, oklch(0.54 0.008 286)); outline-offset: -0.25rem; } .ds-gauges-cell:active:not(:disabled) .ds-gauges-day { transform: scale(0.95); } @media (hover: hover) and (pointer: fine) { .ds-gauges-cell:hover .ds-gauges-day[data-state=\"empty\"] { box-shadow: inset 0 0 0 0.09375rem var(--line-strong, oklch(0.831 0.007 286)); } } .ds-gauges-day[data-state=\"editing\"] { outline: 0.125rem solid var(--c); outline-offset: 0.1875rem; } @media (prefers-reduced-motion: reduce) { .ds-gauges-day, .ds-gauges-day::before { transition: none; } .ds-gauges-cell:active .ds-gauges-day { transform: none; } }"
+    },
+    {
+      "name": "Habit row",
+      "kind": "custom",
+      "refersTo": "habit-row",
+      "description": "One habit in the list: the duotone icon and the dimmed name at the left, the last five Days at the right, no card and no divider.",
+      "html": "<div class=\"ds-row\" style=\"--c: var(--habit-sky, oklch(0.637 0.084 223.9))\"><a class=\"ds-row-head\" href=\"#\"><span class=\"ds-row-icon\"><svg viewBox=\"0 0 256 256\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M208,144a80,80,0,0,1-160,0c0-72,80-128,80-128S208,72,208,144Z\" opacity=\"0.2\"/><path d=\"M174,47.75a254.19,254.19,0,0,0-41.45-38.3,8,8,0,0,0-9.18,0A254.19,254.19,0,0,0,82,47.75C54.51,79.32,40,112.6,40,144a88,88,0,0,0,176,0C216,112.6,201.49,79.32,174,47.75ZM128,216a72.08,72.08,0,0,1-72-72c0-57.23,55.47-105,72-118,16.53,13,72,60.75,72,118A72.08,72.08,0,0,1,128,216Zm55.89-62.66a57.6,57.6,0,0,1-46.56,46.55A8.75,8.75,0,0,1,136,200a8,8,0,0,1-1.32-15.89c16.57-2.79,30.63-16.85,33.44-33.45a8,8,0,0,1,15.78,2.68Z\"/></svg></span><span class=\"ds-row-name\">Drink water</span></a><span class=\"ds-row-days\"><button type=\"button\" class=\"ds-row-cell\" aria-label=\"A Day\"><span class=\"ds-row-day\" data-state=\"full\" style=\"--p: 1\"></span></button><button type=\"button\" class=\"ds-row-cell\" aria-label=\"A Day\"><span class=\"ds-row-day\" data-state=\"partial\" style=\"--p: 0.5\"></span></button><button type=\"button\" class=\"ds-row-cell\" aria-label=\"A Day\"><span class=\"ds-row-day\" data-state=\"empty\"></span></button><button type=\"button\" class=\"ds-row-cell\" aria-label=\"A Day\"><span class=\"ds-row-day\" data-state=\"partial\" style=\"--p: 0.75\"></span></button><button type=\"button\" class=\"ds-row-cell\" aria-label=\"A Day\"><span class=\"ds-row-day\" data-state=\"partial\" style=\"--p: 0.25\"></span></button></span></div>",
+      "css": ".ds-row { display: flex; align-items: center; max-width: 600px; height: var(--row, 3.375rem); padding: 0 var(--gutter, 1.25rem); background: var(--ground, oklch(1 0 0)); font-family: var(--font-sans, \"IBM Plex Sans Variable\", ui-sans-serif, system-ui, sans-serif); } @supports (corner-shape: squircle) { .ds-row { --squircle-k: 1.75; } } .ds-row-head { display: flex; flex: 1; align-items: center; align-self: stretch; min-width: 0; margin-right: 0.75rem; color: inherit; text-decoration: none; outline-offset: -2px; } .ds-row-icon { display: inline-grid; flex: none; place-items: center; width: var(--icon, 1.375rem); height: var(--icon, 1.375rem); color: var(--c); } .ds-row-icon svg { width: 100%; height: 100%; } .ds-row-name { min-width: 0; margin-left: 0.75rem; overflow: hidden; color: var(--ink-2, oklch(0.403 0.008 286)); font-size: 1.0625rem; font-weight: 600; line-height: 1.375rem; letter-spacing: -0.01em; text-overflow: ellipsis; white-space: nowrap; transition: color 120ms ease; } @media (hover: hover) and (pointer: fine) { .ds-row-head:hover .ds-row-name { color: var(--ink, oklch(0.232 0.004 286)); } } .ds-row-head:focus-visible { outline: 2px solid var(--ink-3, oklch(0.54 0.008 286)); } .ds-row-days { display: flex; flex: none; margin: 0 calc(var(--square-gap, 0.375rem) / -2); touch-action: pan-y; } .ds-row-day { position: relative; display: block; box-sizing: border-box; width: var(--square, 1.875rem); height: var(--square, 1.875rem); overflow: hidden; isolation: isolate; border-radius: calc(var(--square, 1.875rem) * 0.19 * var(--squircle-k, 1)); corner-shape: squircle; box-shadow: inset 0 0 0 0.09375rem color-mix(in oklch, var(--c) var(--frame-mix, 40%), transparent); transition: transform 120ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 160ms cubic-bezier(0.23, 1, 0.32, 1); } .ds-row-day::before { content: \"\"; position: absolute; inset: 0; background: var(--c); transform: scaleY(var(--p, 0)); transform-origin: bottom; transition: transform 420ms cubic-bezier(0.23, 1, 0.32, 1); } .ds-row-day[data-state=\"empty\"] { box-shadow: inset 0 0 0 0.09375rem var(--line, oklch(0.896 0.005 286)); } .ds-row-day[data-state=\"ghost\"] { box-shadow: none; border: 0.0625rem dashed var(--line, oklch(0.896 0.005 286)); } .ds-row-day[data-state=\"future\"] { box-shadow: inset 0 0 0 0.09375rem var(--line, oklch(0.896 0.005 286)); opacity: 0.45; } .ds-row-cell { display: grid; place-items: center; width: calc(var(--square, 1.875rem) + var(--square-gap, 0.375rem)); height: var(--row, 3.375rem); padding: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; } .ds-row-cell:disabled { cursor: default; } .ds-row-cell:focus-visible { outline: 2px solid var(--ink-3, oklch(0.54 0.008 286)); outline-offset: -0.25rem; } .ds-row-cell:active:not(:disabled) .ds-row-day { transform: scale(0.95); } @media (hover: hover) and (pointer: fine) { .ds-row-cell:hover .ds-row-day[data-state=\"empty\"] { box-shadow: inset 0 0 0 0.09375rem var(--line-strong, oklch(0.831 0.007 286)); } } @media (prefers-reduced-motion: reduce) { .ds-row-day, .ds-row-day::before { transition: none; } .ds-row-cell:active .ds-row-day { transform: none; } }"
+    },
+    {
+      "name": "Ghost row (New habit)",
+      "kind": "custom",
+      "refersTo": "ghost-row-name",
+      "description": "The last row of the list: a habit that does not exist yet, drawn dashed and faint. A tap starts the create sheet.",
+      "html": "<button type=\"button\" class=\"ds-ghost\"><span class=\"ds-ghost-icon\"><svg viewBox=\"0 0 256 256\" width=\"1em\" height=\"1em\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z\"/></svg></span><span class=\"ds-ghost-name\">New habit</span><span class=\"ds-ghost-days\"><span class=\"ds-ghost-cell\"><span class=\"ds-ghost-day\"></span></span><span class=\"ds-ghost-cell\"><span class=\"ds-ghost-day\"></span></span><span class=\"ds-ghost-cell\"><span class=\"ds-ghost-day\"></span></span><span class=\"ds-ghost-cell\"><span class=\"ds-ghost-day\"></span></span><span class=\"ds-ghost-cell\"><span class=\"ds-ghost-day\"></span></span></span></button>",
+      "css": ".ds-ghost { display: flex; align-items: center; width: 100%; max-width: 600px; height: var(--row, 3.375rem); padding: 0 var(--gutter, 1.25rem); background: none; border: 0; text-align: left; font-family: var(--font-sans, \"IBM Plex Sans Variable\", ui-sans-serif, system-ui, sans-serif); cursor: pointer; transition: transform 120ms cubic-bezier(0.23, 1, 0.32, 1); } @supports (corner-shape: squircle) { .ds-ghost { --squircle-k: 1.75; } } .ds-ghost:active { transform: scale(0.99); } .ds-ghost:focus-visible { outline: 2px solid var(--ink-3, oklch(0.54 0.008 286)); outline-offset: 2px; } .ds-ghost-icon { display: grid; flex: none; place-items: center; box-sizing: border-box; width: var(--icon, 1.375rem); height: var(--icon, 1.375rem); color: var(--ink-4, oklch(0.557 0.008 286)); font-size: 0.75rem; border: 0.0625rem dashed var(--line-strong, oklch(0.831 0.007 286)); border-radius: calc(var(--icon, 1.375rem) * 0.18 * var(--squircle-k, 1)); corner-shape: squircle; transition: color 120ms ease; } .ds-ghost-name { flex: 1; min-width: 0; margin: 0 0.75rem; color: var(--ink-4, oklch(0.557 0.008 286)); font-size: 1.0625rem; font-weight: 600; line-height: 1.375rem; letter-spacing: -0.01em; transition: color 120ms ease; } @media (hover: hover) and (pointer: fine) { .ds-ghost:hover .ds-ghost-name, .ds-ghost:hover .ds-ghost-icon { color: var(--ink-2, oklch(0.403 0.008 286)); } } .ds-ghost-days { display: flex; flex: none; margin: 0 calc(var(--square-gap, 0.375rem) / -2); } .ds-ghost-cell { display: grid; place-items: center; width: calc(var(--square, 1.875rem) + var(--square-gap, 0.375rem)); height: var(--row, 3.375rem); } .ds-ghost-day { display: block; box-sizing: border-box; width: var(--square, 1.875rem); height: var(--square, 1.875rem); border: 0.0625rem dashed var(--line, oklch(0.896 0.005 286)); border-radius: calc(var(--square, 1.875rem) * 0.19 * var(--squircle-k, 1)); corner-shape: squircle; } @media (prefers-reduced-motion: reduce) { .ds-ghost:active { transform: none; } }"
+    },
+    {
+      "name": "Day header",
+      "kind": "nav",
+      "refersTo": "day-header",
+      "description": "The sticky header of the list: the weekday letter over the date for each Day column, today in ink and bold. No title.",
+      "html": "<div class=\"ds-dayhead\"><div class=\"ds-dayhead-cols\"><div class=\"ds-dayhead-day\"><small>S</small><span>18</span></div><div class=\"ds-dayhead-day\"><small>M</small><span>19</span></div><div class=\"ds-dayhead-day\"><small>T</small><span>20</span></div><div class=\"ds-dayhead-day\"><small>W</small><span>21</span></div><div class=\"ds-dayhead-day\" data-today><small>T</small><span>22</span></div></div></div>",
+      "css": ".ds-dayhead { display: flex; justify-content: flex-end; max-width: 600px; padding: 0.375rem var(--gutter, 1.25rem) 0.25rem; background: var(--ground, oklch(1 0 0)); font-family: var(--font-sans, \"IBM Plex Sans Variable\", ui-sans-serif, system-ui, sans-serif); } .ds-dayhead-cols { display: flex; margin: 0 calc(var(--square-gap, 0.375rem) / -2); } .ds-dayhead-day { display: flex; flex-direction: column; align-items: center; gap: 0.0625rem; width: calc(var(--square, 1.875rem) + var(--square-gap, 0.375rem)); color: var(--ink-3, oklch(0.54 0.008 286)); } .ds-dayhead-day small { font-size: 0.75rem; font-weight: 500; line-height: 0.9375rem; } .ds-dayhead-day span { font-size: 1rem; line-height: 1.25rem; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; } .ds-dayhead-day[data-today] { color: var(--ink, oklch(0.232 0.004 286)); } .ds-dayhead-day[data-today] small, .ds-dayhead-day[data-today] span { font-weight: 700; }"
+    },
+    {
+      "name": "Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "The control inside a sheet: a neutral tonal fill, never an accent color.",
+      "html": "<div class=\"ds-btns\"><button type=\"button\" class=\"ds-btn\">= Target</button><button type=\"button\" class=\"ds-btn\">Clear</button><button type=\"button\" class=\"ds-btn\" disabled>Clear</button></div>",
+      "css": ".ds-btns { display: flex; gap: 0.5rem; font-family: var(--font-sans, \"IBM Plex Sans Variable\", ui-sans-serif, system-ui, sans-serif); } @supports (corner-shape: squircle) { .ds-btns { --squircle-k: 1.75; } } .ds-btn { display: inline-flex; flex: 1; align-items: center; justify-content: center; gap: 0.375rem; height: 2.75rem; padding: 0 1rem; background: var(--surface-2, oklch(0.962 0.003 286)); color: var(--ink, oklch(0.232 0.004 286)); font: inherit; font-size: 0.9375rem; font-weight: 600; letter-spacing: -0.01em; border: 0; border-radius: calc(0.625rem * var(--squircle-k, 1)); corner-shape: squircle; cursor: pointer; transition: background-color 120ms ease, color 120ms ease, transform 120ms cubic-bezier(0.23, 1, 0.32, 1); } @media (hover: hover) and (pointer: fine) { .ds-btn:hover:not(:disabled) { background: var(--surface-3, oklch(0.935 0.005 286)); } } .ds-btn:active:not(:disabled) { transform: scale(0.97); background: var(--surface-3, oklch(0.935 0.005 286)); } .ds-btn:focus-visible { outline: 2px solid var(--ink-3, oklch(0.54 0.008 286)); outline-offset: 2px; } .ds-btn:disabled { color: var(--ink-4, oklch(0.557 0.008 286)); opacity: 0.6; cursor: default; } @media (prefers-reduced-motion: reduce) { .ds-btn:active:not(:disabled) { transform: none; } }"
+    },
+    {
+      "name": "Number input",
+      "kind": "input",
+      "refersTo": "number-field",
+      "description": "The exact value of a number Day: −Step and +Step steppers around a large centered field, with the target as a caption.",
+      "html": "<div class=\"ds-number\"><button type=\"button\" class=\"ds-number-step\" aria-label=\"Subtract 1\">−1</button><label class=\"ds-number-center\"><input class=\"ds-number-field\" type=\"text\" inputmode=\"decimal\" placeholder=\"0\" value=\"6\" aria-label=\"Value in glasses\"><span class=\"ds-number-caption\">Target 8 glasses</span></label><button type=\"button\" class=\"ds-number-step\" aria-label=\"Add 1\">+1</button></div>",
+      "css": ".ds-number { display: flex; align-items: center; gap: 0.75rem; max-width: 27.5rem; font-family: var(--font-sans, \"IBM Plex Sans Variable\", ui-sans-serif, system-ui, sans-serif); } @supports (corner-shape: squircle) { .ds-number { --squircle-k: 1.75; } } .ds-number-step { display: grid; flex: none; place-items: center; min-width: 3.5rem; height: 3.5rem; padding: 0 0.625rem; background: var(--surface-2, oklch(0.962 0.003 286)); color: var(--ink, oklch(0.232 0.004 286)); font: inherit; font-size: 1.0625rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; border: 0; border-radius: calc(0.875rem * var(--squircle-k, 1)); corner-shape: squircle; cursor: pointer; transition: background-color 120ms ease, transform 120ms cubic-bezier(0.23, 1, 0.32, 1); } @media (hover: hover) and (pointer: fine) { .ds-number-step:hover:not(:disabled) { background: var(--surface-3, oklch(0.935 0.005 286)); } } .ds-number-step:active:not(:disabled) { transform: scale(0.95); background: var(--surface-3, oklch(0.935 0.005 286)); } .ds-number-step:focus-visible { outline: 2px solid var(--ink-3, oklch(0.54 0.008 286)); outline-offset: 2px; } .ds-number-center { display: flex; flex: 1; flex-direction: column; align-items: center; min-width: 0; } .ds-number-field { width: 100%; min-width: 0; padding: 0; background: transparent; color: var(--ink, oklch(0.232 0.004 286)); font: inherit; font-size: 2.25rem; font-weight: 600; line-height: 2.75rem; letter-spacing: -0.02em; text-align: center; font-variant-numeric: tabular-nums; border: none; outline: none; caret-color: var(--ink, oklch(0.232 0.004 286)); } .ds-number-field::placeholder { color: var(--ink-3, oklch(0.54 0.008 286)); } .ds-number-caption { color: var(--ink-3, oklch(0.54 0.008 286)); font-size: 0.8125rem; line-height: 1rem; text-align: center; } @media (prefers-reduced-motion: reduce) { .ds-number-step:active:not(:disabled) { transform: none; } }"
+    },
+    {
+      "name": "Text field",
+      "kind": "input",
+      "refersTo": "text-field",
+      "description": "A note inside a sheet: a soft well with a squircle radius that grows with its content. It applies as the person types.",
+      "html": "<textarea class=\"ds-text-field\" placeholder=\"A note for this day\" aria-label=\"Note\"></textarea>",
+      "css": ".ds-text-field { display: block; box-sizing: border-box; width: 100%; max-width: 27.5rem; min-height: 5.5rem; max-height: 40dvh; padding: 0.75rem 0.875rem; background: var(--field, oklch(0.962 0.003 286)); color: var(--ink, oklch(0.232 0.004 286)); font-family: var(--font-sans, \"IBM Plex Sans Variable\", ui-sans-serif, system-ui, sans-serif); font-size: max(16px, 1rem); line-height: 1.375rem; border: 0; border-radius: 0.625rem; corner-shape: squircle; resize: none; field-sizing: content; outline: none; caret-color: var(--ink, oklch(0.232 0.004 286)); } @supports (corner-shape: squircle) { .ds-text-field { border-radius: calc(0.625rem * 1.75); } } .ds-text-field::placeholder { color: var(--ink-3, oklch(0.54 0.008 286)); } .ds-text-field:focus-visible { box-shadow: inset 0 0 0 0.09375rem var(--ink-4, oklch(0.557 0.008 286)); }"
+    },
+    {
+      "name": "Option list",
+      "kind": "chip",
+      "refersTo": "option",
+      "description": "The Options of a choice or scale Day as a radio list. A scale shows each Option's gauge level; the checked Option takes a tonal fill and a check.",
+      "html": "<div class=\"ds-options\" role=\"radiogroup\" aria-label=\"Sleep quality\" style=\"--c: var(--habit-violet, oklch(0.654 0.101 299.4))\"><button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"ds-option\"><span class=\"ds-option-day\" style=\"--p: 0.333\"></span><span class=\"ds-option-label\">Poor</span><span class=\"ds-option-check\"><svg viewBox=\"0 0 256 256\" width=\"1em\" height=\"1em\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z\"/></svg></span></button><button type=\"button\" role=\"radio\" aria-checked=\"true\" class=\"ds-option ds-option-checked\"><span class=\"ds-option-day\" style=\"--p: 0.667\"></span><span class=\"ds-option-label\">Fair</span><span class=\"ds-option-check\"><svg viewBox=\"0 0 256 256\" width=\"1em\" height=\"1em\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z\"/></svg></span></button><button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"ds-option\"><span class=\"ds-option-day\" style=\"--p: 1.000\"></span><span class=\"ds-option-label\">Good</span><span class=\"ds-option-check\"><svg viewBox=\"0 0 256 256\" width=\"1em\" height=\"1em\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z\"/></svg></span></button></div>",
+      "css": ".ds-options { display: flex; flex-direction: column; max-width: 27.5rem; font-family: var(--font-sans, \"IBM Plex Sans Variable\", ui-sans-serif, system-ui, sans-serif); } @supports (corner-shape: squircle) { .ds-options { --squircle-k: 1.75; } } .ds-option { display: flex; align-items: center; gap: 0.75rem; min-height: 2.875rem; padding: 0.5rem 0.75rem; background: none; color: var(--ink-2, oklch(0.403 0.008 286)); font: inherit; font-size: 1rem; font-weight: 500; text-align: left; border: 0; border-radius: calc(0.625rem * var(--squircle-k, 1)); corner-shape: squircle; cursor: pointer; transition: background-color 120ms ease, color 120ms ease, transform 120ms cubic-bezier(0.23, 1, 0.32, 1); } @media (hover: hover) and (pointer: fine) { .ds-option:hover { background: var(--surface-2, oklch(0.962 0.003 286)); } } .ds-option:active { transform: scale(0.985); } .ds-option:focus-visible { outline: 2px solid var(--ink-3, oklch(0.54 0.008 286)); outline-offset: 2px; } .ds-option-checked { background: var(--surface-2, oklch(0.962 0.003 286)); color: var(--ink, oklch(0.232 0.004 286)); } .ds-option-day { position: relative; display: block; flex: none; width: 1.25rem; height: 1.25rem; overflow: hidden; border-radius: calc(1.25rem * 0.19 * var(--squircle-k, 1)); corner-shape: squircle; box-shadow: inset 0 0 0 0.09375rem color-mix(in oklch, var(--c) 40%, transparent); } .ds-option-day::before { content: \"\"; position: absolute; inset: 0; background: var(--c); transform: scaleY(var(--p, 0)); transform-origin: bottom; } .ds-option-label { flex: 1; min-width: 0; line-height: 1.25rem; overflow-wrap: anywhere; } .ds-option-check { display: grid; flex: none; color: var(--ink, oklch(0.232 0.004 286)); opacity: 0; transform: scale(0.9); transition: opacity 160ms cubic-bezier(0.23, 1, 0.32, 1), transform 160ms cubic-bezier(0.23, 1, 0.32, 1); } .ds-option-checked .ds-option-check { opacity: 1; transform: none; } @media (prefers-reduced-motion: reduce) { .ds-option:active, .ds-option-check { transform: none; } }"
+    },
+    {
+      "name": "Toast capsule",
+      "kind": "custom",
+      "refersTo": "toast",
+      "description": "Feedback after a paint or another bulk change: an inverted pill with an Undo, at the bottom center, with no shadow.",
+      "html": "<div class=\"ds-toast\" role=\"status\"><span class=\"ds-toast-message\">Painted 3 days</span><button type=\"button\" class=\"ds-toast-action\">Undo</button></div>",
+      "css": ".ds-toast { display: flex; align-items: center; gap: 1.25rem; width: fit-content; max-width: calc(100vw - 2rem); height: 2.875rem; padding: 0 0.5rem 0 1.375rem; background: var(--toast, oklch(0.232 0.004 286)); color: var(--toast-ink, oklch(0.963 0.007 286)); font-family: var(--font-sans, \"IBM Plex Sans Variable\", ui-sans-serif, system-ui, sans-serif); font-size: 0.9375rem; line-height: 1.25rem; letter-spacing: -0.01em; white-space: nowrap; border-radius: calc(infinity * 1px); corner-shape: superellipse(1.5); } .ds-toast-message { overflow: hidden; font-weight: 500; text-overflow: ellipsis; } .ds-toast-action { flex: none; height: 2.25rem; padding: 0 0.875rem; background: transparent; color: inherit; font: inherit; font-weight: 600; border: 0; border-radius: calc(infinity * 1px); cursor: pointer; transition: background-color 120ms ease, transform 120ms cubic-bezier(0.23, 1, 0.32, 1); } @media (hover: hover) and (pointer: fine) { .ds-toast-action:hover { background: color-mix(in oklch, var(--toast-ink, oklch(0.963 0.007 286)) 8%, transparent); } } .ds-toast-action:active { transform: scale(0.96); background: color-mix(in oklch, var(--toast-ink, oklch(0.963 0.007 286)) 12%, transparent); } .ds-toast-action:focus-visible { outline: 2px solid var(--toast-ink, oklch(0.963 0.007 286)); outline-offset: -2px; } @media (prefers-reduced-motion: reduce) { .ds-toast-action:active { transform: none; } }"
+    },
+    {
+      "name": "Bottom sheet",
+      "kind": "card",
+      "refersTo": "sheet",
+      "description": "The phone form of ResponsiveSheet: a floating surface with large squircle corners, a handle, a title with the habit icon, and a close disc. On a desktop it becomes a dialog or a popover.",
+      "html": "<div class=\"ds-sheet\" role=\"dialog\" aria-label=\"Drink water\" style=\"--c: var(--habit-sky, oklch(0.637 0.084 223.9))\"><div class=\"ds-sheet-handle\"></div><div class=\"ds-sheet-header\"><div class=\"ds-sheet-heading\"><span class=\"ds-sheet-title\"><span class=\"ds-sheet-icon\"><svg viewBox=\"0 0 256 256\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M208,144a80,80,0,0,1-160,0c0-72,80-128,80-128S208,72,208,144Z\" opacity=\"0.2\"/><path d=\"M174,47.75a254.19,254.19,0,0,0-41.45-38.3,8,8,0,0,0-9.18,0A254.19,254.19,0,0,0,82,47.75C54.51,79.32,40,112.6,40,144a88,88,0,0,0,176,0C216,112.6,201.49,79.32,174,47.75ZM128,216a72.08,72.08,0,0,1-72-72c0-57.23,55.47-105,72-118,16.53,13,72,60.75,72,118A72.08,72.08,0,0,1,128,216Zm55.89-62.66a57.6,57.6,0,0,1-46.56,46.55A8.75,8.75,0,0,1,136,200a8,8,0,0,1-1.32-15.89c16.57-2.79,30.63-16.85,33.44-33.45a8,8,0,0,1,15.78,2.68Z\"/></svg></span><span>Drink water</span></span><span class=\"ds-sheet-description\">Today</span></div><button type=\"button\" class=\"ds-sheet-close\" aria-label=\"Close\"><svg viewBox=\"0 0 256 256\" width=\"1em\" height=\"1em\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z\"/></svg></button></div><div class=\"ds-sheet-body\"><div class=\"ds-sheet-actions\"><button type=\"button\" class=\"ds-sheet-btn\">= Target</button><button type=\"button\" class=\"ds-sheet-btn\">Clear</button></div></div></div>",
+      "css": ".ds-sheet { box-sizing: border-box; width: 100%; max-width: 30rem; background: var(--surface, oklch(1 0 0)); color: var(--ink, oklch(0.232 0.004 286)); font-family: var(--font-sans, \"IBM Plex Sans Variable\", ui-sans-serif, system-ui, sans-serif); border-radius: calc(1.25rem * var(--squircle-k, 1)); corner-shape: squircle; box-shadow: var(--elevation, 0 0.5rem 2rem oklch(0 0 0 / 0.12), 0 0.0625rem 0.25rem oklch(0 0 0 / 0.06)); } @supports (corner-shape: squircle) { .ds-sheet { --squircle-k: 1.75; } } .ds-sheet-handle { width: 2.25rem; height: 0.3125rem; margin: 0.5rem auto 0; border-radius: 999px; background: var(--line-strong, oklch(0.831 0.007 286)); } .ds-sheet-header { display: flex; align-items: center; gap: 0.75rem; min-height: 3.25rem; padding: 0.5rem 0.75rem 0 1.25rem; } .ds-sheet-heading { display: flex; flex: 1; flex-direction: column; gap: 0.0625rem; min-width: 0; } .ds-sheet-title { display: flex; align-items: center; gap: 0.625rem; min-width: 0; font-size: 1.0625rem; font-weight: 600; line-height: 1.375rem; letter-spacing: -0.01em; white-space: nowrap; } .ds-sheet-icon { display: inline-grid; flex: none; width: 1.25rem; height: 1.25rem; color: var(--c); } .ds-sheet-icon svg { width: 100%; height: 100%; } .ds-sheet-description { color: var(--ink-3, oklch(0.54 0.008 286)); font-size: 0.875rem; line-height: 1.25rem; } .ds-sheet-close { position: relative; isolation: isolate; display: grid; flex: none; place-items: center; width: 2.75rem; height: 2.75rem; padding: 0; background: none; color: var(--ink-3, oklch(0.54 0.008 286)); font-size: 0.875rem; border: 0; border-radius: 999px; cursor: pointer; transition: color 120ms ease, transform 120ms cubic-bezier(0.23, 1, 0.32, 1); } .ds-sheet-close::before { content: \"\"; position: absolute; z-index: -1; width: 1.75rem; height: 1.75rem; border-radius: 999px; background: var(--surface-2, oklch(0.962 0.003 286)); } @media (hover: hover) and (pointer: fine) { .ds-sheet-close:hover { color: var(--ink, oklch(0.232 0.004 286)); } } .ds-sheet-close:active { transform: scale(0.96); } .ds-sheet-close:focus-visible { outline: 2px solid var(--ink-3, oklch(0.54 0.008 286)); outline-offset: -2px; } .ds-sheet-body { padding: 0.75rem 1.25rem 1.25rem; } .ds-sheet-actions { display: flex; gap: 0.5rem; } .ds-sheet-btn { flex: 1; height: 2.75rem; padding: 0 1rem; background: var(--surface-2, oklch(0.962 0.003 286)); color: var(--ink, oklch(0.232 0.004 286)); font: inherit; font-size: 0.9375rem; font-weight: 600; letter-spacing: -0.01em; border: 0; border-radius: calc(0.625rem * var(--squircle-k, 1)); corner-shape: squircle; cursor: pointer; transition: background-color 120ms ease, transform 120ms cubic-bezier(0.23, 1, 0.32, 1); } @media (hover: hover) and (pointer: fine) { .ds-sheet-btn:hover { background: var(--surface-3, oklch(0.935 0.005 286)); } } .ds-sheet-btn:active { transform: scale(0.97); background: var(--surface-3, oklch(0.935 0.005 286)); } .ds-sheet-btn:focus-visible { outline: 2px solid var(--ink-3, oklch(0.54 0.008 286)); outline-offset: 2px; } @media (prefers-reduced-motion: reduce) { .ds-sheet-close:active, .ds-sheet-btn:active { transform: none; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Quiet Standard",
+    "overview": "The app is a bare ground with only data on it. In the light theme the ground is white. In the dark theme it is pure black. There are no cards, no panels and no dividers: space separates the rows. The only hue on the screen is the habit's own color, in its icon and in its Day gauges.\n\nEach Day is a gauge: a squircle that fills from the bottom. An empty Day is a frame. A full Day is solid. This one shape carries the product, in the list, on the habit page and inside the inputs. The type is one family, IBM Plex Sans, in a small set of sizes. Hierarchy comes from weight and from four steps of ink.\n\nThe care goes into motion and touch, not into decoration. A value that rises springs up, and the square pulses to about 1.04. A value that falls drains without a bounce. On a phone, forms open as bottom sheets. On a desktop, they open as dialogs and popovers. The theme follows the system setting, and there is no switch. The desktop is the phone layout in a 600px column with a 20px base.",
+    "keyCharacteristics": [
+      "A bare ground: white or pure black, with no surfaces at rest.",
+      "Color only where it is data: the habit icon and the Day gauges.",
+      "The Day gauge (DaySquare) is the one signature shape.",
+      "Squircle corners everywhere, with a plain radius as the fallback.",
+      "One typeface, IBM Plex Sans, in sizes from 12px to 17px plus one large number size.",
+      "Springs that settle quickly, a short overshoot when a value rises, and fades under reduced motion."
+    ],
+    "rules": [
+      {
+        "name": "The Data-Only Color Rule",
+        "body": "Habit hue appears only on what belongs to a habit: its icon, its Day gauges, and the ring of the Day under edit. Text, controls, focus rings and overlays use ink and surface tones. The one exception is shadcn's `destructive`, which borrows rose.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Hue, Two Lightnesses Rule",
+        "body": "A habit color keeps its hue and chroma in both themes. Only the lightness moves: darker on white for contrast, the owner's values on black.",
+        "section": "colors"
+      },
+      {
+        "name": "The Four Inks Rule",
+        "body": "Text uses `ink`, `ink-2`, `ink-3` and `ink-4`, from strongest to quietest. Do not add a fifth grey for text.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Family Rule",
+        "body": "IBM Plex Sans is the only typeface. Hierarchy comes from weight (400, 500, 600, 700) and from the ink step, not from a second family or a large jump in size.",
+        "section": "typography"
+      },
+      {
+        "name": "The Today Is Bold Rule",
+        "body": "Weight 700 marks today and nothing else.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Numbers Rule",
+        "body": "A number that sits in a column or changes in place (the dates in the header, the stepper, the number field) uses tabular figures.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Ground Rule",
+        "body": "Nothing that sits on the ground has a drop shadow. A shadow means \"this is above the page\": an overlay, or a row in the hand.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Lighter Is Higher Rule",
+        "body": "In the dark theme, elevation is a lighter surface, not a shadow.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Squircle Rule",
+        "body": "No rounded corner without `corner-shape: squircle` and the 1.75 multiplier where it is supported. A hard-coded radius alone looks too tight in a browser that draws superellipses.",
+        "section": "shapes"
+      },
+      {
+        "name": "The Dashed Means Not Yet Rule",
+        "body": "A dashed outline means \"this does not exist yet\", as in the ghost \"New habit\" row. Nothing else is dashed.",
+        "section": "shapes"
+      },
+      {
+        "name": "The Rise Pulses Rule",
+        "body": "A value that rises springs up and pulses to about 1.04. A value that falls drains in 200ms with no bounce.",
+        "section": "components"
+      },
+      {
+        "name": "The One Grammar Rule",
+        "body": "Every screen uses the springs and durations in `components/motion.ts`. A new screen does not invent its own curve.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Do put a habit's color in scope with `habitColorStyle(color)` (`--c`) and draw from it: the gauge, the icon, `text-habit`, `bg-habit`, `border-habit`.",
+      "Do use `DaySquare` for every Day on every screen, in your own button with a touch target of about 44px. Set `animated={false}` for a large static grid and a thinner `--ds-frame` (0.0625rem) for a small square.",
+      "Do round every corner with `corner-shape: squircle` and the 1.75 multiplier: the `squircle-*` utility, or `calc(<radius> * var(--squircle-k))`.",
+      "Do write measures in rem, so the desktop's 20px base scales them, and keep the content in the 600px column.",
+      "Do set text in the four inks: `ink` for primary text, `ink-2` for habit names, `ink-3` for secondary text and the day header, `ink-4` for the ghost row and disabled controls.",
+      "Do open every form and input with `ResponsiveSheet`: a bottom sheet on a phone, a dialog or a popover at 640px and more.",
+      "Do give every movement a reduced-motion fade of 180ms, and keep a swipe under the finger.",
+      "Do use tabular figures for dates, steppers and number fields.",
+      "Do check both themes: light is the default, dark comes from `prefers-color-scheme`."
+    ],
+    "donts": [
+      "Don't put a habit on a card, a panel or a tile, and don't separate rows with lines or dividers. Space separates them.",
+      "Don't use habit color for names, UI text, buttons, focus rings or overlays. It stays on the icon and the gauge.",
+      "Don't give anything that sits on the ground a drop shadow, the toast included. Shadows are for overlays and the lifted row.",
+      "Don't show a Day's state by color alone: an empty Day is a frame, a filled Day has a fill.",
+      "Don't pulse or bounce on a fall. A drain is 200ms with `--ease-out`.",
+      "Don't hard-code a radius without the squircle multiplier.",
+      "Don't add a second typeface, uppercase eyebrows or kickers, or letter-spaced labels.",
+      "Don't set the text of a field under 16px.",
+      "Don't style a quit habit differently from a build habit, and don't draw streaks, percentages or badges.",
+      "Don't add a theme switch or a `.dark` class; the theme is the system setting."
+    ]
+  }
+}
