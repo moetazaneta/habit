@@ -1,0 +1,164 @@
+import {
+  applyAction,
+  emptyState,
+  invertAction,
+  liveWindow,
+  today as todayOf,
+  type Action,
+  type Day,
+  type HabitState,
+} from "@habit/core";
+import { useCallback, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
+
+import { HabitDataContext, type AuthState, type HabitDataApi, type PerformResult } from "../api";
+import { demoState } from "./demoState";
+
+/** The user ids of the fake sign-in. */
+export const FAKE_OWNER_ID = "user_fake_owner";
+export const FAKE_STRANGER_ID = "user_fake_stranger";
+
+/**
+ * An in-memory provider for tests and for UI work without a backend (`VITE_HABIT_DATA=fake`).
+ * It implements `HabitDataApi` with `applyAction` and `invertAction` from @habit/core.
+ *
+ * Until the person is signed in as the owner, there is no data (`source: "none"`), as with the
+ * real provider. `signIn` and `signOut` of the `auth` state work.
+ */
+export function FakeHabitDataProvider(props: {
+  /** The starting data, read once. Default: `demoState(today)`. */
+  initial?: HabitState;
+  /** Default: ready, as the owner. A change of this prop changes the state of the sign-in. */
+  auth?: AuthState["status"];
+  /** A delay before `done` resolves, to see pending states. Default 0. */
+  latencyMs?: number;
+  /** When true, every write fails after the delay, to see the error state. */
+  failWrites?: boolean;
+  /** The Day of the live window and of the demo data. Default: today in the local time zone. */
+  today?: Day;
+  children: ReactNode;
+}): ReactNode {
+  const { auth = "ready", latencyMs = 0, failWrites = false, children } = props;
+  const [day] = useState(() => props.today ?? todayOf());
+  const [store] = useState(() => new FakeStore(props.initial ?? demoState(day)));
+  const state = useSyncExternalStore(store.subscribe, store.getState);
+
+  // The state of the sign-in starts from the prop, follows its changes, and changes on signIn and
+  // signOut.
+  const [status, setStatus] = useState(auth);
+  const [statusProp, setStatusProp] = useState(auth);
+  if (auth !== statusProp) {
+    setStatusProp(auth);
+    setStatus(auth);
+  }
+  const authState = useMemo(() => authStateOf(status, setStatus), [status]);
+
+  const perform = useCallback(
+    (action: Action) => store.perform(action, { latencyMs, failWrites }),
+    [store, latencyMs, failWrites],
+  );
+
+  const api = useMemo<HabitDataApi>(() => {
+    const ready = status === "ready";
+    return {
+      auth: authState,
+      source: ready ? "live" : "none",
+      state: ready ? state : EMPTY_STATE,
+      window: liveWindow(day, 13),
+      retainMonth: retainNothing,
+      monthStatus: alwaysReady,
+      perform,
+    };
+  }, [authState, status, state, day, perform]);
+
+  return <HabitDataContext.Provider value={api}>{children}</HabitDataContext.Provider>;
+}
+
+const EMPTY_STATE = emptyState();
+
+/** All data is in memory, so each Month is loaded already. */
+function retainNothing(): () => void {
+  return () => {};
+}
+
+function alwaysReady(): "ready" {
+  return "ready";
+}
+
+function authStateOf(
+  status: AuthState["status"],
+  setStatus: (status: AuthState["status"]) => void,
+): AuthState {
+  const signOut = () => setStatus("signedOut");
+  switch (status) {
+    case "loading":
+      return { status };
+    case "signedOut":
+      return { status, signIn: () => setStatus("ready") };
+    case "noAccess":
+      return { status, userId: FAKE_STRANGER_ID, signOut };
+    case "ready":
+      return { status, userId: FAKE_OWNER_ID, signOut };
+  }
+}
+
+interface Write {
+  action: Action;
+  now: number;
+}
+
+/**
+ * The data of the fake: the confirmed state and the writes that wait for their confirmation. The
+ * screen shows the pending writes applied over the confirmed state, as an optimistic update does,
+ * so a failed write goes away without undoing the writes after it.
+ */
+class FakeStore {
+  private confirmed: HabitState;
+  private pending: Write[] = [];
+  private visible: HabitState;
+  private listeners = new Set<() => void>();
+
+  constructor(initial: HabitState) {
+    this.confirmed = initial;
+    this.visible = initial;
+  }
+
+  subscribe = (listener: () => void): (() => void) => {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  };
+
+  getState = (): HabitState => this.visible;
+
+  perform(action: Action, options: { latencyMs: number; failWrites: boolean }): PerformResult {
+    const inverse = invertAction(this.visible, action);
+    const write: Write = { action, now: Date.now() };
+    this.pending.push(write);
+    this.update();
+
+    const done = new Promise<void>((resolve, reject) => {
+      setTimeout(() => {
+        this.pending = this.pending.filter((pending) => pending !== write);
+        if (options.failWrites) {
+          this.update();
+          reject(new Error("@habit/data/testing: the write failed (failWrites)"));
+        } else {
+          this.confirmed = applyAction(this.confirmed, action, write.now);
+          this.update();
+          resolve();
+        }
+      }, options.latencyMs);
+    });
+    // A caller that does not wait for `done` gets no unhandled rejection; one that waits still
+    // gets the error.
+    done.catch(() => {});
+    return { inverse, done };
+  }
+
+  private update(): void {
+    this.visible = this.pending.reduce(
+      (state, write) => applyAction(state, write.action, write.now),
+      this.confirmed,
+    );
+    for (const listener of this.listeners) listener();
+  }
+}
