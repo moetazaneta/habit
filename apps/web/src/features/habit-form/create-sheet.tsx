@@ -49,6 +49,11 @@ type Step = "basics" | "details" | "icon";
 
 const NO_STORED_OPTIONS: ReadonlySet<OptionId> = new Set();
 
+// Where the focus goes when a step comes back (see Steps).
+const NAME_FIELD = 'input[aria-label="Name"]';
+const NEXT_BUTTON = "[data-next]";
+const ICON_TILE = 'button[aria-label="Change icon"]';
+
 /**
  * The create sheet (`?new=true`). Two steps, as in Family: first who the habit is (icon, name,
  * color, Kind and Direction), then, for a number, a choice or a scale, the fields of its Kind. A
@@ -85,7 +90,11 @@ export function CreateHabitSheet({
   const nameIssue = issues.find((issue) => issue.field === "name");
   const hasDetails = form.kind === "number" || form.kind === "choice" || form.kind === "scale";
 
-  const go = (next: Step, by: 1 | -1) => {
+  const [focusOnEnter, setFocusOnEnter] = useState<string | undefined>();
+
+  /** Moves to a step; `focus` is a selector in that step (see Steps). */
+  const go = (next: Step, by: 1 | -1, focus?: string) => {
+    setFocusOnEnter(focus);
     setLeftFirstStep(true);
     setDirection(by);
     setStep(next);
@@ -96,7 +105,7 @@ export function CreateHabitSheet({
       setAttempted({ basics: true, details: true });
       setTouched({ target: true, step: true });
       if (nameIssue !== undefined) {
-        if (step !== "basics") go("basics", -1);
+        if (step !== "basics") go("basics", -1, NAME_FIELD);
         else nameRef.current?.focus();
       }
       return;
@@ -113,7 +122,9 @@ export function CreateHabitSheet({
       nameRef.current?.focus();
       return;
     }
-    if (hasDetails) go("details", 1);
+    // On a desktop the first field takes the focus; on a phone that would not open the keyboard,
+    // so the focus stays on the sheet.
+    if (hasDetails) go("details", 1, wide ? "input" : undefined);
     else create();
   };
 
@@ -127,7 +138,7 @@ export function CreateHabitSheet({
   const onPick = (icon: HabitIconValue) => {
     setForm((current) => ({ ...current, icon }));
     setIconPicked(true);
-    go("basics", -1);
+    go("basics", -1, ICON_TILE);
   };
 
   const title = step === "icon" ? "Icon" : firstRun ? "Your first habit" : "New habit";
@@ -143,7 +154,7 @@ export function CreateHabitSheet({
       className="sm:w-[min(25rem,100%)]"
       {...(wide ? { initialFocus: nameRef } : {})}
     >
-      <Steps step={step} direction={direction}>
+      <Steps step={step} direction={direction} focus={focusOnEnter}>
         {step === "basics" ? (
           <div className="flex flex-col gap-5">
             <div className="flex justify-center pt-1">
@@ -180,6 +191,7 @@ export function CreateHabitSheet({
             <StickyFooter>
               <SheetButton
                 onClick={next}
+                data-next=""
                 className="w-full"
                 // The old label lingers while it fades out; the name is the new one.
                 aria-label={hasDetails ? "Next" : "Add habit"}
@@ -192,7 +204,7 @@ export function CreateHabitSheet({
           <div className="flex flex-col gap-5">
             <button
               type="button"
-              onClick={() => go("basics", -1)}
+              onClick={() => go("basics", -1, NEXT_BUTTON)}
               className="-mx-1 flex min-h-12 items-center gap-3 squircle-[0.875rem] px-1 text-left transition-[background-color,scale] duration-150 ease-out hover:bg-surface-2 active:scale-[0.98]"
               aria-label={`Back to ${form.name.trim() || "the name"}`}
             >
@@ -265,7 +277,7 @@ export function CreateHabitSheet({
               <div className="flex gap-2">
                 <SheetButton
                   variant="quiet"
-                  onClick={() => go("basics", -1)}
+                  onClick={() => go("basics", -1, NEXT_BUTTON)}
                   aria-label="Back"
                   className="w-12 flex-none px-0"
                 >
@@ -281,7 +293,11 @@ export function CreateHabitSheet({
           <div className="flex flex-col gap-4">
             <IconPicker value={form.icon} color={form.color} onPick={onPick} autoFocus={wide} />
             <StickyFooter>
-              <SheetButton variant="quiet" onClick={() => go("basics", -1)} className="w-full">
+              <SheetButton
+                variant="quiet"
+                onClick={() => go("basics", -1, ICON_TILE)}
+                className="w-full"
+              >
                 Back
               </SheetButton>
             </StickyFooter>

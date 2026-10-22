@@ -236,6 +236,16 @@ describe("edit", () => {
     expect(app.habit(demoHabitIds.water)).toMatchObject({ name: "Water", step: 1 });
   });
 
+  test("a close right after typing keeps the last letters", async () => {
+    const app = renderApp(`/?edit=${demoHabitIds.read}`);
+    const dialog = await sheet();
+    type(within(dialog).getByRole("textbox", { name: "Name" }), "Read a book");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
+
+    // No wait for the pause after typing: the close saves at once.
+    expect(app.habit(demoHabitIds.read).name).toBe("Read a book");
+  });
+
   test("the kind cannot change", async () => {
     renderApp(`/?edit=${demoHabitIds.water}`);
     const dialog = await sheet();

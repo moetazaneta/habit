@@ -124,7 +124,7 @@ export function Segmented<T extends string>({
               />
             ) : null}
             {option.icon === undefined ? null : (
-              <span className="grid text-[1.125rem] leading-none" aria-hidden>
+              <span className="grid [&>svg]:size-[1.125rem]" aria-hidden>
                 {option.icon}
               </span>
             )}
@@ -199,8 +199,8 @@ export function SheetButton({
       type="button"
       {...rest}
       className={cn(
-        "flex h-12 items-center justify-center gap-2 squircle-[0.875rem] px-5 text-[1.0625rem] font-semibold transition-[scale,background-color,opacity] duration-150 ease-out active:scale-[0.97] disabled:opacity-40 disabled:active:scale-100",
-        variant === "primary" ? "bg-ink text-ground" : "bg-surface-2 text-ink-2 hover:text-ink",
+        "flex h-12 items-center justify-center gap-2 squircle-[0.875rem] px-5 text-[0.9375rem] font-semibold tracking-[-0.01em] transition-[scale,background-color,opacity] duration-150 ease-out active:scale-[0.97] disabled:opacity-40 disabled:active:scale-100",
+        variant === "primary" ? "bg-ink text-ground" : "bg-surface-2 text-ink hover:bg-surface-3",
         className,
       )}
     >

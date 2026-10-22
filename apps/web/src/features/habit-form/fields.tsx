@@ -238,7 +238,7 @@ export function NameFields({
           aria-describedby={message === undefined ? undefined : messageId}
           className={cn(
             fieldClass,
-            "h-[3.25rem] text-[1.1875rem] font-semibold tracking-[-0.01em]",
+            "h-[3.25rem] text-[1.0625rem] font-semibold tracking-[-0.01em]",
           )}
         />
         <FieldMessage id={messageId} message={message} />

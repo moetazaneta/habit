@@ -168,7 +168,7 @@ export function OptionsEditor(props: OptionsEditorProps) {
           onClick={add}
           className="flex h-11 w-full items-center gap-2 squircle-[0.75rem] px-3.5 text-[1rem] font-medium text-ink-2 transition-[background-color,scale] duration-150 ease-out hover:bg-surface-2 active:scale-[0.98]"
         >
-          <PlusIcon weight="bold" aria-hidden className="text-[1rem]" />
+          <PlusIcon weight="bold" aria-hidden className="size-4" />
           Add option
         </button>
       ) : (
@@ -284,7 +284,7 @@ function OptionRow({
             aria-label={`Remove ${name}`}
             className="grid size-11 flex-none place-items-center rounded-full text-ink-3 transition-[color,scale,opacity] duration-150 ease-out hover:text-ink active:scale-[0.95] disabled:opacity-30 disabled:active:scale-100"
           >
-            <XIcon weight="bold" aria-hidden className="text-[1rem]" />
+            <XIcon weight="bold" aria-hidden className="size-4" />
           </button>
           <button
             type="button"
@@ -299,7 +299,7 @@ function OptionRow({
             data-base-ui-swipe-ignore=""
             className="-ml-1 grid h-11 w-8 flex-none cursor-grab touch-none place-items-center text-ink-3 active:cursor-grabbing"
           >
-            <DotsSixVerticalIcon weight="bold" aria-hidden className="text-[1.125rem]" />
+            <DotsSixVerticalIcon weight="bold" aria-hidden className="size-[1.125rem]" />
           </button>
         </div>
       </div>
@@ -341,12 +341,12 @@ function EmojiSlot({
         aria-label={`Emoji for ${label}`}
         autoComplete="off"
         enterKeyHint="done"
-        className={cn(fieldClass, "size-12 px-0 text-center text-[1.375rem] caret-transparent")}
+        className={cn(fieldClass, "size-12 px-0 text-center text-[1.0625rem] caret-transparent")}
       />
       {value === "" ? (
         <SmileyIcon
           aria-hidden
-          className="pointer-events-none absolute inset-0 m-auto text-[1.25rem] text-ink-3"
+          className="pointer-events-none absolute inset-0 m-auto size-5 text-ink-3"
         />
       ) : null}
     </div>
@@ -376,7 +376,7 @@ function RetiredOptions({
           {options.map((option) => (
             <motion.li key={option.id} {...rowPresence(reduceMotion)}>
               <div className="flex h-11 items-center gap-3 px-1">
-                <span className="w-6 flex-none text-center text-[1.125rem]" aria-hidden>
+                <span className="w-6 flex-none text-center text-[1.0625rem]" aria-hidden>
                   {option.emoji ?? ""}
                 </span>
                 <span className="min-w-0 flex-1 truncate text-[1rem] text-ink-3 line-through decoration-ink-4/60">

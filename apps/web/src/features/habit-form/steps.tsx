@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useReducedMotion, type Variants } from "motion/react";
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 import { springs } from "@/components/motion";
 
@@ -47,19 +47,40 @@ const fading: Variants = {
 export function Steps({
   step,
   direction,
+  focus,
   children,
 }: {
   step: string;
   /** 1: forward, -1: back. */
   direction: 1 | -1;
+  /**
+   * A selector of the element to focus in the new step, such as the button the person came back
+   * to. Without it, the focus stays on the sheet (the old step's control is gone).
+   */
+  focus?: string | undefined;
   children: ReactNode;
 }) {
   const reduceMotion = useReducedMotion() === true;
+  const root = useRef<HTMLDivElement>(null);
+  const focusRef = useRef(focus);
+  focusRef.current = focus;
+
+  // Only on a change of step: when the sheet opens, the sheet places the focus itself.
+  const focusedStep = useRef(step);
+  useEffect(() => {
+    if (focusedStep.current === step) return;
+    focusedStep.current = step;
+    const selector = focusRef.current;
+    if (selector === undefined) return;
+    root.current?.querySelector<HTMLElement>(`[data-step="${step}"] ${selector}`)?.focus();
+  }, [step]);
+
   return (
-    <div className="relative">
+    <div ref={root} className="relative">
       <AnimatePresence initial={false} mode="popLayout" custom={direction}>
         <motion.div
           key={step}
+          data-step={step}
           custom={direction}
           variants={reduceMotion ? fading : moving}
           initial="enter"

@@ -165,7 +165,11 @@ export function EditHabitSheet({
       title={step === "icon" ? "Icon" : "Edit habit"}
       className="sm:w-[min(25rem,100%)]"
     >
-      <Steps step={step} direction={direction}>
+      <Steps
+        step={step}
+        direction={direction}
+        focus={step === "main" ? 'button[aria-label="Change icon"]' : undefined}
+      >
         {step === "icon" ? (
           <div className="flex flex-col gap-4">
             <IconPicker value={form.icon} color={form.color} onPick={onPick} autoFocus={wide} />
@@ -227,7 +231,7 @@ export function EditHabitSheet({
               <div>
                 <SectionLabel>Kind</SectionLabel>
                 <div className="flex h-12 items-center gap-2.5 squircle-[0.75rem] bg-surface-2 px-3.5 text-ink-2">
-                  <span aria-hidden className="grid text-[1.125rem] text-ink-3">
+                  <span aria-hidden className="grid text-ink-3 [&>svg]:size-[1.125rem]">
                     {KIND_ICONS[form.kind]}
                   </span>
                   <span className="font-medium">{KIND_LABELS[form.kind]}</span>

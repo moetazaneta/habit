@@ -51,7 +51,7 @@ export function IconPicker({
       <div className="relative">
         <MagnifyingGlassIcon
           aria-hidden
-          className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-[1.125rem] text-ink-3"
+          className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 size-[1.125rem] text-ink-3"
         />
         <input
           ref={search}
