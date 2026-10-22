@@ -1,5 +1,5 @@
-import { type Day, type HabitId } from "@habit/core";
-import { HabitDataContext, type HabitDataApi } from "@habit/data";
+import { type Day, type HabitId, type HabitState } from "@habit/core";
+import { HabitDataContext, type AuthState, type HabitDataApi } from "@habit/data";
 import { demoHabitIds, demoState, FakeHabitDataProvider } from "@habit/data/testing";
 import { createMemoryHistory, RouterProvider } from "@tanstack/react-router";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
@@ -30,7 +30,10 @@ afterEach(() => {
 function renderPage(
   habitId: string,
   wrap: (children: ReactNode) => ReactNode = (c) => c,
-  { initial = demoState(TODAY), auth = "ready" as const } = {},
+  {
+    initial = demoState(TODAY),
+    auth = "ready",
+  }: { initial?: HabitState; auth?: AuthState["status"] } = {},
 ) {
   const router = createAppRouter(createMemoryHistory({ initialEntries: [`/habits/${habitId}`] }));
   render(
