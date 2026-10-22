@@ -4,11 +4,11 @@
 
 1. Start the app on the real backend (see "How to run against the real backend") and sign in with
    Google. The "no access" screen shows your Clerk user id (`user_…`).
-2. Add your id to the owners. Keep the test user in the list, so that the automated checks still
-   work:
+2. Add your id to the owners. Run this from the repository root, after `git pull` and
+   `vp install`. Keep the test user in the list, so that the automated checks still work:
 
    ```sh
-   vp -C packages/data exec convex env set OWNER_USER_IDS "user_3L3tBtYfJHjf9ZrdScO5oy8SQwe,<your user id>"
+   vp -C packages/data exec convex env set --deployment fantastic-chihuahua-570 OWNER_USER_IDS "user_3L3tBtYfJHjf9ZrdScO5oy8SQwe,<your user id>"
    ```
 
 3. Reload the app.
