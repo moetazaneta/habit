@@ -1,0 +1,245 @@
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type Announcements,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { lastDays, orderBetween, paintAction, tapResult, type Day, type Habit } from "@habit/core";
+import { useEntries, useHabits } from "@habit/data";
+import { PlusIcon } from "@phosphor-icons/react/dist/csr/Plus";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+
+import { useAct } from "@/components/act";
+import { DaySquare } from "@/components/day-square";
+import { dayOfMonth, weekdayLetter } from "@/components/format";
+import { preloadHabitIcons } from "@/components/habit-icon";
+import { haptic } from "@/components/haptics";
+import { entryRef, useOpenSheet, useSheetSearch } from "@/components/sheet-search";
+import { useIsWide } from "@/components/use-media-query";
+import { HabitRow } from "@/features/list/habit-row";
+import { useToday } from "@/features/list/use-today";
+
+/** A press on the icon or the name this long lifts the row for a reorder (touch). */
+const LIFT_DELAY_MS = 300;
+
+/**
+ * The habit list, the main screen: a sticky header of the last Days, a row per habit, and the
+ * ghost "New habit" row at the end. No title, no cards, no lines: space separates the rows.
+ */
+export function HabitList() {
+  const { source, habits } = useHabits();
+  const entries = useEntries();
+  const act = useAct();
+  const openSheet = useOpenSheet();
+  const today = useToday();
+  const wide = useIsWide();
+  const days = useMemo(() => lastDays(today, wide ? 7 : 5), [today, wide]);
+  const ignoreClicksUntil = useRef(0);
+
+  useEffect(() => preloadHabitIcons(habits.map((habit) => habit.icon)), [habits]);
+  useOpenNewWhenEmpty(source !== "none" && habits.length === 0);
+
+  const onTap = useCallback(
+    (habit: Habit, day: Day) => {
+      const result = tapResult(habit, day, entries(habit.id, day), today);
+      if (result.type === "action") act(result.action);
+      else if (result.type === "openInput") openSheet({ entry: entryRef(habit.id, day) });
+    },
+    [act, entries, openSheet, today],
+  );
+
+  const onOpenInput = useCallback(
+    (habit: Habit, day: Day) => openSheet({ entry: entryRef(habit.id, day) }),
+    [openSheet],
+  );
+
+  const onPaint = useCallback(
+    (habit: Habit, painted: Day[], mode: "set" | "clear") => {
+      const action = paintAction(habit, painted, mode, today, entries);
+      const count = action.type === "batch" ? action.actions.length : 1;
+      if (count === 0) return;
+      const noun = count === 1 ? "day" : "days";
+      act(action, {
+        undo: mode === "set" ? `Painted ${count} ${noun}` : `Cleared ${count} ${noun}`,
+      });
+    },
+    [act, entries, today],
+  );
+
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: LIFT_DELAY_MS, tolerance: 8 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+      // Space lifts and drops; Enter still opens the habit.
+      keyboardCodes: { start: ["Space"], cancel: ["Escape"], end: ["Space"] },
+    }),
+  );
+
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    ignoreClicksUntil.current = performance.now() + 250;
+    if (over === null || active.id === over.id) return;
+    const from = habits.findIndex((habit) => habit.id === active.id);
+    const to = habits.findIndex((habit) => habit.id === over.id);
+    if (from < 0 || to < 0) return;
+    const moved = arrayMove(habits, from, to);
+    const order = orderBetween(moved[to - 1]?.order, moved[to + 1]?.order);
+    act({ type: "moveHabit", id: habits[from]!.id, order });
+  };
+
+  const announcements = useMemo(() => reorderAnnouncements(habits), [habits]);
+  const shouldIgnoreClick = useCallback(() => performance.now() < ignoreClicksUntil.current, []);
+
+  return (
+    <main className="habit-list">
+      <h1 className="sr-only">Habits</h1>
+      <DayHeader days={days} today={today} />
+      {source === "none" ? (
+        <ListSkeleton days={days} />
+      ) : (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+          accessibility={{ announcements }}
+          onDragStart={() => haptic("lift")}
+          onDragEnd={onDragEnd}
+          onDragCancel={() => {
+            ignoreClicksUntil.current = performance.now() + 250;
+          }}
+        >
+          <SortableContext
+            items={habits.map((habit) => habit.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="relative">
+              {habits.map((habit) => (
+                <HabitRow
+                  key={habit.id}
+                  habit={habit}
+                  days={days}
+                  today={today}
+                  entries={entries}
+                  onTap={onTap}
+                  onOpenInput={onOpenInput}
+                  onPaint={onPaint}
+                  shouldIgnoreClick={shouldIgnoreClick}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
+      )}
+      {source === "none" ? null : <GhostRow days={days} onClick={() => openSheet({ new: true })} />}
+    </main>
+  );
+}
+
+/** The weekday letter over the date of each column; today is bright and bold. */
+function DayHeader({ days, today }: { days: Day[]; today: Day }) {
+  return (
+    <div className="list-header" aria-hidden>
+      <div className="day-columns">
+        {days.map((day) => (
+          <div key={day} className="list-header-day" data-today={day === today ? "" : undefined}>
+            <small>{weekdayLetter(day)}</small>
+            <span>{dayOfMonth(day)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** A habit that does not exist yet: a tap starts the create sheet. */
+function GhostRow({ days, onClick }: { days: Day[]; onClick: () => void }) {
+  return (
+    <button type="button" className="habit-row ghost-row" onClick={onClick}>
+      <span className="habit-row-inner">
+        <span className="habit-row-head">
+          <span className="ghost-icon" aria-hidden>
+            <PlusIcon weight="bold" />
+          </span>
+          <span className="habit-row-name">New habit</span>
+        </span>
+        <span className="day-columns" aria-hidden>
+          {days.map((day) => (
+            <span key={day} className="day-cell">
+              <DaySquare color="stone" intensity={0} variant="ghost" animated={false} />
+            </span>
+          ))}
+        </span>
+      </span>
+    </button>
+  );
+}
+
+const SKELETON_NAMES = ["4.5rem", "3.25rem", "5.5rem", "3rem", "4rem", "6rem", "3.75rem"];
+
+/** Shown until the first data comes (no snapshot yet): the shape of the list, without data. */
+function ListSkeleton({ days }: { days: Day[] }) {
+  return (
+    <div className="list-skeleton" aria-busy aria-label="Loading habits">
+      {SKELETON_NAMES.map((width) => (
+        <div key={width} className="habit-row">
+          <div className="habit-row-inner">
+            <span className="habit-row-head">
+              <span className="skeleton-icon" />
+              <span className="skeleton-name" style={{ width }} />
+            </span>
+            <span className="day-columns">
+              {days.map((day) => (
+                <span key={day} className="day-cell">
+                  <DaySquare color="stone" intensity={0} animated={false} />
+                </span>
+              ))}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** With no habits, the create sheet opens by itself, once per visit of the list. */
+function useOpenNewWhenEmpty(empty: boolean) {
+  const openSheet = useOpenSheet();
+  const { new: creating, edit, entry } = useSheetSearch();
+  const opened = useRef(false);
+  const sheetOpen = creating === true || edit !== undefined || entry !== undefined;
+  useEffect(() => {
+    if (!empty || opened.current || sheetOpen) return;
+    opened.current = true;
+    openSheet({ new: true });
+  }, [empty, openSheet, sheetOpen]);
+}
+
+function reorderAnnouncements(habits: Habit[]): Announcements {
+  const name = (id: string | number) =>
+    habits.find((habit) => habit.id === id)?.name ?? "The habit";
+  const position = (id: string | number) => habits.findIndex((habit) => habit.id === id) + 1;
+  return {
+    onDragStart: ({ active }) => `Picked up ${name(active.id)}.`,
+    onDragOver: ({ active, over }) =>
+      over === null
+        ? undefined
+        : `${name(active.id)} is at position ${position(over.id)} of ${habits.length}.`,
+    onDragEnd: ({ active, over }) =>
+      over === null
+        ? `${name(active.id)} was dropped.`
+        : `${name(active.id)} was dropped at position ${position(over.id)} of ${habits.length}.`,
+    onDragCancel: ({ active }) => `Moving ${name(active.id)} was cancelled.`,
+  };
+}

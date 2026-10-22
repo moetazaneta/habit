@@ -3,11 +3,13 @@ import { Drawer } from "@base-ui/react/drawer";
 import { Popover } from "@base-ui/react/popover";
 import { XIcon } from "@phosphor-icons/react/dist/csr/X";
 import { motion, useReducedMotion } from "motion/react";
-import { useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 import { springs } from "@/components/motion";
 import { useIsWide } from "@/components/use-media-query";
 import { cn } from "@/lib/utils";
+
+export type InitialFocus = NonNullable<Dialog.Popup.Props["initialFocus"]>;
 
 export interface ResponsiveSheetProps {
   open: boolean;
@@ -23,8 +25,12 @@ export interface ResponsiveSheetProps {
   anchor?: Element | null;
   /** Called when the close animation has finished: the moment to drop retained content. */
   onExitComplete?: () => void;
-  /** The element to focus when the sheet opens. Default: the first focusable element. */
-  initialFocus?: RefObject<HTMLElement | null>;
+  /**
+   * What to focus when the sheet opens (Base UI's `initialFocus`): an element, `false` to keep
+   * focus where it is, or a function of the interaction type (`touch`, `mouse`, `keyboard`).
+   * Default: the first focusable element.
+   */
+  initialFocus?: InitialFocus;
   className?: string;
   children: ReactNode;
 }
@@ -76,17 +82,19 @@ function BottomSheet({
                 <MorphHeight>
                   <SheetHeader
                     title={<Drawer.Title className={titleClass(hideTitle)}>{title}</Drawer.Title>}
+                    description={
+                      description === undefined ? null : (
+                        <Drawer.Description className="sheet-description">
+                          {description}
+                        </Drawer.Description>
+                      )
+                    }
                     close={
                       <Drawer.Close className="sheet-close" aria-label="Close">
                         <XIcon weight="bold" />
                       </Drawer.Close>
                     }
                   />
-                  {description === undefined ? null : (
-                    <Drawer.Description className="sheet-description">
-                      {description}
-                    </Drawer.Description>
-                  )}
                   <div className="sheet-body">{children}</div>
                 </MorphHeight>
               </Drawer.Content>
@@ -127,15 +135,19 @@ function CenteredDialog({
             <MorphHeight>
               <SheetHeader
                 title={<Dialog.Title className={titleClass(hideTitle)}>{title}</Dialog.Title>}
+                description={
+                  description === undefined ? null : (
+                    <Dialog.Description className="sheet-description">
+                      {description}
+                    </Dialog.Description>
+                  )
+                }
                 close={
                   <Dialog.Close className="sheet-close" aria-label="Close">
                     <XIcon weight="bold" />
                   </Dialog.Close>
                 }
               />
-              {description === undefined ? null : (
-                <Dialog.Description className="sheet-description">{description}</Dialog.Description>
-              )}
               <div className="sheet-body">{children}</div>
             </MorphHeight>
           </Dialog.Popup>
@@ -181,17 +193,19 @@ function AnchoredPopover({
             <MorphHeight>
               <SheetHeader
                 title={<Popover.Title className={titleClass(hideTitle)}>{title}</Popover.Title>}
+                description={
+                  description === undefined ? null : (
+                    <Popover.Description className="sheet-description">
+                      {description}
+                    </Popover.Description>
+                  )
+                }
                 close={
                   <Popover.Close className="sheet-close" aria-label="Close">
                     <XIcon weight="bold" />
                   </Popover.Close>
                 }
               />
-              {description === undefined ? null : (
-                <Popover.Description className="sheet-description">
-                  {description}
-                </Popover.Description>
-              )}
               <div className="sheet-body">{children}</div>
             </MorphHeight>
           </Popover.Popup>
@@ -201,10 +215,21 @@ function AnchoredPopover({
   );
 }
 
-function SheetHeader({ title, close }: { title: ReactNode; close: ReactNode }) {
+function SheetHeader({
+  title,
+  description,
+  close,
+}: {
+  title: ReactNode;
+  description: ReactNode;
+  close: ReactNode;
+}) {
   return (
     <div className="sheet-header">
-      {title}
+      <div className="sheet-heading">
+        {title}
+        {description}
+      </div>
       {close}
     </div>
   );

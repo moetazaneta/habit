@@ -25,6 +25,11 @@ export interface DaySquareProps extends HTMLAttributes<HTMLSpanElement> {
    * - `future`: a locked Day after today.
    */
   variant?: "day" | "ghost" | "future";
+  /**
+   * An Entry exists. With an intensity of 0 (a recorded zero, such as 0 cigarettes) the frame
+   * takes the habit color, so a recorded zero differs from a Day with no data.
+   */
+  recorded?: boolean;
   /** Animate changes of the intensity. Turn it off for large static grids. Default: true. */
   animated?: boolean;
   /** Content in the center, where space permits (for example the emoji of a choice). */
@@ -44,6 +49,7 @@ export function DaySquare({
   intensity,
   size,
   variant = "day",
+  recorded = false,
   animated = true,
   label,
   className,
@@ -51,7 +57,8 @@ export function DaySquare({
   ...rest
 }: DaySquareProps) {
   const p = variant === "day" ? clamp01(intensity) : 0;
-  const state = p === 0 ? "empty" : p >= 1 ? "full" : "partial";
+  const state =
+    p >= 1 ? "full" : p > 0 ? "partial" : recorded && variant === "day" ? "zero" : "empty";
   const squareRef = useRef<HTMLSpanElement>(null);
   const fillRef = useRef<HTMLSpanElement>(null);
   const previous = useRef(p);

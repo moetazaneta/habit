@@ -369,6 +369,7 @@
   .sheet-backdrop {
     position: fixed;
     inset: 0;
+    z-index: 50;
     min-height: 100dvh;
     background: var(--backdrop);
     opacity: calc(1 - var(--drawer-swipe-progress, 0));
@@ -391,6 +392,7 @@
   .sheet-viewport {
     position: fixed;
     inset: 0;
+    z-index: 50;
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -440,6 +442,7 @@
   .dialog-backdrop {
     position: fixed;
     inset: 0;
+    z-index: 50;
     background: var(--backdrop);
     transition: opacity 200ms var(--ease-out);
   }
@@ -452,6 +455,7 @@
   .dialog-viewport {
     position: fixed;
     inset: 0;
+    z-index: 50;
     display: grid;
     place-items: center;
     padding: 1.5rem;
@@ -504,12 +508,19 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    min-height: 3rem;
+    min-height: 3.25rem;
     padding: 0.5rem 0.75rem 0 1.25rem;
   }
 
-  .sheet-title {
+  .sheet-heading {
+    display: flex;
     flex: 1;
+    flex-direction: column;
+    gap: 0.0625rem;
+    min-width: 0;
+  }
+
+  .sheet-title {
     min-width: 0;
     overflow: hidden;
     font-size: 1.0625rem;
@@ -518,10 +529,6 @@
     letter-spacing: -0.01em;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  .sheet-header > .sr-only + .sheet-close {
-    margin-left: auto;
   }
 
   .sheet-close {
@@ -562,10 +569,9 @@
   }
 
   .sheet-description {
-    padding: 0 1.25rem;
     color: var(--ink-3);
-    font-size: 0.9375rem;
-    line-height: 1.375rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
   }
 
   .sheet-body {
@@ -651,5 +657,391 @@
     .toast-action:hover {
       background: color-mix(in oklch, var(--toast-ink) 8%, transparent);
     }
+  }
+}
+
+/* ── The habit list ─────────────────────────────────────────────────────────────────────────── */
+
+@layer components {
+  .habit-list {
+    max-width: 600px;
+    margin: 0 auto;
+    /* Room under the last row for the toast. */
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* The columns of the Days. Each column is a square plus a gap wide, so the gaps are part of the
+     touch targets; the half gaps at the ends hang outside, so the last square meets the gutter. */
+  .day-columns {
+    display: flex;
+    flex: none;
+    margin: 0 calc(var(--square-gap) / -2);
+  }
+
+  .list-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    justify-content: flex-end;
+    padding: calc(env(safe-area-inset-top, 0px) + 0.375rem) var(--gutter) 0.25rem;
+    background: var(--ground);
+  }
+
+  .list-header-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.0625rem;
+    width: calc(var(--square) + var(--square-gap));
+    color: var(--ink-3);
+  }
+
+  .list-header-day small {
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 0.9375rem;
+  }
+
+  .list-header-day span {
+    font-size: 1rem;
+    line-height: 1.25rem;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .list-header-day[data-today] {
+    color: var(--ink);
+  }
+
+  .list-header-day[data-today] small,
+  .list-header-day[data-today] span {
+    font-weight: 700;
+  }
+
+  .habit-row {
+    position: relative;
+    display: block;
+    width: 100%;
+    text-align: left;
+  }
+
+  .habit-row-inner {
+    display: flex;
+    align-items: center;
+    height: var(--row);
+    padding: 0 var(--gutter);
+    transition:
+      transform 200ms var(--ease-out),
+      background-color 200ms var(--ease-out),
+      box-shadow 200ms var(--ease-out);
+  }
+
+  .habit-row-head {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    align-self: stretch;
+    min-width: 0;
+    margin-right: 0.75rem;
+    outline-offset: -2px;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+  }
+
+  .habit-row-name {
+    min-width: 0;
+    margin-left: 0.75rem;
+    overflow: hidden;
+    color: var(--ink-2);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    line-height: 1.375rem;
+    letter-spacing: -0.01em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color 120ms ease;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .habit-row-head:hover .habit-row-name {
+      color: var(--ink);
+    }
+  }
+
+  /* Lifted for a reorder: the row rises onto a surface above its neighbours. */
+  .habit-row[data-dragging] {
+    z-index: 3;
+  }
+
+  .habit-row[data-dragging] .habit-row-inner {
+    transform: scale(1.02);
+    background: var(--surface);
+    border-radius: calc(0.75rem * var(--squircle-k));
+    corner-shape: squircle;
+    box-shadow: var(--elevation);
+  }
+
+  .habit-row[data-dragging] .habit-row-name {
+    color: var(--ink);
+  }
+
+  .day-cells {
+    display: flex;
+    flex: none;
+    margin: 0 calc(var(--square-gap) / -2);
+    touch-action: pan-y;
+  }
+
+  .day-cell {
+    display: grid;
+    place-items: center;
+    width: calc(var(--square) + var(--square-gap));
+    height: var(--row);
+    outline-offset: -0.25rem;
+  }
+
+  .day-cell-press {
+    display: block;
+    transition: transform 120ms var(--ease-out);
+  }
+
+  .day-cell[data-pressed] .day-cell-press {
+    transform: scale(0.92);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .day-cell:hover .day-square[data-state="empty"] {
+      box-shadow: inset 0 0 0 var(--ds-frame, 0.09375rem) var(--line-strong);
+    }
+  }
+
+  /* The ghost row: a habit that does not exist yet. */
+  .ghost-row .habit-row-name {
+    color: var(--ink-4);
+  }
+
+  .ghost-icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: var(--icon);
+    height: var(--icon);
+    color: var(--ink-4);
+    font-size: 0.75rem;
+    border: 0.0625rem dashed var(--line-strong);
+    border-radius: calc(var(--icon) * 0.18 * var(--squircle-k));
+    corner-shape: squircle;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .ghost-row:hover .habit-row-name,
+    .ghost-row:hover .ghost-icon {
+      color: var(--ink-2);
+    }
+  }
+
+  .ghost-row:active .habit-row-inner {
+    transform: scale(0.99);
+  }
+
+  /* The skeleton waits 300ms before it shows, so a fast start never flashes it. */
+  .list-skeleton {
+    animation: skeleton-in 240ms var(--ease-out) 300ms both;
+  }
+
+  .skeleton-icon {
+    flex: none;
+    width: var(--icon);
+    height: var(--icon);
+    background: var(--surface-2);
+    border-radius: calc(var(--icon) * 0.18 * var(--squircle-k));
+    corner-shape: squircle;
+  }
+
+  .skeleton-name {
+    height: 0.75rem;
+    margin-left: 0.75rem;
+    background: var(--surface-2);
+    border-radius: 999px;
+  }
+
+  @keyframes skeleton-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .habit-row[data-dragging] .habit-row-inner {
+      transform: none;
+    }
+  }
+}
+
+/* ── Controls inside sheets (the value input, and the forms) ────────────────────────────────── */
+
+@layer components {
+  .sheet-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    height: 2.75rem;
+    padding: 0 1rem;
+    background: var(--surface-2);
+    color: var(--ink);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    border-radius: calc(0.625rem * var(--squircle-k));
+    corner-shape: squircle;
+    transition:
+      background-color 120ms ease,
+      color 120ms ease,
+      transform 120ms var(--ease-out);
+  }
+
+  .sheet-button:active:not(:disabled) {
+    transform: scale(0.97);
+    background: var(--surface-3);
+  }
+
+  .sheet-button:disabled {
+    color: var(--ink-4);
+    opacity: 0.6;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .sheet-button:hover:not(:disabled) {
+      background: var(--surface-3);
+    }
+  }
+
+  .entry-stepper {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    background: var(--surface-2);
+    color: var(--ink);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    border-radius: calc(0.875rem * var(--squircle-k));
+    corner-shape: squircle;
+    transition:
+      background-color 120ms ease,
+      transform 120ms var(--ease-out);
+  }
+
+  .entry-stepper:active:not(:disabled) {
+    transform: scale(0.95);
+    background: var(--surface-3);
+  }
+
+  .entry-stepper:disabled {
+    color: var(--ink-4);
+    opacity: 0.6;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .entry-stepper:hover:not(:disabled) {
+      background: var(--surface-3);
+    }
+  }
+
+  .entry-number-field {
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    background: transparent;
+    color: var(--ink);
+    font-size: 2.25rem;
+    font-weight: 600;
+    line-height: 2.75rem;
+    letter-spacing: -0.02em;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    border: none;
+    outline: none;
+  }
+
+  .entry-number-field::placeholder {
+    color: var(--ink-4);
+  }
+
+  .entry-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 2.875rem;
+    padding: 0 0.75rem;
+    color: var(--ink-2);
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: left;
+    border-radius: calc(0.625rem * var(--squircle-k));
+    corner-shape: squircle;
+    transition:
+      background-color 120ms ease,
+      color 120ms ease,
+      transform 120ms var(--ease-out);
+  }
+
+  .entry-option:active {
+    transform: scale(0.985);
+  }
+
+  .entry-option-check {
+    flex: none;
+    color: var(--ink);
+    opacity: 0;
+    transform: scale(0.6);
+    transition:
+      opacity 160ms var(--ease-out),
+      transform 160ms var(--ease-out);
+  }
+
+  .entry-option-checked {
+    background: var(--surface-2);
+    color: var(--ink);
+  }
+
+  .entry-option-checked .entry-option-check {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .entry-option:hover {
+      background: var(--surface-2);
+    }
+  }
+
+  .entry-text-field {
+    width: 100%;
+    min-height: 5.5rem;
+    max-height: 40dvh;
+    padding: 0.75rem 0.875rem;
+    background: var(--surface-2);
+    color: var(--ink);
+    line-height: 1.375rem;
+    border-radius: calc(0.625rem * var(--squircle-k));
+    corner-shape: squircle;
+    resize: none;
+    field-sizing: content;
+    outline: none;
+  }
+
+  .entry-text-field::placeholder {
+    color: var(--ink-4);
+  }
+
+  .entry-text-field:focus-visible {
+    box-shadow: inset 0 0 0 0.09375rem var(--ink-4);
   }
 }
