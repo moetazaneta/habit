@@ -199,9 +199,7 @@ async function ownerFlow(browser: Browser) {
   step("the habit page: the calendar takes a tap, the grid and the arrows page");
   await rowHead(page, "Water").click();
   await page.getByRole("heading", { level: 1, name: "Water" }).waitFor();
-  // The row grows into the page's title with a view transition, which takes no input until it
-  // ends (see docs/notes/integration.md).
-  await viewTransitionEnd(page);
+  // No wait for the transition from the row: a tap during it must count.
   const month = monthName(new Date());
   await page.getByRole("heading", { name: month }).waitFor();
   const todayButton = calendarDay(page, new Date());
@@ -442,19 +440,6 @@ async function reorder(page: Page, habit: string, over: string) {
   await page.waitForTimeout(200);
   await page.mouse.up();
   await page.waitForTimeout(400);
-}
-
-async function viewTransitionEnd(page: Page) {
-  await page.waitForFunction(
-    () =>
-      !document
-        .getAnimations()
-        .some((animation) =>
-          String((animation.effect as KeyframeEffect | null)?.pseudoElement).includes(
-            "view-transition",
-          ),
-        ),
-  );
 }
 
 function monthName(date: Date): string {
