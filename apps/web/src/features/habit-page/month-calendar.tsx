@@ -30,16 +30,17 @@ import {
 
 import { useAct } from "@/components/act";
 import { DaySquare } from "@/components/day-square";
+import { dayOfMonth, describeEntry, formatDayLong } from "@/components/format";
 import { haptic } from "@/components/haptics";
 import { entryRef, useOpenSheet } from "@/components/sheet-search";
-import { dayOfMonth, describeEntry, formatDayLong } from "@/features/habit-page/format";
 import { CALENDAR_ROWS, formatMonth, monthWeeks } from "@/features/habit-page/months";
 import { useMonthPager } from "@/features/habit-page/use-month-pager";
+import { LONG_PRESS_MS } from "@/features/list/day-cells";
 
 /** A check Day held this long starts a paint; a faster move is a swipe between Months. */
 export const PAINT_HOLD_MS = 200;
-/** A number Day held this long opens the input of the exact value. */
-export const LONG_PRESS_MS = 450;
+/** On touch, a press shows after this delay, so a swipe or a scroll that starts on a Day does not dip it. */
+const TOUCH_PRESS_DELAY_MS = 60;
 /** A press that moves farther than this is not a tap. */
 const SLOP_PX = 8;
 /** A horizontal wheel (a trackpad swipe) of this many pixels turns one page. */
@@ -59,7 +60,9 @@ type Gesture =
       day: Day | null;
       x: number;
       y: number;
+      /** The hold that turns this press into a paint or opens the input. */
       timer: number | undefined;
+      pressTimer: number | undefined;
     }
   | { type: "swipe"; pointerId: number; x: number; samples: { t: number; x: number }[] }
   | { type: "paint"; pointerId: number; mode: "set" | "clear"; days: Day[] }
@@ -69,6 +72,12 @@ type Gesture =
 interface Paint {
   mode: "set" | "clear";
   days: Day[];
+}
+
+/** The pressed Day, and what holding it does: the press shrinks for the whole hold. */
+interface Pressed {
+  day: Day;
+  hold: "paint" | "input" | null;
 }
 
 export interface MonthCalendarProps {
@@ -100,7 +109,7 @@ export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalen
   const reduceMotion = useReducedMotion() === true;
   const pager = useMonthPager({ month, newest, onMonthChange, reduceMotion });
   const gesture = useRef<Gesture>({ type: "idle" });
-  const [pressed, setPressed] = useState<Day | null>(null);
+  const [pressed, setPressed] = useState<Pressed | null>(null);
   const [paint, setPaint] = useState<Paint | null>(null);
   const [focusDay, setFocusDay] = useState<Day | null>(null);
   const pendingFocus = useRef<Day | null>(null);
@@ -152,9 +161,15 @@ export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalen
 
   // ── Pointer gestures ──────────────────────────────────────────────────────────────────────────
 
-  const startPaint = (pointerId: number, days: Day[]) => {
+  const clearTimers = () => {
     const current = gesture.current;
-    if (current.type === "press") window.clearTimeout(current.timer);
+    if (current.type !== "press") return;
+    window.clearTimeout(current.timer);
+    window.clearTimeout(current.pressTimer);
+  };
+
+  const startPaint = (pointerId: number, days: Day[]) => {
+    clearTimers();
     const { entries, habit } = latest.current;
     const mode = entries(habit.id, days[0]!) === undefined ? "set" : "clear";
     gesture.current = { type: "paint", pointerId, mode, days };
@@ -164,8 +179,7 @@ export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalen
   };
 
   const endPress = () => {
-    const current = gesture.current;
-    if (current.type === "press") window.clearTimeout(current.timer);
+    clearTimers();
     gesture.current = { type: "idle" };
     setPressed(null);
   };
@@ -177,10 +191,14 @@ export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalen
     const day = moving ? null : enabledDayAt(event.target);
     const { pointerId, pointerType } = event;
     let timer: number | undefined;
+    let hold: Pressed["hold"] = null;
     if (day !== null && habit.kind === "check" && pointerType !== "mouse") {
+      hold = "paint";
       timer = window.setTimeout(() => startPaint(pointerId, [day]), PAINT_HOLD_MS);
     } else if (day !== null && habit.kind === "number") {
+      hold = "input";
       timer = window.setTimeout(() => {
+        clearTimers();
         gesture.current = { type: "held", pointerId };
         setPressed(null);
         haptic("lift");
@@ -188,6 +206,7 @@ export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalen
       }, LONG_PRESS_MS);
     }
     event.currentTarget.setPointerCapture?.(pointerId);
+    const show = () => setPressed(day === null ? null : { day, hold });
     gesture.current = {
       type: "press",
       pointerId,
@@ -196,8 +215,10 @@ export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalen
       x: event.clientX,
       y: event.clientY,
       timer,
+      pressTimer:
+        pointerType === "touch" ? window.setTimeout(show, TOUCH_PRESS_DELAY_MS) : undefined,
     };
-    setPressed(day);
+    if (pointerType !== "touch") show();
   };
 
   const onPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -219,7 +240,7 @@ export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalen
         return;
       }
       if (Math.abs(dx) > SLOP_PX && Math.abs(dx) > Math.abs(dy)) {
-        window.clearTimeout(current.timer);
+        clearTimers();
         gesture.current = {
           type: "swipe",
           pointerId: event.pointerId,
@@ -459,7 +480,7 @@ interface MonthPageProps {
   slot: -1 | 0 | 1;
   today: Day;
   entries: (habitId: HabitId, day: Day) => EntryValue | undefined;
-  pressed: Day | null;
+  pressed: Pressed | null;
   paint: Paint | null;
   tabDay: Day | null;
 }
@@ -506,7 +527,7 @@ const MonthPage = memo(function MonthPage({
               today={today}
               value={entries(habit.id, day)}
               loading={loading}
-              pressed={pressed === day}
+              pressed={pressed?.day === day ? (pressed.hold ?? "tap") : null}
               painted={paint !== null && paint.days.includes(day) ? paint.mode : null}
               tabbable={tabDay === day}
             />
@@ -534,7 +555,7 @@ function CalendarDay({
   today: Day;
   value: EntryValue | undefined;
   loading: boolean;
-  pressed: boolean;
+  pressed: "tap" | "paint" | "input" | null;
   painted: "set" | "clear" | null;
   tabbable: boolean;
 }) {
@@ -546,7 +567,7 @@ function CalendarDay({
       className="hp-day"
       data-day={day}
       data-today={day === today ? "" : undefined}
-      data-pressed={pressed ? "" : undefined}
+      data-pressed={pressed ?? undefined}
       tabIndex={tabbable ? 0 : -1}
       aria-label={`${formatDayLong(day)}: ${loading ? "loading" : describeEntry(habit, value)}`}
       aria-current={day === today ? "date" : undefined}
@@ -565,6 +586,7 @@ function CalendarDay({
         <DaySquare
           color={habit.color}
           intensity={loading ? 0 : level}
+          recorded={!loading && (painted === null ? value !== undefined : painted === "set")}
           size="var(--cal-square)"
           variant={future ? "future" : "day"}
           label={painted === null ? optionMark(habit, value) : undefined}

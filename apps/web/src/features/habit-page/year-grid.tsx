@@ -3,11 +3,10 @@ import {
   type Day,
   type EntryValue,
   type Habit,
-  type HabitColor,
   type HabitId,
   type Month,
 } from "@habit/core";
-import { memo, useMemo, type CSSProperties } from "react";
+import { useMemo, type CSSProperties } from "react";
 
 import { DaySquare } from "@/components/day-square";
 import { formatMonth, formatMonthShort, yearGrid } from "@/features/habit-page/months";
@@ -36,17 +35,20 @@ export function YearGrid({ habit, today, entries, month, onSelectMonth }: YearGr
       <div className="hp-year-inner" style={{ "--weeks": grid.columns.length } as CSSProperties}>
         <div className="hp-year-grid" aria-hidden>
           {grid.columns.map((column) =>
-            column.map((day, row) =>
-              day === null ? (
-                <span key={`${column[0]}-${row}`} />
-              ) : (
-                <GridDay
+            column.map((day, row) => {
+              if (day === null) return <span key={`${column[0]}-${row}`} />;
+              const value = entries(habit.id, day);
+              // DaySquare is memoized: a change of one Day renders one square, not 364.
+              return (
+                <DaySquare
                   key={day}
                   color={habit.color}
-                  intensity={intensity(habit, entries(habit.id, day))}
+                  intensity={intensity(habit, value)}
+                  recorded={value !== undefined}
+                  size="var(--cell)"
                 />
-              ),
-            ),
+              );
+            }),
           )}
         </div>
         {grid.months.map((region) => (
@@ -70,14 +72,3 @@ export function YearGrid({ habit, today, entries, month, onSelectMonth }: YearGr
     </section>
   );
 }
-
-/** One small gauge; memoized, so a change of one Day renders one square, not 364. */
-const GridDay = memo(function GridDay({
-  color,
-  intensity: value,
-}: {
-  color: HabitColor;
-  intensity: number;
-}) {
-  return <DaySquare color={color} intensity={value} size="var(--cell)" />;
-});

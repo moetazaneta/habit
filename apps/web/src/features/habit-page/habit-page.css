@@ -311,7 +311,20 @@
   }
 
   .hp-day[data-pressed] .hp-day-press {
-    transform: scale(0.92);
+    transform: scale(0.95);
+  }
+
+  /* A held press shrinks for the whole hold, so the wait shows progress toward the paint (a check
+     Day) or the input (a number Day); a release springs back in 120ms. On touch the press shows
+     60ms after the finger lands, so the hold has the rest. */
+  .hp-day[data-pressed="paint"] .hp-day-press {
+    transform: scale(0.9);
+    transition: transform 140ms linear;
+  }
+
+  .hp-day[data-pressed="input"] .hp-day-press {
+    transform: scale(0.9);
+    transition: transform 390ms linear;
   }
 
   @media (hover: hover) and (pointer: fine) {
@@ -410,6 +423,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     .hp-day[data-pressed] .hp-day-press,
+    .hp-day[data-pressed="paint"] .hp-day-press,
+    .hp-day[data-pressed="input"] .hp-day-press,
     .hp-bar-back:active,
     .hp-bar-text:active,
     .hp-cal-today:active,

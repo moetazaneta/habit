@@ -9,8 +9,8 @@ import { HabitIcon } from "@/components/habit-icon";
 import { habitColorStyle } from "@/components/palette";
 import { useOpenSheet } from "@/components/sheet-search";
 import { MonthCalendar } from "@/features/habit-page/month-calendar";
-import { useToday } from "@/features/habit-page/use-today";
 import { YearGrid } from "@/features/habit-page/year-grid";
+import { useToday } from "@/features/list/use-today";
 
 import "@/features/habit-page/habit-page.css";
 
