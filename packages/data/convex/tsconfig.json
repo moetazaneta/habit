@@ -1,0 +1,13 @@
+{
+  // The environment of the Convex functions, and of their tests. `convex dev` reads this file.
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "jsx": "react-jsx",
+    "lib": ["ES2023", "DOM"],
+    "target": "ESNext",
+    "types": ["node", "vite-plus/client"]
+  },
+  "include": ["./**/*"],
+  "exclude": ["./_generated"]
+}

@@ -6,8 +6,8 @@ export default defineConfig({
   },
   test: {
     name: "data",
-    include: ["src/**/*.test.{ts,tsx}"],
-    // Until the first tests land with the implementation.
-    passWithNoTests: true,
+    // The Convex functions' tests choose the edge-runtime environment in their first line, as the
+    // Convex runtime is closer to it than to Node.
+    include: ["src/**/*.test.{ts,tsx}", "convex/**/*.test.ts"],
   },
 });

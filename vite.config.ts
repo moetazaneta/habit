@@ -1,9 +1,10 @@
 import { defineConfig } from "vite-plus";
 
-// Generated files (TanStack Router's route tree), the vendored agent skills, Markdown, which the
-// formatter would rewrap, and the design tool's working files (.impeccable).
+// Generated files (TanStack Router's route tree, Convex's `_generated`), the vendored agent skills,
+// Markdown, which the formatter would rewrap, and the design tool's working files (.impeccable).
 const staticCheckIgnorePatterns = [
   "apps/web/src/routeTree.gen.ts",
+  "packages/data/convex/_generated/**",
   ".agents/**",
   ".claude/**",
   "**/*.md",
