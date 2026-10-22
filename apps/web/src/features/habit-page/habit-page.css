@@ -1,0 +1,421 @@
+/*
+ * The page of a habit, in the world of the list (styles.css): a ground with no surfaces, space
+ * instead of lines, and color only where it is data. The measures are in rem, so the desktop's
+ * 20px base scales them by 1.25.
+ */
+
+@layer components {
+  .habit-page {
+    --hp-icon: 1.75rem;
+    /* The calendar: a gauge under the date, in a row tall enough for a 44px touch target. */
+    --cal-square: 2.375rem;
+    --cal-row: 4rem;
+    max-width: 600px;
+    margin: 0 auto;
+    /* Room under the calendar for the toast. */
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* ── The bar ── */
+
+  .hp-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: calc(2.75rem + env(safe-area-inset-top, 0px));
+    padding: env(safe-area-inset-top, 0px) calc(var(--gutter) - 0.75rem) 0;
+  }
+
+  .hp-bar-back {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    color: var(--ink-2);
+    font-size: 1.25rem;
+    border-radius: 999px;
+    transition:
+      color 120ms ease,
+      transform 120ms var(--ease-out);
+  }
+
+  .hp-bar-text {
+    height: 2.75rem;
+    padding: 0 0.75rem;
+    color: var(--ink-2);
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    border-radius: 999px;
+    transition:
+      color 120ms ease,
+      transform 120ms var(--ease-out);
+  }
+
+  .hp-bar-back:active,
+  .hp-bar-text:active {
+    transform: scale(0.94);
+    color: var(--ink);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hp-bar-back:hover,
+    .hp-bar-text:hover {
+      color: var(--ink);
+    }
+  }
+
+  /* ── The identity plate: the list row's icon and name, at the size of a title ── */
+
+  .hp-identity {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.5rem var(--gutter) 0;
+  }
+
+  .hp-identity > :first-child {
+    /* On the first line of the name. */
+    margin-top: calc((1.875rem - var(--hp-icon)) / 2);
+  }
+
+  .hp-name {
+    min-width: 0;
+    color: var(--ink);
+    font-size: 1.5rem;
+    font-weight: 650;
+    line-height: 1.875rem;
+    letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+  }
+
+  .hp-description {
+    margin: 0.125rem var(--gutter) 0 calc(var(--gutter) + var(--hp-icon) + 0.75rem);
+    color: var(--ink-3);
+    font-size: 0.9375rem;
+    line-height: 1.375rem;
+    overflow-wrap: anywhere;
+  }
+
+  /* ── The grid of the last 12 months ── */
+
+  .hp-year {
+    margin-top: 2rem;
+    padding: 0 var(--gutter);
+  }
+
+  /* The container of the grid: the squares take their size from its width. */
+  .hp-year-inner {
+    --gap: 0.09375rem;
+    position: relative;
+    container-type: inline-size;
+    padding-top: 1.25rem;
+  }
+
+  .hp-year-grid {
+    --cell: calc((100cqw - (var(--weeks) - 1) * var(--gap)) / var(--weeks));
+    display: grid;
+    grid-auto-columns: var(--cell);
+    grid-auto-flow: column;
+    grid-template-rows: repeat(7, var(--cell));
+    gap: var(--gap);
+    /* A thinner frame: at this size the list's 1.5px frame would fill the square. */
+    --ds-frame: 0.0625rem;
+  }
+
+  /* A Month over its columns: a button over the label and the squares under it. */
+  .hp-year-month {
+    --pitch: calc((100cqw + var(--gap)) / var(--weeks));
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(var(--pitch) * var(--start));
+    width: calc(var(--pitch) * var(--span) - var(--gap));
+    border-radius: calc(0.25rem * var(--squircle-k));
+    corner-shape: squircle;
+    outline-offset: 0.125rem;
+    transition: background-color 120ms ease;
+  }
+
+  .hp-year-month-label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: var(--ink-3);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 0.875rem;
+    white-space: nowrap;
+    transition: color 160ms ease;
+  }
+
+  .hp-year-month[aria-current] .hp-year-month-label {
+    color: var(--ink);
+    font-weight: 650;
+  }
+
+  .hp-year-month:active .hp-year-month-label {
+    color: var(--ink);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hp-year-month:hover {
+      background: color-mix(in oklch, var(--ink) 6%, transparent);
+    }
+
+    .hp-year-month:hover .hp-year-month-label {
+      color: var(--ink);
+    }
+  }
+
+  /* ── The calendar ── */
+
+  .hp-cal {
+    margin-top: 1.75rem;
+    padding: 0 var(--gutter);
+  }
+
+  .hp-cal-head {
+    display: flex;
+    align-items: center;
+    height: 2.75rem;
+    margin-right: -0.75rem;
+  }
+
+  .hp-cal-title {
+    flex: 1;
+    min-width: 0;
+    color: var(--ink);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    line-height: 1.375rem;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hp-cal-today {
+    height: 2.75rem;
+    padding: 0 0.625rem;
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    transition:
+      color 120ms ease,
+      transform 120ms var(--ease-out);
+  }
+
+  .hp-cal-arrow {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    color: var(--ink-2);
+    font-size: 1.125rem;
+    transition:
+      color 120ms ease,
+      opacity 120ms ease,
+      transform 120ms var(--ease-out);
+  }
+
+  .hp-cal-arrow:disabled {
+    color: var(--ink-4);
+    opacity: 0.45;
+  }
+
+  .hp-cal-today:active,
+  .hp-cal-arrow:active:not(:disabled) {
+    transform: scale(0.92);
+    color: var(--ink);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hp-cal-today:hover,
+    .hp-cal-arrow:hover:not(:disabled) {
+      color: var(--ink);
+    }
+  }
+
+  .hp-cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-top: 0.25rem;
+    color: var(--ink-3);
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1rem;
+    text-align: center;
+  }
+
+  /* The pages slide edge to edge of the column, so the clip is at its edges, not at the gutter. */
+  .hp-cal-viewport {
+    position: relative;
+    height: calc(var(--cal-row) * 6);
+    margin: 0.25rem calc(-1 * var(--gutter)) 0;
+    overflow: hidden;
+    /* The browser keeps the vertical scroll; the calendar takes the horizontal swipe. */
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  .hp-cal-track {
+    position: absolute;
+    inset: 0;
+  }
+
+  .hp-month {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(6, var(--cal-row));
+    padding: 0 var(--gutter);
+  }
+
+  .hp-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3125rem;
+    min-width: 0;
+    border-radius: calc(0.625rem * var(--squircle-k));
+    corner-shape: squircle;
+    outline-offset: -0.125rem;
+  }
+
+  .hp-day-number {
+    color: var(--ink-3);
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 0.875rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hp-day[data-today] .hp-day-number {
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .hp-day:disabled .hp-day-number {
+    color: var(--ink-4);
+    opacity: 0.6;
+  }
+
+  .hp-day-press {
+    display: block;
+    transition: transform 120ms var(--ease-out);
+  }
+
+  .hp-day[data-pressed] .hp-day-press {
+    transform: scale(0.92);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hp-day:hover:not(:disabled) .day-square[data-state="empty"] {
+      box-shadow: inset 0 0 0 var(--ds-frame, 0.09375rem) var(--line-strong);
+    }
+  }
+
+  /* An older Month that is still loading: its frames, quieter, until the data comes. */
+  .hp-month[data-loading] .day-square {
+    opacity: 0.5;
+  }
+
+  /* ── A habit that is not here ── */
+
+  .hp-missing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 22dvh var(--gutter) 0;
+    text-align: center;
+  }
+
+  .hp-missing-title {
+    margin-top: 1.25rem;
+    color: var(--ink);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    line-height: 1.375rem;
+    letter-spacing: -0.01em;
+  }
+
+  .hp-missing-text {
+    margin-top: 0.25rem;
+    color: var(--ink-3);
+    font-size: 0.9375rem;
+    line-height: 1.375rem;
+  }
+
+  .hp-missing-link {
+    display: inline-flex;
+    align-items: center;
+    height: 2.75rem;
+    margin-top: 1.5rem;
+    padding: 0 1.25rem;
+    background: var(--surface-2);
+    color: var(--ink);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    border-radius: calc(0.625rem * var(--squircle-k));
+    corner-shape: squircle;
+    transition:
+      background-color 120ms ease,
+      transform 120ms var(--ease-out);
+  }
+
+  .hp-missing-link:active {
+    transform: scale(0.97);
+    background: var(--surface-3);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hp-missing-link:hover {
+      background: var(--surface-3);
+    }
+  }
+
+  /* ── Loading: the skeleton waits 300ms before it shows, so a fast start never flashes it ── */
+
+  .hp-skeleton .hp-identity {
+    align-items: center;
+    animation: hp-fade-in 240ms var(--ease-out) 300ms both;
+  }
+
+  .hp-skeleton-icon {
+    width: var(--hp-icon);
+    height: var(--hp-icon);
+    background: var(--surface-2);
+    border-radius: calc(var(--hp-icon) * 0.18 * var(--squircle-k));
+    corner-shape: squircle;
+  }
+
+  .hp-skeleton-name {
+    width: 8rem;
+    height: 1rem;
+    background: var(--surface-2);
+    border-radius: 999px;
+  }
+
+  @keyframes hp-fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hp-day[data-pressed] .hp-day-press,
+    .hp-bar-back:active,
+    .hp-bar-text:active,
+    .hp-cal-today:active,
+    .hp-cal-arrow:active:not(:disabled),
+    .hp-missing-link:active {
+      transform: none;
+    }
+  }
+}
