@@ -74,6 +74,12 @@ typography:
     lineHeight: "2.75rem"
     letterSpacing: "-0.02em"
     fontFeature: "tnum"
+  page-title:
+    fontFamily: "IBM Plex Sans Variable, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "1.5rem"
+    fontWeight: 600
+    lineHeight: "1.875rem"
+    letterSpacing: "-0.02em"
   title:
     fontFamily: "IBM Plex Sans Variable, ui-sans-serif, system-ui, sans-serif"
     fontSize: "1.0625rem"
@@ -105,6 +111,11 @@ typography:
     fontSize: "0.75rem"
     fontWeight: 500
     lineHeight: "0.9375rem"
+  code:
+    fontFamily: "IBM Plex Mono, ui-monospace, monospace"
+    fontSize: "0.9375rem"
+    fontWeight: 400
+    lineHeight: "1.5rem"
 rounded:
   gauge: "19%"
   icon: "18%"
@@ -298,18 +309,19 @@ shadcn/ui's variables map onto these tokens: `background` is `ground`, `foregrou
 
 - **Display** (600, 2.25rem, 2.75rem line, -0.02em, tabular figures): the typed value in the number input, centered. It steps down to 1.75rem at 7 characters and to 1.375rem at 10, so a long value never runs under the buttons.
 - **Title** (600, 1.0625rem, 1.375rem line, -0.01em): habit names in the list (in `ink-2`) and sheet titles (in `ink`). One line, with an ellipsis.
-- **Page title** (600, 1.5rem, 1.875rem line, -0.02em): the name of a habit on its page, in `ink`. It wraps.
+- **Page title** (600, 1.5rem, 1.875rem line, -0.02em): the name of a habit on its page, and the title of a screen before the list ("Habit", "No access"), in `ink`. It wraps.
 - **Body** (400, 1rem, 1.25rem line): the dates in the day header (with tabular figures and -0.01em), option labels (at 500), and text fields (with a 1.375rem line).
 - **Control** (600, 0.9375rem, -0.01em): buttons inside sheets and the toast action. The toast message uses the same size at 500.
 - **Description** (400, 0.875rem, 1.25rem line): the line under a sheet title, such as "Today" or "Yesterday". In `ink-3`.
 - **Caption** (400, 0.8125rem, 1rem line): the target or the unit under the number field. In `ink-3`, up to two lines.
 - **Label** (500, 0.75rem, 0.9375rem line): the weekday letter over each date in the day header.
+- **Code** (IBM Plex Mono, 400, 0.9375rem, 1.5rem line): a value to copy, such as the user id and the command on the "no access" screen, in `ink`. It breaks anywhere.
 
 On a phone these are 12, 13, 14, 15, 16, 17, 24 and 36px. The desktop's 20px base scales all of them by 1.25. The stepper buttons use 1.0625rem at 600 with tabular figures. A field never shows text under 16px (`font-size: max(16px, 1rem)`), because iOS zooms into a smaller field and does not zoom back.
 
 ### Named Rules
 
-**The One Family Rule.** IBM Plex Sans is the only typeface. Hierarchy comes from weight (400, 500, 600, 700) and from the ink step, not from a second family or a large jump in size.
+**The One Family Rule.** IBM Plex Sans is the only typeface for words. IBM Plex Mono, the mono of the same family, sets code to copy and nothing else; the browser loads it only on a screen that shows code. Hierarchy comes from weight (400, 500, 600, 700) and from the ink step, not from a second family or a large jump in size.
 
 **The Today Is Bold Rule.** Weight 700 marks today and nothing else.
 
