@@ -74,11 +74,12 @@ export const HabitRow = memo(function HabitRow({
           {...sortableAttributes}
           {...listeners}
           aria-roledescription="habit, long press to reorder"
-          // The icon and the name grow into the title of the habit page.
-          viewTransition={!reduceMotion}
+          // The icon and the name grow into the title of the habit page; under reduced motion the
+          // screens only crossfade.
+          viewTransition
           onClick={(event: MouseEvent<HTMLAnchorElement>) => {
             if (shouldIgnoreClick()) event.preventDefault();
-            else if (isPlainClick(event)) markPlate(event.currentTarget);
+            else if (!reduceMotion && isPlainClick(event)) markPlate(event.currentTarget);
           }}
         >
           <HabitIcon icon={habit.icon} color={habit.color} />

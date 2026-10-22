@@ -44,6 +44,13 @@ export const PAINT_HOLD_MS = 200;
 const TOUCH_PRESS_DELAY_MS = 60;
 /** A press that moves farther than this is not a tap. */
 const SLOP_PX = 8;
+/**
+ * A swipe faster than this on average, in pixels per millisecond, is a flick: it turns the page
+ * however short it is (STANDARDS of the review-animations skill: about 0.11).
+ */
+const FLICK_PX_PER_MS = 0.11;
+/** A flick must still be a deliberate move, not a slip at the end of a tap. */
+const FLICK_MIN_PX = 16;
 /** A horizontal wheel (a trackpad swipe) of this many pixels turns one page. */
 const WHEEL_PAGE_PX = 60;
 /** Wheel events closer than this belong to one trackpad swipe (with its momentum). */
@@ -65,7 +72,14 @@ type Gesture =
       timer: number | undefined;
       pressTimer: number | undefined;
     }
-  | { type: "swipe"; pointerId: number; x: number; samples: { t: number; x: number }[] }
+  | {
+      type: "swipe";
+      pointerId: number;
+      x: number;
+      /** When the swipe started, for its average speed. */
+      t: number;
+      samples: { t: number; x: number }[];
+    }
   | { type: "paint"; pointerId: number; mode: "set" | "clear"; days: Day[] }
   /** The long press opened the input: the rest of this press does nothing. */
   | { type: "held"; pointerId: number };
@@ -79,6 +93,8 @@ interface Paint {
 interface Pressed {
   day: Day;
   hold: "paint" | "input" | null;
+  /** On touch the press shows late (TOUCH_PRESS_DELAY_MS), so the hold has less time to run. */
+  late: boolean;
 }
 
 export interface MonthCalendarProps {
@@ -209,7 +225,8 @@ export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalen
       }, LONG_PRESS_MS);
     }
     event.currentTarget.setPointerCapture?.(pointerId);
-    const show = () => setPressed(day === null ? null : { day, hold });
+    const late = pointerType === "touch";
+    const show = () => setPressed(day === null ? null : { day, hold, late });
     gesture.current = {
       type: "press",
       pointerId,
@@ -218,10 +235,9 @@ export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalen
       x: event.clientX,
       y: event.clientY,
       timer,
-      pressTimer:
-        pointerType === "touch" ? window.setTimeout(show, TOUCH_PRESS_DELAY_MS) : undefined,
+      pressTimer: late ? window.setTimeout(show, TOUCH_PRESS_DELAY_MS) : undefined,
     };
-    if (pointerType !== "touch") show();
+    if (!late) show();
   };
 
   const onPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -248,6 +264,7 @@ export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalen
           type: "swipe",
           pointerId: event.pointerId,
           x: event.clientX,
+          t: event.timeStamp,
           samples: [{ t: event.timeStamp, x: event.clientX }],
         };
         setPressed(null);
@@ -288,9 +305,12 @@ export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalen
           tap(current.day);
         }
         return;
-      case "swipe":
-        pager.release(velocityOf(current.samples));
+      case "swipe": {
+        // The lift is the last sample: a finger that stopped before it lifted has no speed.
+        current.samples.push({ t: event.timeStamp, x: event.clientX });
+        pager.release(velocityOf(current.samples), flickOf(current, event));
         return;
+      }
       case "paint":
         setPaint(null);
         commitPaint(current.days, current.mode);
@@ -548,6 +568,7 @@ const MonthPage = memo(function MonthPage({
               value={entries(habit.id, day)}
               loading={loading}
               pressed={pressed?.day === day ? (pressed.hold ?? "tap") : null}
+              pressedLate={pressed?.day === day && pressed.late}
               painted={paint !== null && paint.days.includes(day) ? paint.mode : null}
               tabbable={tabDay === day}
               editing={editing === entryRef(habit.id, day)}
@@ -568,6 +589,7 @@ function CalendarDay({
   value,
   loading,
   pressed,
+  pressedLate,
   painted,
   tabbable,
   editing,
@@ -578,6 +600,7 @@ function CalendarDay({
   value: EntryValue | undefined;
   loading: boolean;
   pressed: "tap" | "paint" | "input" | null;
+  pressedLate: boolean;
   painted: "set" | "clear" | null;
   tabbable: boolean;
   editing: boolean;
@@ -591,6 +614,7 @@ function CalendarDay({
       data-day={day}
       data-today={day === today ? "" : undefined}
       data-pressed={pressed ?? undefined}
+      data-late={pressedLate ? "" : undefined}
       tabIndex={tabbable ? 0 : -1}
       aria-label={`${formatDayLong(day)}: ${loading ? "loading" : describeEntry(habit, value)}`}
       aria-current={day === today ? "date" : undefined}
@@ -607,6 +631,8 @@ function CalendarDay({
       </span>
       <span className="hp-day-press">
         <DaySquare
+          // Loaded data is not a value that rose: the square mounts at its value, without a pulse.
+          key={loading ? "loading" : "ready"}
           color={habit.color}
           intensity={loading ? 0 : level}
           recorded={!loading && (painted === null ? value !== undefined : painted === "set")}
@@ -646,6 +672,17 @@ function enabledDayAt(target: EventTarget | null): Day | null {
 
 function enabledDayAtPoint(x: number, y: number): Day | null {
   return enabledDayAt(document.elementFromPoint?.(x, y) ?? null);
+}
+
+/** The direction of a flick: a short swipe that was fast on average. */
+function flickOf(
+  swipe: { x: number; t: number },
+  event: { clientX: number; timeStamp: number },
+): -1 | 0 | 1 {
+  const distance = event.clientX - swipe.x;
+  const elapsed = event.timeStamp - swipe.t;
+  if (Math.abs(distance) < FLICK_MIN_PX || elapsed <= 0) return 0;
+  return Math.abs(distance) / elapsed > FLICK_PX_PER_MS ? (Math.sign(distance) as -1 | 1) : 0;
 }
 
 /** The finger's speed over the last 100 ms, in pixels per second. */

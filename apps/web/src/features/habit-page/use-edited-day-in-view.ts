@@ -37,9 +37,21 @@ export function useEditedDayInView(page: RefObject<HTMLElement | null>, habitId:
         window.scrollTo(0, top);
         return;
       }
+      // The person's own scroll wins over this one.
+      const detach = () => {
+        window.removeEventListener("wheel", stop);
+        window.removeEventListener("touchstart", stop);
+      };
+      const stop = () => {
+        scroll.current?.stop();
+        detach();
+      };
+      window.addEventListener("wheel", stop, { passive: true });
+      window.addEventListener("touchstart", stop, { passive: true });
       scroll.current = animate(window.scrollY, top, {
         ...springs.sheet,
         onUpdate: (y) => window.scrollTo(0, y),
+        onComplete: detach,
       });
     };
     const startY = window.scrollY;

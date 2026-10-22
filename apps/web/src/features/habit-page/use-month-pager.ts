@@ -29,8 +29,12 @@ export interface MonthPager {
   grab: () => boolean;
   /** The finger moved `dx` pixels since it started to swipe. */
   drag: (dx: number) => void;
-  /** The finger left with a speed in pixels per second: settle on the nearest page. */
-  release: (velocity: number) => void;
+  /**
+   * The finger left with a speed in pixels per second: settle on the nearest page. `flick` is the
+   * direction of a quick swipe (-1 to the left, 1 to the right, 0 none): it turns the page even
+   * when the swipe was short.
+   */
+  release: (velocity: number, flick?: -1 | 0 | 1) => void;
 }
 
 /**
@@ -120,7 +124,8 @@ export function useMonthPager({
       };
       animation.current?.stop();
       if (reduceMotion || keyboard.current) {
-        fadeIn.current = reduceMotion && destination !== shown;
+        // A page that comes in under the finger is already in view: it does not fade.
+        fadeIn.current = reduceMotion && destination !== shown && x.get() === 0;
         finish();
         if (destination === shown) x.jump(0);
         return;
@@ -146,7 +151,7 @@ export function useMonthPager({
       const { shown } = latest.current;
       if (destination > newest || destination === target.current) return;
       if (destination === shown) {
-        settle(0, 0);
+        settle(0, x.getVelocity());
         return;
       }
       const slot = destination < shown ? -1 : 1;
@@ -155,7 +160,8 @@ export function useMonthPager({
       setIncoming(destination);
       // The incoming page renders with this state; the slide starts from where the track is.
       latest.current.slots = slotsOf(shown, destination, newest);
-      settle(slot, 0);
+      // A slide that is still moving keeps its speed: the spring retargets instead of restarting.
+      settle(slot, x.getVelocity());
     },
     [newest, settle],
   );
@@ -186,13 +192,16 @@ export function useMonthPager({
   );
 
   const release = useCallback(
-    (velocity: number) => {
+    (velocity: number, flick: -1 | 0 | 1 = 0) => {
       const size = width();
       const indexes = latest.current.slots.map((page) => page.slot);
+      // A swipe to the right shows the page at the left (slot -1).
+      const flicked = indexes.find((slot) => flick !== 0 && slot === -flick);
       const projected = x.get() + velocity * PROJECTION_S;
       // Never more than one page from the shown one.
       const nearest = Math.round(-projected / size);
-      const slot = Math.min(Math.max(nearest, Math.min(...indexes), -1), Math.max(...indexes), 1);
+      const slot =
+        flicked ?? Math.min(Math.max(nearest, Math.min(...indexes), -1), Math.max(...indexes), 1);
       settle(slot as -1 | 0 | 1, velocity);
     },
     [settle, width, x],
