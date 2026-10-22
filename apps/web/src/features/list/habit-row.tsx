@@ -73,7 +73,9 @@ export const HabitRow = memo(function HabitRow({
           }}
         >
           <HabitIcon icon={habit.icon} color={habit.color} />
-          <span className="habit-row-name">{habit.name}</span>
+          <span className="habit-row-name" dir="auto">
+            {habit.name}
+          </span>
         </Link>
         <DayCells
           habit={habit}

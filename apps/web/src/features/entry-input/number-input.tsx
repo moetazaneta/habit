@@ -90,6 +90,7 @@ export function NumberInput({
             placeholder="0"
             aria-label={habit.unit === undefined ? "Value" : `Value in ${habit.unit}`}
             value={draft}
+            data-length={draft.length > 9 ? "longer" : draft.length > 6 ? "long" : undefined}
             onFocus={() => setEditing(true)}
             onChange={(event) => setDraft(event.target.value)}
             onBlur={() => {
@@ -100,7 +101,9 @@ export function NumberInput({
               if (event.key === "Enter") event.currentTarget.blur();
             }}
           />
-          <span className="text-[0.8125rem] leading-4 text-ink-3">{caption}</span>
+          <span className="line-clamp-2 text-center text-[0.8125rem] leading-4 text-ink-3">
+            {caption}
+          </span>
         </label>
         <button
           type="button"

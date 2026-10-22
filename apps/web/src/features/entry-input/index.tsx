@@ -77,7 +77,9 @@ function EntryInput({
       title={
         <span className="flex min-w-0 items-center gap-2.5">
           <HabitIcon icon={habit.icon} color={habit.color} size="1.25rem" />
-          <span className="truncate">{habit.name}</span>
+          <span className="truncate" dir="auto">
+            {habit.name}
+          </span>
         </span>
       }
       description={formatDayRelative(day, today)}

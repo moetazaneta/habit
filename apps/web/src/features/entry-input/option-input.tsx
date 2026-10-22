@@ -84,7 +84,9 @@ export function OptionInput({
                   {option.emoji ?? ""}
                 </span>
               )}
-              <span className="min-w-0 flex-1 truncate">{option.label}</span>
+              <span className="entry-option-label" dir="auto">
+                {option.label}
+              </span>
               <CheckIcon weight="bold" className="entry-option-check" aria-hidden />
             </button>
           );

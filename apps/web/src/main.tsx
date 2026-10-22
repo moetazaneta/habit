@@ -19,6 +19,23 @@ type DataProvider = (props: { children: ReactNode }) => ReactNode;
 async function loadDataProvider(): Promise<DataProvider> {
   if (import.meta.env.VITE_HABIT_DATA !== "fake") return HabitDataProvider;
   const { FakeHabitDataProvider, demoState } = await import("@habit/data/testing");
+  // Dev only: `?data=worst` (or empty, one, many) swaps the demo data for a break-ui dataset.
+  const dataset = import.meta.env.DEV
+    ? new URLSearchParams(window.location.search).get("data")
+    : null;
+  if (dataset !== null) {
+    const { devDataset, isDevDataset } = await import("@/components/dev-data/fixtures");
+    const { DevDataToggle } = await import("@/components/dev-data/toggle");
+    if (isDevDataset(dataset)) {
+      const initial = devDataset(dataset, today());
+      return ({ children }) => (
+        <FakeHabitDataProvider initial={initial}>
+          {children}
+          <DevDataToggle current={dataset} />
+        </FakeHabitDataProvider>
+      );
+    }
+  }
   const initial = demoState(today());
   const latencyMs = Number(import.meta.env.VITE_HABIT_FAKE_LATENCY_MS ?? 0);
   const failWrites = import.meta.env.VITE_HABIT_FAKE_FAIL === "true";
