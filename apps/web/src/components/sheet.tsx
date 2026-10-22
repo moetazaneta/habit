@@ -3,7 +3,7 @@ import { Drawer } from "@base-ui/react/drawer";
 import { Popover } from "@base-ui/react/popover";
 import { XIcon } from "@phosphor-icons/react/dist/csr/X";
 import { motion, useReducedMotion } from "motion/react";
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 import { springs } from "@/components/motion";
 import { useIsWide } from "@/components/use-media-query";
@@ -45,9 +45,15 @@ export interface ResponsiveSheetProps {
  */
 export function ResponsiveSheet(props: ResponsiveSheetProps) {
   const wide = useIsWide();
-  if (!wide) return <BottomSheet {...props} />;
-  if (props.desktop === "popover" && props.anchor) return <AnchoredPopover {...props} />;
-  return <CenteredDialog {...props} />;
+  // Base UI plays the enter transition only when `open` turns true after the root has mounted. A
+  // sheet that mounts already open (its search param came with a tap or with the URL) would appear
+  // in place, without the slide: keep it closed for the first commit.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const shown = { ...props, open: props.open && mounted };
+  if (!wide) return <BottomSheet {...shown} />;
+  if (props.desktop === "popover" && props.anchor) return <AnchoredPopover {...shown} />;
+  return <CenteredDialog {...shown} />;
 }
 
 function BottomSheet({
