@@ -2,10 +2,23 @@ import type { Action, Day, EntryValue, Habit, HabitId, HabitState, Month } from 
 import { entryValue, visibleHabits } from "@habit/core";
 import { createContext, useContext, useEffect, useMemo } from "react";
 
+/**
+ * A sign-in with a code that Clerk sends by email, in two steps. The web app offers it in
+ * development, so the test users (docs/notes/data.md) can sign in. Each step rejects with an Error
+ * whose message is fit to show.
+ */
+export interface EmailCodeSignIn {
+  /** Starts a sign-in for the address and sends the code to it. */
+  sendCode: (email: string) => Promise<void>;
+  /** Finishes the sign-in that `sendCode` started. */
+  verifyCode: (code: string) => Promise<void>;
+}
+
 /** Who is signed in, and whether they may see the data (only the owner may). */
 export type AuthState =
   | { status: "loading" }
-  | { status: "signedOut"; signIn: () => void }
+  /** `signIn` starts the Google sign-in. */
+  | { status: "signedOut"; signIn: () => void; emailCode?: EmailCodeSignIn }
   /** Signed in, but not the owner. `userId` is shown so the owner can set it up. */
   | { status: "noAccess"; userId: string; signOut: () => void }
   | { status: "ready"; userId: string; signOut: () => void };

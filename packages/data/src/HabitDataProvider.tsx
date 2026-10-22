@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { api } from "../convex/_generated/api";
+import type { EmailCodeSignIn } from "./api";
 import { HabitDataContext } from "./api";
 import type { Me } from "./engine";
 import { useHabitDataEngine } from "./engine";
@@ -169,6 +170,21 @@ function ConvexHabitData(props: { snapshots: SnapshotStore; children: ReactNode 
         if (error) void clerk.redirectToSignIn();
       });
   }, [clerk]);
+  const emailCode = useMemo<EmailCodeSignIn>(
+    () => ({
+      sendCode: async (email) => {
+        const { error } = await signInRef.current.emailCode.sendCode({ emailAddress: email });
+        if (error) throw clerkError(error);
+      },
+      verifyCode: async (code) => {
+        const verified = await signInRef.current.emailCode.verifyCode({ code });
+        if (verified.error) throw clerkError(verified.error);
+        const finalized = await signInRef.current.finalize();
+        if (finalized.error) throw clerkError(finalized.error);
+      },
+    }),
+    [],
+  );
   const signOut = useCallback(() => clerk.signOut(), [clerk]);
 
   const value = useHabitDataEngine({
@@ -182,11 +198,17 @@ function ConvexHabitData(props: { snapshots: SnapshotStore; children: ReactNode 
     retainMonth,
     send,
     signIn,
+    emailCode,
     signOut,
     snapshots: props.snapshots,
   });
 
   return <HabitDataContext.Provider value={value}>{props.children}</HabitDataContext.Provider>;
+}
+
+/** An Error with the message of a Clerk error, the long form when Clerk gives one. */
+function clerkError(error: { message: string; longMessage?: string }): Error {
+  return new Error(error.longMessage ?? error.message);
 }
 
 /** The value of a query result of `useQueries`: undefined while it loads or after an error. */

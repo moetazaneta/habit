@@ -2,7 +2,7 @@ import type { Action, Day, HabitState, Month } from "@habit/core";
 import { invertAction, monthOf } from "@habit/core";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
-import type { AuthState, HabitDataApi, PerformResult } from "./api";
+import type { AuthState, EmailCodeSignIn, HabitDataApi, PerformResult } from "./api";
 import type { SnapshotStore } from "./snapshot";
 import { SNAPSHOT_VERSION, usableSnapshot } from "./snapshot";
 import type { Data, FlatAction } from "./state";
@@ -58,6 +58,8 @@ export interface EngineInputs {
   /** Sends one Action to the server, with its optimistic update. Rejects when the write fails. */
   send: (action: FlatAction, now: number) => Promise<unknown>;
   signIn: () => void;
+  /** The sign-in with an email code, when the provider offers one. */
+  emailCode?: EmailCodeSignIn;
   signOut: () => Promise<unknown>;
   snapshots: SnapshotStore;
   /** The clock, in milliseconds since the epoch. Default `Date.now`. */
@@ -114,6 +116,7 @@ export function useHabitDataEngine(inputs: EngineInputs): HabitDataApi {
     hasSnapshot: snapshot !== null,
   });
   const signIn = inputs.signIn;
+  const emailCode = inputs.emailCode;
   const signOutInput = inputs.signOut;
   const signOut = useCallback(() => {
     void snapshots.clear().then(signOutInput);
@@ -121,13 +124,13 @@ export function useHabitDataEngine(inputs: EngineInputs): HabitDataApi {
 
   const auth = useMemo<AuthState>(() => {
     if (status === "loading") return { status: "loading" };
-    if (status === "signedOut") return { status: "signedOut", signIn };
+    if (status === "signedOut") return { status: "signedOut", signIn, emailCode };
     // userId is not null in the other statuses.
     const id = userId ?? "";
     return status === "noAccess"
       ? { status: "noAccess", userId: id, signOut }
       : { status: "ready", userId: id, signOut };
-  }, [status, signIn, signOut, userId]);
+  }, [status, signIn, emailCode, signOut, userId]);
 
   const source: HabitDataApi["source"] =
     auth.status !== "ready"

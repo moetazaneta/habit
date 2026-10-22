@@ -1,4 +1,4 @@
-export type { AuthState, HabitDataApi, PerformResult } from "./api";
+export type { AuthState, EmailCodeSignIn, HabitDataApi, PerformResult } from "./api";
 export {
   HabitDataContext,
   useAuth,

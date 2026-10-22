@@ -14,7 +14,7 @@ import {
   type PerformResult,
 } from "../api";
 import { demoHabitIds } from "./demoState";
-import { FakeHabitDataProvider } from "./FakeHabitDataProvider";
+import { FAKE_EMAIL_CODE, FakeHabitDataProvider } from "./FakeHabitDataProvider";
 
 afterEach(cleanup);
 
@@ -174,6 +174,28 @@ describe("FakeHabitDataProvider", () => {
     });
     expect(result.current.auth).toMatchObject({ status: "ready", userId: expect.any(String) });
     expect(result.current.habits).toHaveLength(11);
+  });
+
+  test("signed out: the email code signs in the owner, or a guest without access", async () => {
+    const view = renderData({ auth: "signedOut" });
+    const emailCode = () => {
+      const { auth } = view.result.current;
+      if (auth.status !== "signedOut" || auth.emailCode === undefined) throw new Error("no code");
+      return auth.emailCode;
+    };
+
+    await act(() => emailCode().sendCode("owner@example.com"));
+    await expect(emailCode().verifyCode("111111")).rejects.toThrow("Incorrect code.");
+    await act(() => emailCode().verifyCode(FAKE_EMAIL_CODE));
+    expect(view.result.current.auth.status).toBe("ready");
+
+    act(() => {
+      const { auth } = view.result.current;
+      if (auth.status === "ready") auth.signOut();
+    });
+    await act(() => emailCode().sendCode("guest@example.com"));
+    await act(() => emailCode().verifyCode(FAKE_EMAIL_CODE));
+    expect(view.result.current.auth.status).toBe("noAccess");
   });
 
   test("no access: shows the user id and no data, and can sign out", () => {

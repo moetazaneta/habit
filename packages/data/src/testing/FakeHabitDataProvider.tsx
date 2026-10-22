@@ -10,12 +10,21 @@ import {
 } from "@habit/core";
 import { useCallback, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 
-import { HabitDataContext, type AuthState, type HabitDataApi, type PerformResult } from "../api";
+import {
+  HabitDataContext,
+  type AuthState,
+  type EmailCodeSignIn,
+  type HabitDataApi,
+  type PerformResult,
+} from "../api";
 import { demoState } from "./demoState";
 
 /** The user ids of the fake sign-in. */
 export const FAKE_OWNER_ID = "user_fake_owner";
 export const FAKE_STRANGER_ID = "user_fake_stranger";
+
+/** The code that the fake email-code sign-in accepts, the same as Clerk's for its test users. */
+export const FAKE_EMAIL_CODE = "424242";
 
 /**
  * An in-memory provider for tests and for UI work without a backend (`VITE_HABIT_DATA=fake`).
@@ -93,12 +102,31 @@ function authStateOf(
     case "loading":
       return { status };
     case "signedOut":
-      return { status, signIn: () => setStatus("ready") };
+      return { status, signIn: () => setStatus("ready"), emailCode: fakeEmailCode(setStatus) };
     case "noAccess":
       return { status, userId: FAKE_STRANGER_ID, signOut };
     case "ready":
       return { status, userId: FAKE_OWNER_ID, signOut };
   }
+}
+
+/**
+ * The email-code sign-in of the fake: any address gets a code; `FAKE_EMAIL_CODE` signs in, as the
+ * owner, or as a stranger for an address that contains "guest" (like the guest test user).
+ */
+function fakeEmailCode(setStatus: (status: AuthState["status"]) => void): EmailCodeSignIn {
+  let email: string | null = null;
+  return {
+    sendCode: async (address) => {
+      if (!address.includes("@")) throw new Error("Enter an email address.");
+      email = address;
+    },
+    verifyCode: async (code) => {
+      if (email === null) throw new Error("Send a code first.");
+      if (code.trim() !== FAKE_EMAIL_CODE) throw new Error("Incorrect code.");
+      setStatus(email.includes("guest") ? "noAccess" : "ready");
+    },
+  };
 }
 
 interface Write {
