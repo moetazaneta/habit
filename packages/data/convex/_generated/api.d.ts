@@ -10,6 +10,7 @@
 
 import type * as data from "../data.js";
 import type * as functions from "../functions.js";
+import type * as range from "../range.js";
 import type * as users from "../users.js";
 import type * as validators from "../validators.js";
 
@@ -22,6 +23,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   data: typeof data;
   functions: typeof functions;
+  range: typeof range;
   users: typeof users;
   validators: typeof validators;
 }>;

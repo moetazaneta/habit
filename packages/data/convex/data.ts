@@ -6,6 +6,7 @@ import { ConvexError, v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { authMutation, authQuery } from "./functions";
+import { monthRange } from "./range";
 import { vAction, vData, vDay } from "./validators";
 
 type Data = Infer<typeof vData>;
@@ -36,9 +37,10 @@ export const month = authQuery({
 
 /**
  * Applies one Action with `applyAction` of @habit/core, the same function that the client uses for
- * its optimistic update. `now` is the time of the Action on the client: it becomes the `updatedAt`
- * of each changed row, and a row that is already newer keeps its value (last write wins). A time
- * after the server's clock counts as the server's time, so a wrong clock cannot lock a row.
+ * its optimistic update, so it ignores what `applyAction` ignores (such as an Entry of an unknown
+ * Habit). `now` is the time of the Action on the client: it becomes the `updatedAt` of each changed
+ * row, and a row that is already newer keeps its value (last write wins). A time after the
+ * server's clock counts as the server's time, so a wrong clock cannot lock a row.
  */
 export const perform = authMutation({
   args: { action: vAction, now: v.number() },
@@ -86,11 +88,6 @@ export const perform = authMutation({
     }
     for (const [key, entry] of Object.entries(after.entries) as [EntryKey, Entry][]) {
       if (sameRow(entry, before.entries[key])) continue;
-      const habit = after.habits[entry.habitId];
-      if (habit === undefined) throw new ConvexError({ code: "unknownHabit", id: entry.habitId });
-      if (entry.deletedAt === undefined && entry.value.kind !== habit.kind) {
-        throw new ConvexError({ code: "wrongKind", id: entry.habitId });
-      }
       const doc = entryDocs.get(key);
       if (doc !== undefined && doc.updatedAt > now) continue;
       const row = { ...entry, userId: ctx.userId };
@@ -116,11 +113,6 @@ async function entriesBetween(ctx: QueryCtx, userId: string, from: Day, to: Day)
     .withIndex("by_user_and_day", (q) => q.eq("userId", userId).gte("day", from).lte("day", to))
     .collect();
   return docs.filter((doc) => doc.deletedAt === undefined).map(toEntry);
-}
-
-/** The first and the last possible Day of a Month, as strings that sort around all its Days. */
-export function monthRange(month: string): { from: Day; to: Day } {
-  return { from: `${month}-01` as Day, to: `${month}-31` as Day };
 }
 
 /** The Habits and the Entries that an Action can change. */

@@ -1,10 +1,229 @@
+import { ClerkProvider, HandleSSOCallback, useAuth, useClerk, useSignIn } from "@clerk/react";
+import type { Day, Month } from "@habit/core";
+import { liveWindow, monthOf, today } from "@habit/core";
+import type { RequestForQueries } from "convex/react";
+import { ConvexReactClient, useConvexAuth, useMutation, useQueries } from "convex/react";
+import { ConvexProviderWithClerk } from "convex/react-clerk";
 import type { ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { api } from "../convex/_generated/api";
+import { HabitDataContext } from "./api";
+import type { Me } from "./engine";
+import { useHabitDataEngine } from "./engine";
+import { performOptimistically } from "./optimistic";
+import type { SnapshotStore } from "./snapshot";
+import { indexedDbSnapshotStore } from "./snapshot";
+import type { Data, FlatAction } from "./state";
+
+/**
+ * The page that Clerk returns to after the Google sign-in when it needs one more step, such as the
+ * sign-up of a new user. The provider shows Clerk's handler there instead of the app.
+ */
+export const SSO_CALLBACK_PATH = "/sso-callback";
+
+/** The live window covers the 12-month grid plus the current Month (docs/v1.md, "Data"). */
+const LIVE_MONTHS = 13;
+
+const clients = new Map<string, ConvexReactClient>();
+
+/** One client for each deployment, also when React mounts the provider two times. */
+function convexClient(url: string): ConvexReactClient {
+  let client = clients.get(url);
+  if (client === undefined) {
+    client = new ConvexReactClient(url);
+    clients.set(url, client);
+  }
+  return client;
+}
 
 /**
  * The real provider: Clerk sign-in, Convex data, optimistic updates, the IndexedDB snapshot for an
- * instant start (docs/v1.md). It reads `VITE_CONVEX_URL` and `VITE_CLERK_PUBLISHABLE_KEY`.
+ * instant start (docs/v1.md). It reads `VITE_CONVEX_URL` and `VITE_CLERK_PUBLISHABLE_KEY`; the
+ * props override them.
  */
-export function HabitDataProvider(props: { children: ReactNode }): ReactNode {
-  void props;
-  throw new Error("@habit/data: HabitDataProvider is not implemented yet");
+export function HabitDataProvider(props: {
+  children: ReactNode;
+  convexUrl?: string;
+  clerkPublishableKey?: string;
+}): ReactNode {
+  const convexUrl = props.convexUrl ?? import.meta.env.VITE_CONVEX_URL;
+  const publishableKey = props.clerkPublishableKey ?? import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+  if (!convexUrl) throw new Error("@habit/data: set VITE_CONVEX_URL (see apps/web/.env.example)");
+  if (!publishableKey) {
+    throw new Error("@habit/data: set VITE_CLERK_PUBLISHABLE_KEY (see apps/web/.env.example)");
+  }
+  const [snapshots] = useState(indexedDbSnapshotStore);
+
+  return (
+    <ClerkProvider publishableKey={publishableKey} afterSignOutUrl="/">
+      <ConvexProviderWithClerk client={convexClient(convexUrl)} useAuth={useAuth}>
+        {globalThis.location?.pathname === SSO_CALLBACK_PATH ? (
+          <SsoCallback />
+        ) : (
+          <ConvexHabitData snapshots={snapshots}>{props.children}</ConvexHabitData>
+        )}
+      </ConvexProviderWithClerk>
+    </ClerkProvider>
+  );
+}
+
+function SsoCallback(): ReactNode {
+  const clerk = useClerk();
+  return (
+    <HandleSSOCallback
+      navigateToApp={({ decorateUrl }) => {
+        location.replace(decorateUrl("/"));
+      }}
+      // Another step, such as a missing field: Clerk's own pages finish the sign-in.
+      navigateToSignIn={() => {
+        void clerk.redirectToSignIn();
+      }}
+      navigateToSignUp={() => {
+        void clerk.redirectToSignUp();
+      }}
+    />
+  );
+}
+
+function ConvexHabitData(props: { snapshots: SnapshotStore; children: ReactNode }): ReactNode {
+  const clerk = useClerk();
+  const { isLoaded, userId } = useAuth();
+  const { isAuthenticated } = useConvexAuth();
+
+  const day = useToday();
+  const windowRange = useMemo(() => liveWindow(day, LIVE_MONTHS), [day]);
+  const [retained, retainMonth] = useRetainedMonths();
+  const firstLiveMonth = monthOf(windowRange.from);
+  const olderMonths = useMemo(
+    () => retained.filter((month) => month < firstLiveMonth),
+    [retained, firstLiveMonth],
+  );
+
+  // One subscription for the user, one for the live window, one for each older Month. The owner's
+  // data loads at the same time as the answer of `me`, without waiting for it.
+  const queries = useMemo(() => {
+    const request: RequestForQueries = {};
+    if (!isAuthenticated) return request;
+    request.me = { query: api.users.me, args: {} };
+    request.days = { query: api.data.days, args: windowRange };
+    for (const month of olderMonths) {
+      request[`month:${month}`] = { query: api.data.month, args: { month } };
+    }
+    return request;
+  }, [isAuthenticated, windowRange, olderMonths]);
+  const results = useQueries(queries);
+
+  const me = resultOf<Me | null>(results.me) ?? undefined;
+  const live = useLatest(userId ?? null, resultOf<Data>(results.days));
+  const months = useMemo(() => {
+    const loaded = new Map<Month, Data>();
+    for (const month of olderMonths) {
+      const data = resultOf<Data>(results[`month:${month}`]);
+      if (data !== undefined) loaded.set(month, data);
+    }
+    return loaded;
+  }, [results, olderMonths]);
+
+  const mutate = useMutation(api.data.perform);
+  const send = useMemo(() => {
+    const withUpdate = mutate.withOptimisticUpdate(performOptimistically);
+    return (action: FlatAction, now: number) => withUpdate({ action, now });
+  }, [mutate]);
+
+  const { signIn: signInResource } = useSignIn();
+  const signInRef = useRef(signInResource);
+  useEffect(() => {
+    signInRef.current = signInResource;
+  });
+  const signIn = useCallback(() => {
+    void signInRef.current
+      .sso({
+        strategy: "oauth_google",
+        redirectUrl: location.href,
+        redirectCallbackUrl: new URL(SSO_CALLBACK_PATH, location.origin).href,
+      })
+      .then(({ error }) => {
+        // Clerk's own sign-in page, which offers Google and the email code, as a fallback.
+        if (error) void clerk.redirectToSignIn();
+      });
+  }, [clerk]);
+  const signOut = useCallback(() => clerk.signOut(), [clerk]);
+
+  const value = useHabitDataEngine({
+    clerkLoaded: isLoaded,
+    userId: userId ?? null,
+    me,
+    live,
+    months,
+    window: windowRange,
+    retainMonth,
+    send,
+    signIn,
+    signOut,
+    snapshots: props.snapshots,
+  });
+
+  return <HabitDataContext.Provider value={value}>{props.children}</HabitDataContext.Provider>;
+}
+
+/** The value of a query result of `useQueries`: undefined while it loads or after an error. */
+function resultOf<T>(result: unknown): T | undefined {
+  return result === undefined || result instanceof Error ? undefined : (result as T);
+}
+
+/** Today, also after midnight or after the phone wakes up. */
+function useToday(): Day {
+  const [day, setDay] = useState(() => today());
+  useEffect(() => {
+    const update = () => setDay(today());
+    const timer = setInterval(update, 60_000);
+    document.addEventListener("visibilitychange", update);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", update);
+    };
+  }, []);
+  return day;
+}
+
+/**
+ * The last value that came for `key` (the user). When the live window moves to a new Day, the
+ * screen keeps the data of the old window until the new one loads.
+ */
+function useLatest<T>(key: string | null, value: T | undefined): T | undefined {
+  const [latest, setLatest] = useState<{ key: string | null; value: T } | null>(null);
+  if (value !== undefined && (latest?.key !== key || latest.value !== value)) {
+    setLatest({ key, value });
+  }
+  if (value !== undefined) return value;
+  return latest?.key === key ? latest.value : undefined;
+}
+
+/** The Months that something shows, with a count of the users of each. */
+function useRetainedMonths(): [Month[], (month: Month) => () => void] {
+  const [counts, setCounts] = useState<ReadonlyMap<Month, number>>(() => new Map());
+  const retain = useCallback((month: Month) => {
+    setCounts((current) => withCount(current, month, 1));
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      setCounts((current) => withCount(current, month, -1));
+    };
+  }, []);
+  const months = useMemo(() => [...counts.keys()].sort(), [counts]);
+  return [months, retain];
+}
+
+function withCount(
+  counts: ReadonlyMap<Month, number>,
+  month: Month,
+  change: number,
+): ReadonlyMap<Month, number> {
+  const next = new Map(counts);
+  const count = (next.get(month) ?? 0) + change;
+  if (count > 0) next.set(month, count);
+  else next.delete(month);
+  return next;
 }
