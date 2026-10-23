@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { HabitPage } from "@/features/habit-page";
 
-export const Route = createFileRoute("/habits/$habitId")({
+export const Route = createFileRoute("/_screens/habits/$habitId")({
   component: HabitRoute,
 });
 

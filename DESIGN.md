@@ -13,6 +13,7 @@ colors:
   surface: "oklch(1 0 0)"
   surface-2: "oklch(0.962 0.003 286)"
   surface-3: "oklch(0.935 0.005 286)"
+  tile: "oklch(0.947 0.004 286)"
   field: "oklch(0.962 0.003 286)"
   backdrop: "oklch(0 0 0 / 0.2)"
   toast: "oklch(0.232 0.004 286)"
@@ -28,6 +29,7 @@ colors:
   surface-dark: "oklch(0.227 0.004 286)"
   surface-2-dark: "oklch(0.294 0.004 286)"
   surface-3-dark: "oklch(0.349 0.003 286)"
+  tile-dark: "oklch(0.247 0.004 286)"
   field-dark: "oklch(0 0 0)"
   backdrop-dark: "oklch(0 0 0 / 0.6)"
   toast-dark: "oklch(0.227 0.004 286)"
@@ -256,7 +258,7 @@ The app is a bare ground with only data on it. In the light theme the ground is 
 
 Each Day is a gauge: a squircle that fills from the bottom. An empty Day is a frame. A full Day is solid. This one shape carries the product, in the list, on the habit page and inside the inputs. The type is one family, IBM Plex Sans, in a small set of sizes. Hierarchy comes from weight and from four steps of ink.
 
-The care goes into motion and touch, not into decoration. A value that rises springs up, and the square pulses to about 1.04. A value that falls drains without a bounce. On a phone, forms open as bottom sheets. On a desktop, they open as dialogs and popovers. The theme follows the system setting, and there is no switch. The desktop is the phone layout in a 600px column with a 20px base.
+The care goes into motion and touch, not into decoration. A value that rises springs up, and the square pulses to about 1.04. A value that falls drains without a bounce. On a phone, forms open as bottom sheets. On a desktop, they open as dialogs and popovers. The theme follows the system setting, and there is no switch. The desktop is the phone layout in a 600px column with a 20px base, and the page of a habit opens beside the list instead of in its place.
 
 **Key Characteristics:**
 - A bare ground: white or pure black, with no surfaces at rest except the "New habit" button.
@@ -289,6 +291,7 @@ Every color is OKLCH. The light theme is the default in CSS. The dark theme repl
 - **Surface** (`surface`): sheets, dialogs, popovers, and a row lifted for a reorder. In the light theme it is white like the ground and a shadow lifts it; in the dark theme it is a lighter grey, and the lightness is the elevation.
 - **Surface 2** (`surface-2`): the rest fill of a control inside a sheet and of the "New habit" button, a checked option, the close button's disc, and skeleton shapes.
 - **Surface 3** (`surface-3`): the hover and press fill of a control inside a sheet.
+- **Tile** (`tile`): an empty Day on the habit page, which has no frame, and the month and year pills of its calendar. A partial Day there fills over 24% of the habit color mixed into the tile (in oklab, so the tint keeps the habit's hue).
 - **Field** (`field`): a text field inside a sheet. In the light theme it equals `surface-2`. In the dark theme it is a well of pure black, so the placeholder keeps its contrast.
 - **Backdrop** (`backdrop`): the scrim under a sheet or a dialog. 20% black in the light theme, 60% in the dark theme.
 - **Toast and Toast Ink** (`toast`, `toast-ink`): the toast capsule. The light theme inverts it (an ink capsule with light text), so an Undo is never missed on white. The dark theme uses the surface grey with light text.
@@ -338,6 +341,7 @@ The phone layout is the layout. A desktop gets the same layout with more room.
 
 - **Breakpoints.** Wide is 640px and more (`min-width: 40rem`). Narrow is 359px and less (`max-width: 22.4375rem`).
 - **Wide.** The root font size becomes 125% (20px), so every rem in the app scales by 1.25. The list shows 7 Days instead of 5. Forms open as dialogs and popovers instead of bottom sheets. The content sits in a centered column of 600px. The column is in px, so it does not scale.
+- **The page beside the list (wide).** The page of a habit opens to the right of the list (`features/screens/`), and the two sit together in the middle of the window. The window does not scroll: the list and the page are columns of the window's height, each with its own scroll, and each reaches its edge of the window, so a wheel over the margin scrolls the column next to it. The page's column is at most 600px. The list takes what is left, in three steps: the whole list with its Days and 2.5rem before the page (1200px and more), the icons and the names in 15rem (880px and more), and the icons alone (640px and more). The rows keep their place in each step; the day header keeps its height without its dates. The open habit's row has a `surface-2` fill (0.75rem squircle, 0.25rem in from the row and 0.625rem in from the edges; a 2.375rem square around the icon when only icons show), and its name is `ink`. With only icons, "New habit" is a 2.375rem square with its plus. A row picked while a page is open replaces that page in the history, so Back returns to the list.
 - **The row.** The icon and the name are at the left; the Days are at the right, with today at the far right. A row is `row` tall (54px on a phone) and has a `gutter` on each side. The name takes the remaining width and truncates.
 - **The Day columns.** Each column is a square plus a gap wide, so the gap is part of the touch target. The half gaps at the ends hang outside, so the last square meets the gutter. The day header uses the same columns, so each date sits over its squares.
 - **Narrow.** At 320px the gutter is 1rem, the squares are 1.75rem and the gap is 0.3125rem, so a name keeps room next to five Days.
@@ -374,7 +378,7 @@ Pills (the toast and its action) use an infinite radius with `corner-shape: supe
 
 The radius scale, as fallback values: the gauge is 19% of its side, an icon tile 18% of its side, a control 0.625rem, a lifted row 0.75rem, a stepper and a popover 0.875rem, a dialog 1rem, a bottom sheet 1.25rem. Larger containers get larger radii.
 
-There are no structural borders. A frame is an inset ring: 1.5px (0.09375rem) by default, thinner for small gauges through `--ds-frame` (the habit page's year grid uses 0.0625rem). A dashed 1px border marks something that does not exist yet: the ghost gauge, in `line`.
+There are no structural borders. A frame is an inset ring: 1.5px (0.09375rem) by default, thinner for small gauges through `--ds-frame`. The habit page draws its gauges without a frame (`look="fill"`): an empty Day is a `tile`. A dashed 1px border marks something that does not exist yet: the ghost gauge, in `line`.
 
 ### Named Rules
 
@@ -508,13 +512,14 @@ The create sheet (`?new=true`) and the edit sheet (`?edit=<id>`), in `features/h
 
 The page of one habit (`/habits/$habitId`), in `features/habit-page/`.
 
-- **Bar:** back (a bold Phosphor caret in `ink-2`, a 44px target) at the left, "Edit" (1rem at 500 in `ink-2`) at the right; both `ink` under a fine pointer and press to 0.96. The bar has the safe-area inset at the top.
-- **Title:** the habit icon at 1.75rem and the name at 1.5rem, 600, `ink`, -0.02em, 0.75rem apart, the icon on the first line. The name wraps (it is the page's `h1`). The description sits under the name in `ink-3` at 0.9375rem.
-- **Year grid:** 52 Monday weeks of `DaySquare`s that end with the week of today, as wide as the column: the side is the column width over 52, less the gap (0.09375rem), from a container query. The frame is 0.0625rem; the grid does not animate. Each Month is a button over its columns: its label (Label size in `ink-3`; the shown Month in `ink` at 600) and its squares. The labels are short names, or first letters when the grid is narrower than 23rem. Under a fine pointer a Month takes 6% of `ink`.
-- **Calendar:** the Month (Title type) with "Today" (only when another Month shows) and two carets, the weekday letters, and the Days in 7 columns, always 6 rows. A Day is its date (0.75rem at 500, tabular, `ink-3`; today `ink` at 700) over a gauge of up to 2.375rem, never wider than its column less 0.375rem. A choice shows its emoji in the square.
-- **Paging:** the track follows the finger 1:1 with a rubber band at the current Month, and settles with the sheet spring and the finger's speed. A flick (above 0.11 px/ms on average over 16px, still moving at the lift) turns the page. A change from the keyboard is instant. Under reduced motion a new page fades in.
+- **Floating buttons:** back (a 3rem disc with a bold Phosphor caret) at the left, "Edit" (a 3rem pill, a bold pencil and 0.9375rem at 600) at the right, fixed 0.75rem above the bottom safe area in the page's column. Each is `surface` at 82% with a 1rem backdrop blur, `--elevation` and a hairline of 10% `ink`; it presses to 0.96. On this page the toasts rise 3.25rem, above them.
+- **Title:** the habit icon at 1.75rem and the name at 1.5rem, 600, `ink`, -0.02em, 0.75rem apart, the icon on the first line, 2rem under the top safe area. The name wraps (it is the page's `h1`). The description sits under the name in `ink-3` at 0.9375rem.
+- **Year grid:** 52 Monday weeks of `DaySquare`s that end with the week of today, in squares of 0.875rem with a 0.1875rem gap; the grid does not animate. It scrolls sideways from edge to edge of the column and opens at today; its edges fade over the gutter. When the calendar moves to a Month of the grid, the grid scrolls it into view. Each Month is a button over its columns: its short name (Label size in `ink-3`; the shown Month in `ink` at 600) and its squares. Under a fine pointer a Month takes 6% of `ink`.
+- **Calendar:** the weekday letters, then the Days in 7 columns, always 6 rows, then the controls, near the thumb: the month and the year as `tile` pills (0.9375rem at 600 with a small caret; each is a native select under the pill, so a phone opens its own picker), "Today" (only when another Month shows) and two carets. A Day is a gauge of up to 3rem, never wider than its column less 0.5rem, with its date inside (0.875rem at 600, tabular, `ink-2`; the part over the fill in `ground`, so a digit splits where the fill ends). Today has a 1.5px ring in `ink-2`, 2px off the square, and its date at 750. A choice shows its emoji in the square and the date small in its corner.
+- **Paging:** the track follows the finger 1:1 with a rubber band at the current Month, and settles with the sheet spring and the finger's speed. A flick (above 0.11 px/ms on average over 16px, still moving at the lift) turns the page. A horizontal trackpad swipe moves the track the same way and settles when the steps of its events start to shrink (the momentum after the lift); a mouse wheel's notch turns one page. A change from the keyboard is instant. Under reduced motion a new page fades in.
 - **Hold:** a Day presses to 0.95 in 120ms; a hold adds a linear shrink on `scale`, to 0.9 in all, over the time to the paint (200ms) or the input (450ms).
-- **From the list:** the row's icon and name grow into the title (a view transition, 320ms with `--ease-out`; a finger that lands during it ends it, and its tap goes to the page); the rest crossfades in 200ms, 180ms under reduced motion, where the plate does not move.
+- **From the list and back:** the row's icon and name grow into the title (a view transition, 320ms with `--ease-out`; a finger that lands during it ends it, and its tap goes to the page); the rest crossfades in 200ms, 180ms under reduced motion, where the plate does not move. Back shrinks the title into the row the same way, from the Back button and from the browser's back, unless the browser animates its back itself (the back swipe on iOS).
+- **Beside the list (wide):** the list moves aside with the sheet spring and keeps its left edge: its column narrows to the next step, which cuts off what it drops, while its old and new pictures cross in 240ms. The page comes from the right with it, from as far as the list moves plus 1.5rem, and fades in over 300ms. Back plays it in reverse, the page fading in 200ms. Another habit crossfades the pages in 200ms. The title does not move. Under reduced motion nothing moves, and the page fades in 180ms.
 - **Under edit, on a phone:** the page rises with the sheet spring until the Day is 16px above the input sheet, and comes back when the sheet closes.
 - **Empty state:** a ghost gauge, "This habit is not here" (Title type), a line in `ink-3`, and a "Back to habits" button.
 
@@ -532,7 +537,7 @@ The screens of `features/auth/`. `AuthGate` in the root route shows the app to t
 
 All motion comes from the presets in `@/components/motion`, after Family: springs that settle quickly, a short overshoot when a value rises, and sheets that change their height instead of cutting.
 
-- **Springs (Motion):** fill (visual duration 0.38s, bounce 0.24), sheet (0.42s, bounce 0.1), morph (0.34s, bounce 0.12), and pulse (stiffness 600, damping 18, mass 1, start velocity 1.6, a peak of about 1.04). `installCssSprings()` puts the fill and sheet springs on the document as `--spring-fill` and `--spring-sheet` (`linear()` easings), so CSS and JS motion match.
+- **Springs (Motion):** fill (visual duration 0.38s, bounce 0.24), sheet (0.42s, bounce 0.1), morph (0.34s, bounce 0.12), and pulse (stiffness 600, damping 18, mass 1, start velocity 1.6, a peak of about 1.04). `installCssSprings()` puts the fill and sheet springs on the document as `--spring-fill` and `--spring-sheet` (`linear()` easings), so CSS and JS motion match. The sheet spring also comes in parts, `--spring-sheet-duration` and `--spring-sheet-easing`, for a view transition's group, whose animation has no author name.
 - **Curves:** `--ease-out` (`cubic-bezier(0.23, 1, 0.32, 1)`) for every plain transition; `--ease-drawer` (`cubic-bezier(0.32, 0.72, 0, 1)`) for the bottom sheet and its scrim.
 - **Durations:** a press 120ms; a color change 120ms; a check mark or a frame 160ms; a popover 180ms; a dialog, a drain and a reorder 200ms; the sheet scrim 400ms.
 - **Presses:** larger elements press less. A Day and a stepper press to 0.95, the close button and the toast action to 0.96, a button to 0.97, the "New habit" button to 0.98, an option to 0.985.

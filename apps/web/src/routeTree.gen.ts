@@ -9,68 +9,92 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as HabitsHabitIdRouteImport } from './routes/habits.$habitId'
+import { Route as ScreensRouteImport } from './routes/_screens'
+import { Route as ScreensIndexRouteImport } from './routes/_screens.index'
+import { Route as ScreensHabitsHabitIdRouteImport } from './routes/_screens.habits.$habitId'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const ScreensRoute = ScreensRouteImport.update({
+  id: '/_screens',
   getParentRoute: () => rootRouteImport,
 } as any)
-const HabitsHabitIdRoute = HabitsHabitIdRouteImport.update({
+const ScreensIndexRoute = ScreensIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ScreensRoute,
+} as any)
+const ScreensHabitsHabitIdRoute = ScreensHabitsHabitIdRouteImport.update({
   id: '/habits/$habitId',
   path: '/habits/$habitId',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => ScreensRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/habits/$habitId': typeof HabitsHabitIdRoute
+  '/': typeof ScreensIndexRoute
+  '/habits/$habitId': typeof ScreensHabitsHabitIdRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/habits/$habitId': typeof HabitsHabitIdRoute
+  '/': typeof ScreensIndexRoute
+  '/habits/$habitId': typeof ScreensHabitsHabitIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/habits/$habitId': typeof HabitsHabitIdRoute
+  '/_screens': typeof ScreensRouteWithChildren
+  '/_screens/': typeof ScreensIndexRoute
+  '/_screens/habits/$habitId': typeof ScreensHabitsHabitIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths: '/' | '/habits/$habitId'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/habits/$habitId'
-  id: '__root__' | '/' | '/habits/$habitId'
+  id: '__root__' | '/_screens' | '/_screens/' | '/_screens/habits/$habitId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  HabitsHabitIdRoute: typeof HabitsHabitIdRoute
+  ScreensRoute: typeof ScreensRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
+    '/_screens': {
+      id: '/_screens'
+      path: ''
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof ScreensRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/habits/$habitId': {
-      id: '/habits/$habitId'
+    '/_screens/': {
+      id: '/_screens/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof ScreensIndexRouteImport
+      parentRoute: typeof ScreensRoute
+    }
+    '/_screens/habits/$habitId': {
+      id: '/_screens/habits/$habitId'
       path: '/habits/$habitId'
       fullPath: '/habits/$habitId'
-      preLoaderRoute: typeof HabitsHabitIdRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof ScreensHabitsHabitIdRouteImport
+      parentRoute: typeof ScreensRoute
     }
   }
 }
 
+interface ScreensRouteChildren {
+  ScreensIndexRoute: typeof ScreensIndexRoute
+  ScreensHabitsHabitIdRoute: typeof ScreensHabitsHabitIdRoute
+}
+
+const ScreensRouteChildren: ScreensRouteChildren = {
+  ScreensIndexRoute: ScreensIndexRoute,
+  ScreensHabitsHabitIdRoute: ScreensHabitsHabitIdRoute,
+}
+
+const ScreensRouteWithChildren =
+  ScreensRoute._addFileChildren(ScreensRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  HabitsHabitIdRoute: HabitsHabitIdRoute,
+  ScreensRoute: ScreensRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

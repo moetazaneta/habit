@@ -1,11 +1,14 @@
+import type { AnyRouter } from "@tanstack/react-router";
+
 /**
- * The shared-element transition from a row of the list to the page of its habit: the icon and the
- * name of the row (its identity plate) move and grow into the title of the page, while the rest
- * of the screen crossfades. It uses the View Transitions API through the router (`viewTransition`
- * on the row's link); a browser without it navigates without the transition.
+ * The shared-element transition between a row of the list and the page of its habit: the icon and
+ * the name of the row (its identity plate) move and grow into the title of the page, and shrink
+ * back into the row on the way back, while the rest of the screen crossfades. It uses the View
+ * Transitions API through the router; a browser without it navigates without the transition.
  *
- * Only list → page animates. The way back is the back gesture, which on iOS already slides the
- * page away; a second animation on top of it would play twice.
+ * The way back animates from the page's Back button, and from the browser's back when the browser
+ * says that it draws no animation of its own (`hasUAVisualTransition`): the back swipe on iOS
+ * already slides the page away, and a second animation on top of it would play twice.
  *
  * While a view transition runs, the browser gives every pointer event to the document, so a tap
  * on the page would be lost. The move is short (320ms, see habit-page.css), and a finger that
@@ -24,9 +27,34 @@ let marked: HTMLElement[] = [];
  */
 export function markPlate(head: HTMLElement, { plate = true }: { plate?: boolean } = {}): void {
   passTapsThrough();
-  for (const element of marked) element.style.viewTransitionName = "";
-  marked = [];
+  unmark();
+  if (plate) mark(head);
+}
+
+/**
+ * Prepares the way back from the page of a habit to the list, before the router goes there: the
+ * router runs the transition, and with `plate` the row of the habit (its link carries
+ * `data-plate` with the habit's id) takes the names as soon as the list has rendered, so the title
+ * of the page shrinks into it. Without it (reduced motion, the keyboard), the screens only
+ * crossfade.
+ */
+export function markReturn(
+  router: AnyRouter,
+  habitId: string,
+  { plate = true }: { plate?: boolean } = {},
+): void {
+  passTapsThrough();
+  unmark();
+  router.shouldViewTransition = true;
   if (!plate) return;
+  const stop = router.subscribe("onRendered", () => {
+    stop();
+    const head = document.querySelector<HTMLElement>(`[data-plate="${CSS.escape(habitId)}"]`);
+    if (head !== null) mark(head);
+  });
+}
+
+function mark(head: HTMLElement): void {
   const [icon, name] = Array.from(head.children) as HTMLElement[];
   if (icon === undefined || name === undefined) return;
   icon.style.viewTransitionName = PLATE_ICON;
@@ -34,7 +62,12 @@ export function markPlate(head: HTMLElement, { plate = true }: { plate?: boolean
   marked = [icon, name];
 }
 
-/** How long after a row's click the transition can still run (the page loads, then moves). */
+function unmark(): void {
+  for (const element of marked) element.style.viewTransitionName = "";
+  marked = [];
+}
+
+/** How long after a click the transition can still run (the screen loads, then moves). */
 const TRANSITION_WINDOW_MS = 1500;
 /** A press that moves farther than this is not a tap. */
 const TAP_SLOP_PX = 10;

@@ -36,9 +36,11 @@ const LIFT_DELAY_MS = 300;
 
 /**
  * The habit list, the main screen: a sticky header of the last Days, a row per habit, and the
- * "New habit" button at the end. No title, no cards, no lines: space separates the rows.
+ * "New habit" button at the end. No title, no cards, no lines: space separates the rows. With
+ * `pageOpen`, the page of a habit is open beside the list (a desktop), and a row opens its page in
+ * that place.
  */
-export function HabitList() {
+export function HabitList({ pageOpen = false }: { pageOpen?: boolean }) {
   const { source, habits } = useHabits();
   const entries = useEntries();
   const act = useAct();
@@ -113,7 +115,7 @@ export function HabitList() {
   }, []);
 
   return (
-    <main className="habit-list">
+    <div className="habit-list">
       <h1 className="sr-only">Habits</h1>
       <DayHeader days={days} today={today} />
       {source === "none" ? (
@@ -142,6 +144,8 @@ export function HabitList() {
                   days={days}
                   today={today}
                   entries={entries}
+                  wide={wide}
+                  replace={pageOpen}
                   onTap={onTap}
                   onOpenInput={onOpenInput}
                   onPaint={onPaint}
@@ -152,7 +156,7 @@ export function HabitList() {
         </DndContext>
       )}
       {source === "none" ? null : <NewHabitButton onClick={() => openSheet({ new: true })} />}
-    </main>
+    </div>
   );
 }
 
@@ -177,7 +181,7 @@ function NewHabitButton({ onClick }: { onClick: () => void }) {
   return (
     <button type="button" className="new-habit" onClick={onClick}>
       <PlusIcon weight="bold" aria-hidden />
-      New habit
+      <span className="new-habit-label">New habit</span>
     </button>
   );
 }

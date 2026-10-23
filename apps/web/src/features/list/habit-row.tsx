@@ -12,6 +12,13 @@ import { DayCells, type DayCellsProps } from "@/features/list/day-cells";
 
 export interface HabitRowProps extends Pick<DayCellsProps, "days" | "today" | "entries"> {
   habit: Habit;
+  /** The wide layout (a desktop): the page opens beside the list, not out of the row. */
+  wide: boolean;
+  /**
+   * A page is open beside the list: this row's page takes its place in the history, so Back
+   * returns to the list and not to the page before.
+   */
+  replace: boolean;
   onTap: (habit: Habit, day: Day) => void;
   onOpenInput: (habit: Habit, day: Day) => void;
   onPaint: (habit: Habit, days: Day[], mode: "set" | "clear") => void;
@@ -26,6 +33,8 @@ export const HabitRow = memo(function HabitRow({
   days,
   today,
   entries,
+  wide,
+  replace,
   onTap,
   onOpenInput,
   onPaint,
@@ -66,16 +75,20 @@ export const HabitRow = memo(function HabitRow({
           ref={setActivatorNodeRef}
           to="/habits/$habitId"
           params={{ habitId: habit.id }}
+          replace={replace}
           className="habit-row-head"
           draggable={false}
           {...sortableAttributes}
           {...listeners}
           aria-roledescription="habit, long press to reorder"
-          // The icon and the name grow into the title of the habit page; under reduced motion the
-          // screens only crossfade.
+          data-plate={habit.id}
+          // On a phone the icon and the name grow into the title of the habit page; under reduced
+          // motion the screens only crossfade. On a desktop the page slides in beside the list.
           viewTransition
           onClick={(event: MouseEvent<HTMLAnchorElement>) => {
-            if (isPlainClick(event)) markPlate(event.currentTarget, { plate: !reduceMotion });
+            if (isPlainClick(event)) {
+              markPlate(event.currentTarget, { plate: !reduceMotion && !wide });
+            }
           }}
         >
           <HabitIcon icon={habit.icon} color={habit.color} />

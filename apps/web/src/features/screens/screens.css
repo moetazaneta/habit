@@ -1,0 +1,248 @@
+/*
+ * The list and the page of a habit beside it, on a desktop (the wide layout, from 40em). The
+ * window does not scroll: the list and the page are columns of the screen's height that scroll by
+ * themselves. With no page, the list's column is as wide as the window, so a wheel anywhere scrolls
+ * the list. With a page, the list and the page sit together in the middle, and each column reaches
+ * its edge of the window.
+ *
+ * The list beside a page is as wide as the room allows: the whole list with its Days, then the
+ * icons and the names, then the icons alone. Below 40em the page takes the place of the list.
+ */
+
+/* The measures of the two columns. They live on the root, where the view transition reads them. */
+@media (min-width: 40em) {
+  :root {
+    /* The list beside a page: the icons alone, the icons and the names, or the whole list. */
+    --split-list: calc(var(--icon) + 2 * var(--gutter));
+    /* The room between the Days of the whole list and the page. */
+    --split-gap: 0px;
+    --split-page: min(600px, 100vw - var(--split-list) - var(--split-gap));
+    /* How far the list moves from the middle of the window when a page opens beside it. */
+    --split-shift: calc((var(--split-list) + var(--split-gap) + var(--split-page) - 600px) / 2);
+  }
+}
+
+@media (min-width: 55em) {
+  :root {
+    --split-list: 15rem;
+  }
+}
+
+@media (min-width: 75em) {
+  :root {
+    --split-list: 600px;
+    --split-gap: 2.5rem;
+  }
+}
+
+@layer components {
+  @media (min-width: 40em) {
+    .screens {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      height: 100dvh;
+    }
+
+    .screens-list,
+    .screens-page {
+      height: 100dvh;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
+    .screens-list .habit-list {
+      view-transition-name: screens-list;
+    }
+
+    /* The list's column takes the room between the columns, so its scrollbar sits in the gap. */
+    .screens[data-split] {
+      grid-template-columns:
+        minmax(0, 1fr) var(--split-list) var(--split-gap) minmax(0, 600px)
+        minmax(0, 1fr);
+    }
+
+    .screens[data-split] .screens-list {
+      grid-column: 1 / 4;
+    }
+
+    .screens[data-split] .habit-list {
+      width: var(--split-list);
+      margin: 0 var(--split-gap) 0 auto;
+    }
+
+    .screens[data-split] .screens-page {
+      grid-column: 4 / 6;
+      view-transition-name: screens-page;
+    }
+
+    .screens[data-split] .habit-page {
+      margin: 0;
+    }
+
+    /* The floating buttons stay over the bottom edge of the page's column. */
+    .screens[data-split] .hp-actions {
+      right: auto;
+      left: calc((100vw + var(--split-list) + var(--split-gap) - var(--split-page)) / 2);
+      width: var(--split-page);
+      margin: 0;
+    }
+
+    /* The title does not come from the row, which stays in its place. */
+    .screens[data-split] .hp-identity-icon,
+    .screens[data-split] .hp-name {
+      view-transition-name: none;
+    }
+
+    /* The habit whose page is open. */
+    .screens[data-split] .habit-row-inner {
+      position: relative;
+      isolation: isolate;
+    }
+
+    .screens[data-split] .habit-row-inner:has(> [aria-current="page"])::before {
+      position: absolute;
+      inset: 0.25rem calc(var(--gutter) - 0.625rem);
+      z-index: -1;
+      background: var(--surface-2);
+      border-radius: calc(0.75rem * var(--squircle-k));
+      corner-shape: squircle;
+      content: "";
+    }
+
+    .screens[data-split] .habit-row-head[aria-current="page"] .habit-row-name {
+      color: var(--ink);
+    }
+
+    /* ── The icons and the names: the Days go. The header keeps its height, so the rows stay where
+       they were, but with no dates it does not stick. ── */
+
+    @media (width < 75em) {
+      .screens[data-split] .habit-row .day-cells,
+      .screens[data-split] .habit-row .day-columns {
+        display: none;
+      }
+
+      .screens[data-split] .list-header {
+        position: static;
+        overflow: clip;
+      }
+
+      .screens[data-split] .list-header .day-columns {
+        visibility: hidden;
+      }
+
+      .screens[data-split] .habit-row-head {
+        margin-right: 0;
+      }
+    }
+
+    /* ── The icons alone: the names stay for screen readers. ── */
+
+    @media (width < 55em) {
+      .screens[data-split] .habit-row-name,
+      .screens[data-split] .new-habit-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
+
+      .screens[data-split] .skeleton-name {
+        display: none;
+      }
+
+      .screens[data-split] .habit-row-inner:has(> [aria-current="page"])::before {
+        inset: calc((var(--row) - 2.375rem) / 2) calc((var(--split-list) - 2.375rem) / 2);
+      }
+
+      .screens[data-split] .new-habit {
+        width: 2.375rem;
+        height: 2.375rem;
+        margin: 0.375rem auto 0;
+      }
+    }
+  }
+}
+
+/* ── The page comes in beside the list: the list moves aside with the sheet spring and keeps its
+   left edge, so what it drops is cut off as its column narrows, and the page comes from the right
+   with it, as if the list pulled it in. Switching to another habit crossfades the pages. ── */
+
+::view-transition-group(screens-list),
+::view-transition-group(screens-page) {
+  animation-duration: var(--spring-sheet-duration, 450ms);
+  animation-timing-function: var(--spring-sheet-easing, var(--ease-drawer));
+}
+
+::view-transition-group(screens-list) {
+  overflow: clip;
+}
+
+/* At their own size, from the left edge: never scaled into the new width. */
+::view-transition-old(screens-list),
+::view-transition-new(screens-list) {
+  width: auto;
+  height: auto;
+  animation-duration: 240ms;
+  animation-timing-function: var(--ease-out);
+}
+
+::view-transition-old(screens-page),
+::view-transition-new(screens-page) {
+  animation-duration: 200ms;
+  animation-timing-function: var(--ease-out);
+}
+
+::view-transition-new(screens-page):only-child {
+  animation:
+    screens-slide-in var(--spring-sheet, 450ms var(--ease-drawer)) both,
+    screens-fade-in 300ms var(--ease-out) both;
+}
+
+::view-transition-old(screens-page):only-child {
+  animation:
+    screens-slide-out var(--spring-sheet, 450ms var(--ease-drawer)) both,
+    screens-fade-out 200ms var(--ease-out) both;
+}
+
+@keyframes screens-slide-in {
+  from {
+    transform: translateX(calc(var(--split-shift) + 1.5rem));
+  }
+}
+
+@keyframes screens-slide-out {
+  to {
+    transform: translateX(calc(var(--split-shift) + 1.5rem));
+  }
+}
+
+@keyframes screens-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes screens-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(screens-list),
+  ::view-transition-group(screens-page) {
+    animation: none;
+  }
+
+  ::view-transition-new(screens-page):only-child {
+    animation: screens-fade-in 180ms ease both;
+  }
+
+  ::view-transition-old(screens-page):only-child {
+    animation: screens-fade-out 180ms ease both;
+  }
+}

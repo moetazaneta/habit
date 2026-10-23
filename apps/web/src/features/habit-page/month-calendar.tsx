@@ -34,6 +34,7 @@ import { DaySquare } from "@/components/day-square";
 import { dayOfMonth, describeEntry, formatDayLong } from "@/components/format";
 import { haptic } from "@/components/haptics";
 import { entryRef, useOpenSheet, useSheetSearch } from "@/components/sheet-search";
+import { MonthSelect } from "@/features/habit-page/month-select";
 import { CALENDAR_ROWS, formatMonth, monthWeeks } from "@/features/habit-page/months";
 import { useMonthPager } from "@/features/habit-page/use-month-pager";
 import { LONG_PRESS_MS } from "@/features/list/day-cells";
@@ -51,10 +52,14 @@ const SLOP_PX = 8;
 const FLICK_PX_PER_MS = 0.11;
 /** A flick must still be a deliberate move, not a slip at the end of a tap. */
 const FLICK_MIN_PX = 16;
-/** A horizontal wheel (a trackpad swipe) of this many pixels turns one page. */
-const WHEEL_PAGE_PX = 60;
+/** A trackpad swipe whose events stop for this long has lifted without momentum. */
+const WHEEL_LIFT_MS = 80;
 /** Wheel events closer than this belong to one trackpad swipe (with its momentum). */
 const WHEEL_QUIET_MS = 250;
+/** A step this much larger than the last one is a new swipe, not the momentum of the old one. */
+const WHEEL_FRESH_PX = 4;
+/** The speed of a mouse wheel's notch, in pixels per second: a quick swipe. */
+const NOTCH_SPEED = 1000;
 
 const WEEKDAYS = ["M", "T", "W", "T", "F", "S", "S"] as const;
 
@@ -107,8 +112,9 @@ export interface MonthCalendarProps {
 
 /**
  * The calendar of a habit: one Month per page. A swipe moves between Months (the current Month
- * first, older Months with a swipe to the right, no future Months); the arrows, a trackpad swipe
- * and Page Up / Page Down do the same.
+ * first, older Months with a swipe to the right, no future Months), and so does a trackpad swipe.
+ * Under the Days, near the thumb: the month and the year to pick, Today, and the arrows; Page Up
+ * and Page Down page too.
  *
  * Input, as in the list (docs/v1.md, "Input"):
  * - check: a tap toggles the Day; a hold of PAINT_HOLD_MS, then a drag, paints the Days (the first
@@ -120,6 +126,11 @@ export interface MonthCalendarProps {
  */
 export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalendarProps) {
   const newest = monthOf(today);
+  // The years to pick from: back to the habit's start, and at least the two before this one.
+  const oldestYear = Math.min(
+    new Date(habit.createdAt).getFullYear(),
+    Number(newest.slice(0, 4)) - 2,
+  );
   const entries = useEntries();
   const act = useAct();
   const openSheet = useOpenSheet();
@@ -342,32 +353,81 @@ export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalen
     return () => viewport.removeEventListener("touchmove", onTouchMove);
   }, [pager.viewportRef]);
 
-  // A horizontal trackpad swipe turns one page, also with its momentum. It must not reach the
-  // browser, which would go back in the history.
-  const pageRef = useRef(page);
-  pageRef.current = page;
+  // A horizontal trackpad swipe moves the pages with the fingers, as a swipe on a phone does, and
+  // settles when they lift. The trackpad then keeps sending events with shrinking steps (its
+  // momentum): those are ignored until it is quiet, or until a new swipe starts. None of them may
+  // reach the browser, which would go back in the history.
+  const pagerRef = useRef(pager);
+  pagerRef.current = pager;
   useEffect(() => {
-    const viewport = pager.viewportRef.current;
+    const viewport = pagerRef.current.viewportRef.current;
     if (viewport === null) return;
-    let distance = 0;
+    let phase: "idle" | "swipe" | "coast" = "idle";
+    let start = 0;
+    let dx = 0;
+    let steps: number[] = [];
+    let samples: { t: number; x: number }[] = [];
+    let lastStep = 0;
     let quietUntil = 0;
-    const onWheel = (event: WheelEvent) => {
-      if (Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;
-      event.preventDefault();
-      const now = event.timeStamp;
-      if (now < quietUntil) {
-        quietUntil = now + WHEEL_QUIET_MS;
+    let timer: number | undefined;
+
+    const settle = (t: number) => {
+      window.clearTimeout(timer);
+      phase = "coast";
+      // A wheel with notches (a mouse) sends an event or two for a move: each move turns a page,
+      // as a quick swipe would.
+      if (steps.length <= 2) {
+        const direction = Math.sign(dx) as -1 | 0 | 1;
+        pagerRef.current.release(direction * NOTCH_SPEED, direction);
         return;
       }
-      distance += event.deltaX;
-      if (Math.abs(distance) < WHEEL_PAGE_PX) return;
-      pageRef.current(distance > 0 ? 1 : -1);
-      distance = 0;
-      quietUntil = now + WHEEL_QUIET_MS;
+      pagerRef.current.release(
+        velocityOf(samples),
+        flickOf({ x: 0, t: start }, { clientX: dx, timeStamp: t }),
+      );
     };
+
+    const onWheel = (event: WheelEvent) => {
+      if (phase !== "swipe" && Math.abs(event.deltaX) <= Math.abs(event.deltaY)) {
+        phase = "idle";
+        return;
+      }
+      event.preventDefault();
+      const now = event.timeStamp;
+      const step = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? event.deltaX * 16 : event.deltaX;
+      if (phase === "coast") {
+        const fresh = now > quietUntil || Math.abs(step) > Math.abs(lastStep) + WHEEL_FRESH_PX;
+        lastStep = step;
+        quietUntil = now + WHEEL_QUIET_MS;
+        if (!fresh) return;
+        phase = "idle";
+      }
+      if (phase === "idle") {
+        pagerRef.current.grab();
+        phase = "swipe";
+        start = now;
+        dx = 0;
+        steps = [];
+        samples = [];
+      }
+      dx -= step;
+      steps.push(step);
+      samples.push({ t: now, x: dx });
+      if (samples.length > 8) samples.shift();
+      pagerRef.current.drag(dx);
+      lastStep = step;
+      quietUntil = now + WHEEL_QUIET_MS;
+      window.clearTimeout(timer);
+      if (isMomentum(steps)) settle(now);
+      else timer = window.setTimeout(() => settle(performance.now()), WHEEL_LIFT_MS);
+    };
+
     viewport.addEventListener("wheel", onWheel, { passive: false });
-    return () => viewport.removeEventListener("wheel", onWheel);
-  }, [pager.viewportRef]);
+    return () => {
+      viewport.removeEventListener("wheel", onWheel);
+      window.clearTimeout(timer);
+    };
+  }, []);
 
   // ── Keyboard ──────────────────────────────────────────────────────────────────────────────────
 
@@ -426,33 +486,9 @@ export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalen
 
   return (
     <section className="hp-cal" aria-labelledby="hp-cal-title">
-      <div className="hp-cal-head">
-        <h2 id="hp-cal-title" className="hp-cal-title" aria-live="polite">
-          {formatMonth(month)}
-        </h2>
-        {month === newest ? null : (
-          <button type="button" className="hp-cal-today" onClick={() => pager.goTo(newest)}>
-            Today
-          </button>
-        )}
-        <button
-          type="button"
-          className="hp-cal-arrow"
-          aria-label="Previous month"
-          onClick={() => page(-1)}
-        >
-          <CaretLeftIcon weight="bold" />
-        </button>
-        <button
-          type="button"
-          className="hp-cal-arrow"
-          aria-label="Next month"
-          disabled={month >= newest}
-          onClick={() => page(1)}
-        >
-          <CaretRightIcon weight="bold" />
-        </button>
-      </div>
+      <h2 id="hp-cal-title" className="sr-only" aria-live="polite">
+        {formatMonth(month)}
+      </h2>
       <div className="hp-cal-weekdays" aria-hidden>
         {WEEKDAYS.map((letter, index) => (
           <span key={index}>{letter}</span>
@@ -499,6 +535,36 @@ export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalen
             />
           ))}
         </div>
+      </div>
+      <div className="hp-cal-controls">
+        <MonthSelect
+          month={month}
+          newest={newest}
+          oldestYear={oldestYear}
+          onChange={(destination) => pager.goTo(destination)}
+        />
+        {month === newest ? null : (
+          <button type="button" className="hp-cal-today" onClick={() => pager.goTo(newest)}>
+            Today
+          </button>
+        )}
+        <button
+          type="button"
+          className="hp-cal-arrow"
+          aria-label="Previous month"
+          onClick={() => page(-1)}
+        >
+          <CaretLeftIcon weight="bold" />
+        </button>
+        <button
+          type="button"
+          className="hp-cal-arrow"
+          aria-label="Next month"
+          disabled={month >= newest}
+          onClick={() => page(1)}
+        >
+          <CaretRightIcon weight="bold" />
+        </button>
       </div>
     </section>
   );
@@ -607,12 +673,14 @@ function CalendarDay({
 }) {
   const future = isFuture(day, today);
   const level = painted === null ? intensity(habit, value) : painted === "set" ? 1 : 0;
+  const mark = painted === null ? optionMark(habit, value) : undefined;
   return (
     <button
       type="button"
       className="hp-day"
       data-day={day}
       data-today={day === today ? "" : undefined}
+      data-mark={mark === undefined ? undefined : ""}
       data-pressed={pressed ?? undefined}
       data-late={pressedLate ? "" : undefined}
       tabIndex={tabbable ? 0 : -1}
@@ -626,9 +694,6 @@ function CalendarDay({
       }
       disabled={future || loading}
     >
-      <span className="hp-day-number" aria-hidden>
-        {dayOfMonth(day)}
-      </span>
       <span className="hp-day-press">
         <DaySquare
           // Loaded data is not a value that rose: the square mounts at its value, without a pulse.
@@ -638,10 +703,16 @@ function CalendarDay({
           recorded={!loading && (painted === null ? value !== undefined : painted === "set")}
           size="var(--cal-square)"
           variant={future ? "future" : "day"}
-          label={painted === null ? optionMark(habit, value) : undefined}
+          look="fill"
+          label={mark ?? dayOfMonth(day)}
           data-entry={entryRef(habit.id, day)}
           data-editing={editing ? "" : undefined}
         />
+        {mark === undefined ? null : (
+          <span className="hp-day-corner" aria-hidden>
+            {dayOfMonth(day)}
+          </span>
+        )}
       </span>
     </button>
   );
@@ -683,6 +754,17 @@ function flickOf(
   const elapsed = event.timeStamp - swipe.t;
   if (Math.abs(distance) < FLICK_MIN_PX || elapsed <= 0) return 0;
   return Math.abs(distance) / elapsed > FLICK_PX_PER_MS ? (Math.sign(distance) as -1 | 1) : 0;
+}
+
+/** The momentum of a trackpad after a lift: steps that shrink, event after event, one way. */
+function isMomentum(steps: number[]): boolean {
+  if (steps.length < 6) return false;
+  const tail = steps.slice(-4);
+  return tail.every(
+    (step, index) =>
+      index === 0 ||
+      (Math.sign(step) === Math.sign(tail[0]!) && Math.abs(step) < Math.abs(tail[index - 1]!)),
+  );
 }
 
 /** The finger's speed over the last 100 ms, in pixels per second. */

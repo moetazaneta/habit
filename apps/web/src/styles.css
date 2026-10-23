@@ -83,6 +83,8 @@
   --surface: oklch(1 0 0);
   --surface-2: oklch(0.962 0.003 286);
   --surface-3: oklch(0.935 0.005 286);
+  /* An empty Day without a frame (the habit page). */
+  --tile: oklch(0.947 0.004 286);
   /* A text field inside a sheet. */
   --field: oklch(0.962 0.003 286);
   --backdrop: oklch(0 0 0 / 0.2);
@@ -160,6 +162,7 @@
     --surface: oklch(0.227 0.004 286); /* #1c1c1e */
     --surface-2: oklch(0.294 0.004 286);
     --surface-3: oklch(0.349 0.003 286);
+    --tile: oklch(0.247 0.004 286);
     /* A well of the ground in the sheet, so the placeholder keeps its contrast. */
     --field: oklch(0 0 0);
     --backdrop: oklch(0 0 0 / 0.6);
@@ -330,14 +333,16 @@
     transition: transform var(--spring-fill, 420ms var(--ease-out));
   }
 
-  .day-square-fill[data-trend="down"] {
+  .day-square[data-trend="down"] .day-square-fill {
     transition: transform 200ms var(--ease-out);
   }
 
-  .day-square[data-animated="false"] .day-square-fill {
+  .day-square[data-animated="false"] :is(.day-square-fill, .day-square-label) {
     transition: none;
   }
 
+  /* The label is drawn twice: over the empty part, and in the ground color over the fill. The two
+     clips follow the fill with its own transition, so a digit splits where the fill ends. */
   .day-square-label {
     position: absolute;
     inset: 0;
@@ -346,10 +351,17 @@
     font-size: calc(var(--ds-size) * 0.5);
     line-height: 1;
     color: var(--c);
+    clip-path: inset(0 0 calc(var(--p) * 100%) 0);
+    transition: clip-path var(--spring-fill, 420ms var(--ease-out));
   }
 
-  .day-square[data-state="full"] .day-square-label {
+  .day-square-label[data-on-fill] {
     color: var(--ground);
+    clip-path: inset(calc((1 - var(--p)) * 100%) 0 0 0);
+  }
+
+  .day-square[data-trend="down"] .day-square-label {
+    transition: clip-path 200ms var(--ease-out);
   }
 
   /* The Day that the input sheet edits: above the scrim (between the backdrop at 50 and the sheet
@@ -381,9 +393,22 @@
     display: none;
   }
 
+  /* The filled look: no frame. An empty Day is a quiet tile, and the gauge fills over a tint of the
+     habit color, so a partial Day, or a recorded zero, still reads as this habit's. */
+  .day-square[data-look="fill"] {
+    background: color-mix(in oklab, var(--c) 24%, var(--tile));
+    box-shadow: none;
+  }
+
+  .day-square[data-look="fill"]:is([data-state="empty"], [data-variant="future"]) {
+    background: var(--tile);
+    box-shadow: none;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     /* The fill changes in place; DaySquare fades it in instead of moving it. */
-    .day-square-fill {
+    .day-square-fill,
+    .day-square-label {
       transition: none;
     }
   }

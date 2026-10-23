@@ -184,6 +184,20 @@ test("a Month in the grid moves the calendar there; the arrows and Today page", 
   expect(screen.queryByRole("button", { name: "Today" })).toBeNull();
 });
 
+test("the month and the year selects move the calendar, never past this month", async () => {
+  renderPage(demoHabitIds.water);
+
+  await screen.findByRole("heading", { name: "October 2026" });
+  fireEvent.change(screen.getByRole("combobox", { name: "Year" }), { target: { value: "2025" } });
+  expect(await screen.findByRole("heading", { name: "October 2025" })).toBeTruthy();
+  fireEvent.change(screen.getByRole("combobox", { name: "Month" }), { target: { value: "12" } });
+  expect(await screen.findByRole("heading", { name: "December 2025" })).toBeTruthy();
+
+  // December 2026 has not come yet: the calendar stops at this month.
+  fireEvent.change(screen.getByRole("combobox", { name: "Year" }), { target: { value: "2026" } });
+  expect(await screen.findByRole("heading", { name: "October 2026" })).toBeTruthy();
+});
+
 test("the keyboard moves between Days and Months at once", async () => {
   renderPage(demoHabitIds.meditate);
 
