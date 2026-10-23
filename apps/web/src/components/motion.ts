@@ -53,6 +53,9 @@ export const cssSprings = {
  */
 export const morphTiming = timingOf(cssSprings.morph);
 
+/** The sheet spring as the timing of a Web Animation, for a sheet that grows out of a control. */
+export const sheetTiming = timingOf(cssSprings.sheet);
+
 function timingOf(css: string): { duration: number; easing: string } {
   const [duration = "", ...easing] = css.split(" ");
   return { duration: Number.parseFloat(duration), easing: easing.join(" ") };

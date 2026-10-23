@@ -690,6 +690,19 @@
     background: linear-gradient(to bottom, transparent, var(--surface));
   }
 
+  /* A sheet that grows out of the control that opened it (sheet-morph.ts) neither slides nor
+     scales: the clip of its viewport carries it from the control's box to its own. */
+  .sheet-viewport[data-morph] .sheet-popup[data-starting-style],
+  .sheet-viewport[data-morph] .sheet-popup[data-ending-style] {
+    transform: translateY(var(--drawer-swipe-movement-y, 0px));
+  }
+
+  .dialog-viewport[data-morph] .dialog-popup[data-starting-style],
+  .dialog-viewport[data-morph] .dialog-popup[data-ending-style] {
+    opacity: 1;
+    transform: none;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     /* A fade replaces the slide and the scale; a swipe still follows the finger. */
     .sheet-popup,

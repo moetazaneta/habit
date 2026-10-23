@@ -6,6 +6,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 import { springs } from "@/components/motion";
+import { useSheetMorph } from "@/components/sheet-morph";
 import { useIsWide } from "@/components/use-media-query";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +33,11 @@ export interface ResponsiveSheetProps {
    */
   initialFocus?: InitialFocus;
   /**
+   * The control the sheet grows out of and shrinks back into (`morphSource(id)` on it), when it
+   * is on screen. Not for the desktop popover, which already comes out of its anchor.
+   */
+  morphFrom?: string;
+  /**
    * The buttons that end the sheet. They stay at the bottom while the content above changes its
    * height or scrolls, so the main action never moves.
    */
@@ -39,6 +45,8 @@ export interface ResponsiveSheetProps {
   className?: string;
   children: ReactNode;
 }
+
+type SheetMorph = ReturnType<typeof useSheetMorph>;
 
 /**
  * One sheet for every form and input: a bottom sheet on a phone (swipe down to dismiss), and on a
@@ -56,9 +64,11 @@ export function ResponsiveSheet(props: ResponsiveSheetProps) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const shown = { ...props, open: props.open && mounted };
-  if (!wide) return <BottomSheet {...shown} />;
-  if (props.desktop === "popover" && props.anchor) return <AnchoredPopover {...shown} />;
-  return <CenteredDialog {...shown} />;
+  const popover = wide && props.desktop === "popover" && props.anchor != null;
+  const morph = useSheetMorph(popover ? undefined : props.morphFrom, shown.open);
+  if (!wide) return <BottomSheet {...shown} morph={morph} />;
+  if (popover) return <AnchoredPopover {...shown} />;
+  return <CenteredDialog {...shown} morph={morph} />;
 }
 
 function BottomSheet({
@@ -72,20 +82,25 @@ function BottomSheet({
   footer,
   className,
   children,
-}: ResponsiveSheetProps) {
+  morph,
+}: ResponsiveSheetProps & { morph: SheetMorph }) {
   return (
     <Drawer.Root
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={(isOpen, details) => {
+        if (!isOpen && details.reason === "swipe") morph.release();
+        onOpenChange(isOpen);
+      }}
       onOpenChangeComplete={(isOpen) => {
         if (!isOpen) onExitComplete?.();
       }}
     >
       <Drawer.Portal>
         <Drawer.Backdrop className="sheet-backdrop" />
-        <Drawer.Viewport className="sheet-viewport">
+        <Drawer.Viewport ref={morph.viewportRef} className="sheet-viewport">
           <Drawer.VirtualKeyboardProvider>
             <Drawer.Popup
+              ref={morph.popupRef}
               className={cn("sheet-popup", className)}
               {...(initialFocus === undefined ? {} : { initialFocus })}
             >
@@ -130,7 +145,8 @@ function CenteredDialog({
   footer,
   className,
   children,
-}: ResponsiveSheetProps) {
+  morph,
+}: ResponsiveSheetProps & { morph: SheetMorph }) {
   return (
     <Dialog.Root
       open={open}
@@ -141,8 +157,9 @@ function CenteredDialog({
     >
       <Dialog.Portal>
         <Dialog.Backdrop className="dialog-backdrop" />
-        <Dialog.Viewport className="dialog-viewport">
+        <Dialog.Viewport ref={morph.viewportRef} className="dialog-viewport">
           <Dialog.Popup
+            ref={morph.popupRef}
             className={cn("dialog-popup", className)}
             {...(initialFocus === undefined ? {} : { initialFocus })}
           >
