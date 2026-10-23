@@ -1,5 +1,6 @@
 import type { HabitColor, HabitIcon as HabitIconValue } from "@habit/core";
 import { MagnifyingGlassIcon } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
+import { ProhibitIcon } from "@phosphor-icons/react/dist/csr/Prohibit";
 import { XIcon } from "@phosphor-icons/react/dist/csr/X";
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 
@@ -17,33 +18,43 @@ const ALL_ICONS: HabitIconValue[] = PHOSPHOR_ICON_GROUPS.flatMap((group) =>
 /**
  * The icon picker: the curated Phosphor icons by group, or a short list of emoji, and one search
  * field over both. Any emoji typed into the search (from the emoji keyboard) can be used as it is.
- * A tap picks and goes back.
+ * A tap picks and goes back. With `emojiOnly`, it offers emoji alone, as an Option's icon is.
  */
 export function IconPicker({
   value,
   color,
   onPick,
+  onClear,
   autoFocus,
+  emojiOnly = false,
 }: {
-  value: HabitIconValue;
+  value: HabitIconValue | undefined;
   color: HabitColor;
   onPick: (icon: HabitIconValue) => void;
+  /** Offers "No emoji" first in the emoji grid, for an icon that may be left out. */
+  onClear?: () => void;
   /** Focus the search field: on a desktop, where no keyboard covers the grid. */
   autoFocus: boolean;
+  emojiOnly?: boolean;
 }) {
   const [query, setQuery] = useState("");
-  const [tab, setTab] = useState<"icons" | "emoji">(value.type === "emoji" ? "emoji" : "icons");
+  const [pickedTab, setTab] = useState<"icons" | "emoji">(
+    value?.type === "phosphor" ? "icons" : "emoji",
+  );
+  const tab = emojiOnly ? "emoji" : pickedTab;
   const search = useRef<HTMLInputElement>(null);
 
   // Load every icon of the catalog now (each is a small chunk), so the grid fills at once.
-  useEffect(() => preloadHabitIcons(ALL_ICONS), []);
+  useEffect(() => {
+    if (!emojiOnly) return preloadHabitIcons(ALL_ICONS);
+  }, [emojiOnly]);
   useEffect(() => {
     if (autoFocus) search.current?.focus();
   }, [autoFocus]);
 
   const trimmed = query.trim();
   const typedEmoji = firstEmoji(trimmed);
-  const icons = trimmed === "" ? [] : searchIcons(trimmed);
+  const icons = trimmed === "" || emojiOnly ? [] : searchIcons(trimmed);
   const emoji = trimmed === "" ? [] : searchEmoji(trimmed);
 
   return (
@@ -58,7 +69,7 @@ export function IconPicker({
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          aria-label="Search icons, or type an emoji"
+          aria-label={emojiOnly ? "Search emoji, or type one" : "Search icons, or type an emoji"}
           placeholder="Search, or type an emoji"
           autoComplete="off"
           autoCapitalize="none"
@@ -95,7 +106,7 @@ export function IconPicker({
         )}
       </div>
 
-      {trimmed === "" ? (
+      {trimmed === "" && !emojiOnly ? (
         <Segmented
           label="Icon type"
           hideLabel
@@ -118,6 +129,7 @@ export function IconPicker({
             typedEmoji={typedEmoji}
             icons={icons}
             emoji={emoji}
+            noun={emojiOnly ? "emoji" : "icon"}
             value={value}
             color={color}
             onPick={onPick}
@@ -142,6 +154,18 @@ export function IconPicker({
         ) : (
           <>
             <Grid>
+              {onClear === undefined ? null : (
+                <button
+                  type="button"
+                  data-icon-cell=""
+                  onClick={onClear}
+                  aria-label="No emoji"
+                  aria-pressed={value === undefined}
+                  className={cellClass(value === undefined)}
+                >
+                  <ProhibitIcon aria-hidden className="size-[1.375rem] text-ink-3" />
+                </button>
+              )}
               {HABIT_EMOJI.map((entry) => (
                 <IconCell
                   key={entry.emoji}
@@ -167,6 +191,7 @@ function SearchResults({
   typedEmoji,
   icons,
   emoji,
+  noun,
   value,
   color,
   onPick,
@@ -175,7 +200,8 @@ function SearchResults({
   typedEmoji: string | undefined;
   icons: string[];
   emoji: string[];
-  value: HabitIconValue;
+  noun: "icon" | "emoji";
+  value: HabitIconValue | undefined;
   color: HabitColor;
   onPick: (icon: HabitIconValue) => void;
 }) {
@@ -183,7 +209,7 @@ function SearchResults({
   if (icons.length === 0 && emoji.length === 0 && extra.length === 0) {
     return (
       <p className="px-1 pt-2 text-[0.9375rem] leading-6 text-ink-3">
-        No icon for “{query}”. Try another word, or type an emoji.
+        No {noun} for “{query}”. Try another word, or type an emoji.
       </p>
     );
   }
@@ -235,12 +261,12 @@ function IconCell({
   onPick,
 }: {
   icon: HabitIconValue;
-  value: HabitIconValue;
+  value: HabitIconValue | undefined;
   color: HabitColor;
   onPick: (icon: HabitIconValue) => void;
 }) {
   const selected =
-    icon.type === value.type &&
+    icon.type === value?.type &&
     (icon.type === "emoji"
       ? icon.emoji === (value as { emoji: string }).emoji
       : icon.name === (value as { name: string }).name);
@@ -251,14 +277,19 @@ function IconCell({
       onClick={() => onPick(icon)}
       aria-label={icon.type === "emoji" ? icon.emoji : humanize(icon.name)}
       aria-pressed={selected}
-      className={cn(
-        "grid aspect-square min-h-11 place-items-center squircle-[0.625rem] transition-[background-color,scale] duration-150 ease-out active:scale-[0.95] hover:bg-surface-2",
-        selected &&
-          "bg-[color-mix(in_oklab,var(--c)_18%,var(--surface))] shadow-[inset_0_0_0_0.09375rem_color-mix(in_oklab,var(--c)_70%,transparent)] hover:bg-[color-mix(in_oklab,var(--c)_18%,var(--surface))]",
-      )}
+      className={cellClass(selected)}
     >
       <HabitIcon icon={icon} color={color} size="1.625rem" />
     </button>
+  );
+}
+
+/** A cell of the grid. The chosen one takes 18% of the habit color and a ring at 70%. */
+function cellClass(selected: boolean): string {
+  return cn(
+    "grid aspect-square min-h-11 place-items-center squircle-[0.625rem] transition-[background-color,scale] duration-150 ease-out active:scale-[0.95] hover:bg-surface-2",
+    selected &&
+      "bg-[color-mix(in_oklab,var(--c)_18%,var(--surface))] shadow-[inset_0_0_0_0.09375rem_color-mix(in_oklab,var(--c)_70%,transparent)] hover:bg-[color-mix(in_oklab,var(--c)_18%,var(--surface))]",
   );
 }
 
@@ -292,4 +323,28 @@ function moveFocusInGrid(event: KeyboardEvent<HTMLDivElement>) {
   if (next === undefined) return;
   event.preventDefault();
   next.focus();
+}
+
+/** The emoji of an Option: the emoji alone, and "No emoji" first. */
+export function OptionEmojiPicker({
+  emoji,
+  color,
+  onPick,
+  autoFocus,
+}: {
+  emoji: string | undefined;
+  color: HabitColor;
+  onPick: (emoji: string | undefined) => void;
+  autoFocus: boolean;
+}) {
+  return (
+    <IconPicker
+      emojiOnly
+      value={emoji === undefined ? undefined : { type: "emoji", emoji }}
+      color={color}
+      onPick={(icon) => onPick(icon.type === "emoji" ? icon.emoji : undefined)}
+      onClear={() => onPick(undefined)}
+      autoFocus={autoFocus}
+    />
+  );
 }

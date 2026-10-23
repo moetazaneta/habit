@@ -2,6 +2,7 @@ import {
   closestCenter,
   DndContext,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -14,27 +15,47 @@ import { ArrowCounterClockwiseIcon } from "@phosphor-icons/react/dist/csr/ArrowC
 import { DotsSixVerticalIcon } from "@phosphor-icons/react/dist/csr/DotsSixVertical";
 import { PlusIcon } from "@phosphor-icons/react/dist/csr/Plus";
 import { SmileyIcon } from "@phosphor-icons/react/dist/csr/Smiley";
+import { TrashIcon } from "@phosphor-icons/react/dist/csr/Trash";
 import { XIcon } from "@phosphor-icons/react/dist/csr/X";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+  useTransform,
+  type MotionValue,
+} from "motion/react";
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type TouchEventHandler,
+} from "react";
 import { flushSync } from "react-dom";
 
 import { DaySquare } from "@/components/day-square";
 import { haptic } from "@/components/haptics";
+import { useVariant } from "@/components/lab";
 import { cn } from "@/lib/utils";
 
 import { FieldMessage, fieldClass, SectionLabel } from "./controls";
 import { OPTION_LIMITS, offered, retired, scaleIntensity } from "./draft";
-import { firstEmoji } from "./icon-search";
 import { rowPresence } from "./presence";
+import { REMOVE_WIDTH, useSwipeToRemove } from "./swipe-to-remove";
+
+/** On touch, a press on an Option's emoji this long lifts the row for a move, as in the list. */
+const LIFT_DELAY_MS = 300;
 
 export interface OptionsEditorProps {
   kind: "choice" | "scale";
   color: HabitColor;
   options: Option[];
   onLabel: (id: OptionId, label: string) => void;
-  onEmoji: (id: OptionId, emoji: string | undefined) => void;
-  /** Called on blur of a label or an emoji, so an edit form can save at once. */
+  /** Opens the emoji picker for the Option. */
+  onPickEmoji: (id: OptionId) => void;
+  /** Called on blur of a label, so an edit form can save at once. */
   onBlurField?: () => void;
   onAdd: () => OptionId;
   onRemove: (id: OptionId) => void;
@@ -45,9 +66,13 @@ export interface OptionsEditorProps {
 
 /**
  * The Options of a choice or a scale: a label and an optional emoji each, added, renamed, removed
- * and moved (drag the handle, or press the up and down arrow keys on it). A scale draws the fill
- * that each Option gives a day, so its order reads at a glance. Retired Options (removed, but used
- * by old Entries) wait under the list, and can come back.
+ * and moved (drag the handle, or press the up and down arrow keys on it). A tap on the emoji opens
+ * the emoji picker. A scale draws the fill that each Option gives a day, so its order reads at a
+ * glance. Retired Options (removed, but used by old Entries) wait under the list, and can come
+ * back.
+ *
+ * The lab tries gestures instead of the buttons on touch: hold the emoji to lift the row, swipe
+ * the row left to remove it. A mouse keeps the buttons.
  */
 export function OptionsEditor(props: OptionsEditorProps) {
   const { kind, color, options, onAdd, onMove, message } = props;
@@ -62,6 +87,11 @@ export function OptionsEditor(props: OptionsEditorProps) {
   const handles = useRef(new Map<OptionId, HTMLButtonElement>());
   const [focusHandle, setFocusHandle] = useState<OptionId | null>(null);
   const [announcement, setAnnouncement] = useState("");
+  const touch = useVariant("option-row-touch", {
+    label: "Option rows on touch",
+    options: ["Buttons", "Gestures", "Gestures, with a hint"],
+  });
+  const gestures = touch !== "Buttons";
 
   // A keyboard move re-inserts the row, which takes the focus off its handle: give it back.
   useLayoutEffect(() => {
@@ -70,7 +100,11 @@ export function OptionsEditor(props: OptionsEditorProps) {
     setFocusHandle(null);
   }, [focusHandle]);
 
-  const sensors = useSensors(useSensor(PointerSensor));
+  // The handle lifts at once, under a mouse or a finger; the emoji lifts after a hold on touch.
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(TouchSensor, { activationConstraint: { delay: LIFT_DELAY_MS, tolerance: 8 } }),
+  );
 
   const add = () => {
     // Render the new row now, inside the tap, so that iOS opens the keyboard for its label.
@@ -105,6 +139,11 @@ export function OptionsEditor(props: OptionsEditorProps) {
       <SectionLabel id={labelId}>
         {kind === "scale" ? "Options, from the lightest to the fullest" : "Options"}
       </SectionLabel>
+      {touch === "Gestures, with a hint" ? (
+        <p className="-mt-1 mb-2 hidden text-[0.875rem] leading-5 text-ink-3 pointer-coarse:block">
+          To move an option, hold its emoji. To remove it, swipe it left.
+        </p>
+      ) : null}
       <p id={hintId} className="sr-only">
         Drag a handle, or press the up and down arrow keys on it, to move an option.
       </p>
@@ -136,6 +175,7 @@ export function OptionsEditor(props: OptionsEditorProps) {
                   canRemove={shown.length > limits.min}
                   intensity={kind === "scale" ? scaleIntensity(options, option.id) : undefined}
                   hintId={hintId}
+                  gestures={gestures}
                   reduceMotion={reduceMotion}
                   labelRef={(element) => {
                     if (element === null) labels.current.delete(option.id);
@@ -200,13 +240,14 @@ function OptionRow({
   intensity,
   color,
   hintId,
+  gestures,
   reduceMotion,
   labelRef,
   handleRef,
   onArrow,
   onEnter,
   onLabel,
-  onEmoji,
+  onPickEmoji,
   onBlurField,
   onRemove,
 }: OptionsEditorProps & {
@@ -216,6 +257,7 @@ function OptionRow({
   canRemove: boolean;
   intensity: number | undefined;
   hintId: string;
+  gestures: boolean;
   reduceMotion: boolean;
   labelRef: (element: HTMLInputElement | null) => void;
   handleRef: (element: HTMLButtonElement | null) => void;
@@ -228,7 +270,27 @@ function OptionRow({
       // The neighbours make room with the app's ease-out; under reduced motion they move at once.
       transition: reduceMotion ? null : { duration: 200, easing: "cubic-bezier(0.23, 1, 0.32, 1)" },
     });
+  const { onTouchStart: liftOnHold, ...handleListeners } = listeners ?? {};
   const name = option.label.trim() || `option ${index + 1}`;
+  const dragging = useRef(false);
+  dragging.current = isDragging;
+  // A hold on the emoji that lifted the row must not open the picker when the finger lets go.
+  const lifted = useRef(false);
+  const swipe = useSwipeToRemove({
+    enabled: gestures && canRemove,
+    blocked: () => dragging.current,
+    onRemove: () => onRemove(option.id),
+    reduceMotion,
+  });
+  const { close } = swipe;
+  // Clipped only while it is off its place: the focus rings of the buttons reach past the row.
+  const overflow = useTransform(swipe.x, (value) => (value === 0 ? "visible" : "hidden"));
+
+  useEffect(() => {
+    if (!isDragging) return;
+    lifted.current = true;
+    close();
+  }, [isDragging, close]);
 
   const onHandleKey = (event: KeyboardEvent<HTMLButtonElement>) => {
     if (event.key === "ArrowUp" || event.key === "ArrowDown") {
@@ -244,112 +306,154 @@ function OptionRow({
         style={{ transform: CSS.Translate.toString(transform), transition }}
         className={cn("relative pb-2", isDragging && "z-10")}
       >
-        <div
-          className={cn(
-            "flex items-center gap-2 squircle-[0.875rem] transition-[background-color,box-shadow] duration-150",
-            isDragging && "bg-surface shadow-[var(--elevation)]",
-          )}
+        <motion.div
+          ref={swipe.container}
+          style={{ overflow }}
+          className="relative squircle-[0.875rem]"
         >
-          {intensity === undefined ? null : (
-            <DaySquare color={color} intensity={intensity} size="1.25rem" className="ml-1" />
-          )}
-          <EmojiSlot
-            emoji={option.emoji}
-            label={name}
-            onEmoji={(emoji) => onEmoji(option.id, emoji)}
-            onBlur={onBlurField}
-          />
-          <input
-            ref={labelRef}
-            value={option.label}
-            onChange={(event) => onLabel(option.id, event.target.value)}
-            onBlur={onBlurField}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                onEnter();
-              }
-            }}
-            aria-label={`Option ${index + 1} of ${count}`}
-            placeholder={`Option ${index + 1}`}
-            autoComplete="off"
-            autoCapitalize="sentences"
-            enterKeyHint="next"
-            className={cn(fieldClass, "flex-1")}
-          />
-          <button
-            type="button"
-            onClick={() => onRemove(option.id)}
-            disabled={!canRemove}
-            aria-label={`Remove ${name}`}
-            className="grid size-11 flex-none place-items-center rounded-full text-ink-3 transition-[color,scale,opacity] duration-150 ease-out hover:text-ink active:scale-[0.95] disabled:opacity-30 disabled:active:scale-100"
+          {gestures && canRemove ? (
+            <SwipeAction x={swipe.x} onRemove={() => onRemove(option.id)} />
+          ) : null}
+          <motion.div
+            style={{ x: swipe.x }}
+            {...swipe.handlers}
+            className={cn(
+              "relative flex items-center gap-2 squircle-[0.875rem] bg-surface transition-[box-shadow] duration-150",
+              gestures && "touch-pan-y",
+              isDragging && "shadow-[var(--elevation)]",
+            )}
           >
-            <XIcon weight="bold" aria-hidden className="size-4" />
-          </button>
-          <button
-            type="button"
-            ref={(element) => {
-              setActivatorNodeRef(element);
-              handleRef(element);
-            }}
-            {...listeners}
-            onKeyDown={onHandleKey}
-            aria-label={`Move ${name}`}
-            aria-describedby={hintId}
-            data-base-ui-swipe-ignore=""
-            className="-ml-1 grid h-11 w-8 flex-none cursor-grab touch-none place-items-center text-ink-3 active:cursor-grabbing"
-          >
-            <DotsSixVerticalIcon weight="bold" aria-hidden className="size-[1.125rem]" />
-          </button>
-        </div>
+            <div
+              onTouchStart={gestures ? (liftOnHold as TouchEventHandler | undefined) : undefined}
+              onContextMenu={gestures ? (event) => event.preventDefault() : undefined}
+              className="flex flex-none items-center gap-2 select-none [-webkit-touch-callout:none]"
+            >
+              {intensity === undefined ? null : (
+                <DaySquare color={color} intensity={intensity} size="1.25rem" className="ml-1" />
+              )}
+              <EmojiButton
+                optionId={option.id}
+                emoji={option.emoji}
+                label={name}
+                onPointerDown={() => {
+                  lifted.current = false;
+                }}
+                onClick={() => {
+                  if (lifted.current) lifted.current = false;
+                  else onPickEmoji(option.id);
+                }}
+              />
+            </div>
+            <input
+              ref={labelRef}
+              value={option.label}
+              onChange={(event) => onLabel(option.id, event.target.value)}
+              onBlur={onBlurField}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  onEnter();
+                }
+              }}
+              aria-label={`Option ${index + 1} of ${count}`}
+              placeholder={`Option ${index + 1}`}
+              autoComplete="off"
+              autoCapitalize="sentences"
+              enterKeyHint="next"
+              className={cn(fieldClass, "flex-1")}
+            />
+            <button
+              type="button"
+              onClick={() => onRemove(option.id)}
+              disabled={!canRemove}
+              aria-label={`Remove ${name}`}
+              className={cn(
+                "grid size-11 flex-none place-items-center rounded-full text-ink-3 transition-[color,scale,opacity] duration-150 ease-out hover:text-ink active:scale-[0.95] disabled:opacity-30 disabled:active:scale-100",
+                gestures && "pointer-coarse:sr-only",
+              )}
+            >
+              <XIcon weight="bold" aria-hidden className="size-4" />
+            </button>
+            <button
+              type="button"
+              ref={(element) => {
+                setActivatorNodeRef(element);
+                handleRef(element);
+              }}
+              {...handleListeners}
+              onKeyDown={onHandleKey}
+              aria-label={`Move ${name}`}
+              aria-describedby={hintId}
+              data-base-ui-swipe-ignore=""
+              className={cn(
+                "-ml-1 grid h-11 w-8 flex-none cursor-grab touch-none place-items-center text-ink-3 active:cursor-grabbing",
+                gestures && "pointer-coarse:sr-only",
+              )}
+            >
+              <DotsSixVerticalIcon weight="bold" aria-hidden className="size-[1.125rem]" />
+            </button>
+          </motion.div>
+        </motion.div>
       </div>
     </motion.li>
   );
 }
 
 /**
- * The emoji of an Option: a small field for the emoji keyboard. It keeps one emoji; letters are
- * ignored. Empty, it shows a quiet smiley.
+ * The emoji of an Option, on the field fill: a tap opens the emoji picker. Empty, it shows a quiet
+ * smiley.
  */
-function EmojiSlot({
+function EmojiButton({
+  optionId,
   emoji,
   label,
-  onEmoji,
-  onBlur,
+  onPointerDown,
+  onClick,
 }: {
+  optionId: OptionId;
   emoji: string | undefined;
   label: string;
-  onEmoji: (emoji: string | undefined) => void;
-  onBlur: (() => void) | undefined;
+  onPointerDown: () => void;
+  onClick: () => void;
 }) {
-  const value = emoji ?? "";
   return (
-    <div className="relative size-12 flex-none">
-      <input
-        value={value}
-        onChange={(event) => {
-          const text = event.target.value;
-          if (text === "") {
-            onEmoji(undefined);
-            return;
-          }
-          // The newest emoji wins: the one the person just typed, else any in the text.
-          const typed = firstEmoji(text.replace(value, "")) ?? firstEmoji(text);
-          if (typed !== undefined) onEmoji(typed);
-        }}
-        onBlur={onBlur}
-        aria-label={`Emoji for ${label}`}
-        autoComplete="off"
-        enterKeyHint="done"
-        className={cn(fieldClass, "size-12 px-0 text-center text-[1.0625rem] caret-transparent")}
-      />
-      {value === "" ? (
-        <SmileyIcon
-          aria-hidden
-          className="pointer-events-none absolute inset-0 m-auto size-5 text-ink-3"
-        />
-      ) : null}
-    </div>
+    <button
+      type="button"
+      data-option-emoji={optionId}
+      onPointerDown={onPointerDown}
+      onClick={onClick}
+      aria-label={emoji === undefined ? `Emoji for ${label}` : `Emoji for ${label}: ${emoji}`}
+      className="grid size-12 flex-none place-items-center squircle-[0.625rem] bg-field text-[1.0625rem] outline-none transition-[box-shadow,scale] duration-150 ease-out active:scale-[0.95] focus-visible:shadow-[inset_0_0_0_0.09375rem_var(--ink-4)]"
+    >
+      {emoji ?? <SmileyIcon aria-hidden className="size-5 text-ink-3" />}
+    </button>
+  );
+}
+
+/**
+ * What a swipe uncovers under the row: Remove, on the tint of "Delete habit". Past its width the
+ * button keeps to the row's edge. Screen readers use the remove button of the row instead.
+ */
+function SwipeAction({ x, onRemove }: { x: MotionValue<number>; onRemove: () => void }) {
+  const opacity = useTransform(x, (value) => (value < -0.5 ? 1 : 0));
+  const shift = useTransform(x, (value) => Math.min(0, value + REMOVE_WIDTH));
+  return (
+    <motion.div
+      aria-hidden
+      style={{ opacity }}
+      className="absolute inset-0 flex justify-end squircle-[0.875rem] bg-[color-mix(in_oklab,var(--destructive)_12%,var(--surface))]"
+    >
+      <motion.button
+        type="button"
+        tabIndex={-1}
+        onClick={onRemove}
+        style={{ x: shift, width: REMOVE_WIDTH }}
+        className="flex h-full flex-none flex-col items-center justify-center gap-0.5 text-[0.75rem] font-medium text-[color-mix(in_oklab,var(--destructive)_70%,var(--ink))]"
+      >
+        <TrashIcon weight="bold" aria-hidden className="size-[1.125rem]" />
+        Remove
+      </motion.button>
+    </motion.div>
   );
 }
 

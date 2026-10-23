@@ -31,7 +31,14 @@ questions, so the brief won.)
 - **Choice and scale**: a row per Option with its emoji, its label, remove and a drag handle (the
   up and down arrow keys move it too). A scale draws each Option's fill level. Add stops at 12 (5
   for a scale). Remove stops at 1 (2 for a scale). Return in a label goes to the next row, or adds
-  one.
+  one. A tap on the emoji opens the emoji picker as a step of the sheet: the emoji of the icon
+  picker and its search, without the Phosphor icons (an Option stores an emoji), and "No emoji"
+  first. A picked emoji returns to the form, with the focus on that emoji.
+- **Option rows on touch** (a lab choice, `option-row-touch`): "Buttons" keeps the remove button
+  and the handle. "Gestures" hides both on a coarse pointer: a hold of 300 ms on the emoji lifts
+  the row, as in the list, and a swipe to the left uncovers Remove (a long or fast swipe removes
+  at once). "Gestures, with a hint" adds a line about both under the label. A mouse always has
+  the buttons, and screen readers keep the remove button.
 - **Retire**: removing an Option that loaded Entries use retires it (it keeps its place, so the
   scale levels of past Days do not move). Retired Options wait under the list with Restore.
 - **Icon picker**: the curated Phosphor catalog by group, or a short list of 50 emoji. One search

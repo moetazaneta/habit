@@ -31,7 +31,7 @@ import {
   type FormState,
 } from "./draft";
 import { DirectionField, IconTile, KindField, NameFields, NumberFields } from "./fields";
-import { IconPicker } from "./icon-picker";
+import { IconPicker, OptionEmojiPicker } from "./icon-picker";
 import { suggestIcon } from "./icon-search";
 import { OptionsEditor } from "./options-editor";
 import { FADE_IN, FADE_OUT } from "./presence";
@@ -44,8 +44,8 @@ const ICON_TILE = 'button[aria-label="Change icon"]';
 /**
  * The create sheet (`?new=true`). One step: the icon and the name, the description, the color, the
  * Kind and the Direction, and under them the fields of a number, a choice or a scale habit. The
- * icon picker is a step of its own, and comes back to the form. "Add habit" creates the habit
- * after the last one and closes the sheet.
+ * icon picker and the emoji picker of an Option are steps of their own, and come back to the
+ * form. "Add habit" creates the habit after the last one and closes the sheet.
  */
 export function CreateHabitSheet({
   open,
@@ -66,7 +66,8 @@ export function CreateHabitSheet({
   const [iconPicked, setIconPicked] = useState(false);
   // The tile's tint rises once, when the sheet opens, not each time the form comes back.
   const [leftForm, setLeftForm] = useState(false);
-  const [step, setStep] = useState<"form" | "icon">("form");
+  const [step, setStep] = useState<"form" | "icon" | "emoji">("form");
+  const [emojiFor, setEmojiFor] = useState<OptionId | null>(null);
   const [attempted, setAttempted] = useState(false);
   const [touched, setTouched] = useState({ target: false, step: false });
   const nameRef = useRef<HTMLInputElement>(null);
@@ -120,6 +121,16 @@ export function CreateHabitSheet({
     setStep("form");
   };
 
+  const onPickEmoji = (emoji: string | undefined) => {
+    if (emojiFor !== null) {
+      setForm((current) => ({
+        ...current,
+        options: updateOption(current.options, emojiFor, { emoji }),
+      }));
+    }
+    setStep("form");
+  };
+
   const kindFields =
     form.kind === "number" ? (
       <NumberFields
@@ -144,12 +155,11 @@ export function CreateHabitSheet({
             options: updateOption(current.options, id, { label }),
           }))
         }
-        onEmoji={(id, emoji) =>
-          setForm((current) => ({
-            ...current,
-            options: updateOption(current.options, id, { emoji }),
-          }))
-        }
+        onPickEmoji={(id) => {
+          setLeftForm(true);
+          setEmojiFor(id);
+          setStep("emoji");
+        }}
         onAdd={() => {
           const options = addOption(form.options);
           setForm((current) => ({ ...current, options }));
@@ -184,14 +194,28 @@ export function CreateHabitSheet({
         if (!isOpen) onClose();
       }}
       onExitComplete={onExitComplete}
-      title={step === "icon" ? "Icon" : firstRun ? "Your first habit" : "New habit"}
+      title={
+        step === "icon"
+          ? "Icon"
+          : step === "emoji"
+            ? "Emoji"
+            : firstRun
+              ? "Your first habit"
+              : "New habit"
+      }
       className="sm:w-[min(25rem,100%)]"
       {...(wide ? { initialFocus: nameRef } : {})}
     >
       <Steps
         step={step}
-        direction={step === "icon" ? 1 : -1}
-        focus={step === "form" ? ICON_TILE : undefined}
+        direction={step === "form" ? -1 : 1}
+        focus={
+          step !== "form"
+            ? undefined
+            : emojiFor === null
+              ? ICON_TILE
+              : `button[data-option-emoji="${emojiFor}"]`
+        }
       >
         {step === "form" ? (
           <div ref={formRef} className="relative flex flex-col gap-5">
@@ -202,6 +226,7 @@ export function CreateHabitSheet({
                   color={form.color}
                   onClick={() => {
                     setLeftForm(true);
+                    setEmojiFor(null);
                     setStep("icon");
                   }}
                   fillOnMount={!leftForm}
@@ -247,6 +272,20 @@ export function CreateHabitSheet({
             <StickyFooter>
               <SheetButton onClick={create} className="w-full">
                 Add habit
+              </SheetButton>
+            </StickyFooter>
+          </div>
+        ) : step === "emoji" ? (
+          <div className="flex flex-col gap-4">
+            <OptionEmojiPicker
+              emoji={form.options.find((option) => option.id === emojiFor)?.emoji}
+              color={form.color}
+              onPick={onPickEmoji}
+              autoFocus={wide}
+            />
+            <StickyFooter>
+              <SheetButton variant="quiet" onClick={() => setStep("form")} className="w-full">
+                Back
               </SheetButton>
             </StickyFooter>
           </div>
