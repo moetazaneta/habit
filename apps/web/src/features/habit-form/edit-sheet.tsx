@@ -41,7 +41,7 @@ import {
   NameFields,
   NumberFields,
 } from "./fields";
-import { IconPicker } from "./icon-picker";
+import { IconPicker, OptionEmojiPicker } from "./icon-picker";
 import { OptionsEditor } from "./options-editor";
 import { Steps } from "./steps";
 import { useDebouncedCommits } from "./use-debounced-commits";
@@ -73,7 +73,8 @@ export function EditHabitSheet({
   const wide = useIsWide();
   const commits = useDebouncedCommits();
   const [form, setForm] = useState<FormState>(() => formOf(habit));
-  const [step, setStep] = useState<"main" | "icon">("main");
+  const [step, setStep] = useState<"main" | "icon" | "emoji">("main");
+  const [emojiFor, setEmojiFor] = useState<OptionId | null>(null);
   const [direction, setDirection] = useState<1 | -1>(1);
   const id: HabitId = habit.id;
 
@@ -146,6 +147,27 @@ export function EditHabitSheet({
     setStep("main");
   };
 
+  const onPickEmoji = (emoji: string | undefined) => {
+    if (emojiFor !== null) changeOptions(updateOption(form.options, emojiFor, { emoji }), "now");
+    setDirection(-1);
+    setStep("main");
+  };
+
+  const back = (
+    <StickyFooter>
+      <SheetButton
+        variant="quiet"
+        onClick={() => {
+          setDirection(-1);
+          setStep("main");
+        }}
+        className="w-full"
+      >
+        Back
+      </SheetButton>
+    </StickyFooter>
+  );
+
   const onDelete = () => {
     commits.flush();
     act({ type: "deleteHabit", id }, { undo: `Deleted “${habit.name}”` });
@@ -162,29 +184,34 @@ export function EditHabitSheet({
         onClose();
       }}
       onExitComplete={onExitComplete}
-      title={step === "icon" ? "Icon" : "Edit habit"}
+      title={step === "icon" ? "Icon" : step === "emoji" ? "Emoji" : "Edit habit"}
       className="sm:w-[min(25rem,100%)]"
     >
       <Steps
         step={step}
         direction={direction}
-        focus={step === "main" ? 'button[aria-label="Change icon"]' : undefined}
+        focus={
+          step !== "main"
+            ? undefined
+            : emojiFor === null
+              ? 'button[aria-label="Change icon"]'
+              : `button[data-option-emoji="${emojiFor}"]`
+        }
       >
         {step === "icon" ? (
           <div className="flex flex-col gap-4">
             <IconPicker value={form.icon} color={form.color} onPick={onPick} autoFocus={wide} />
-            <StickyFooter>
-              <SheetButton
-                variant="quiet"
-                onClick={() => {
-                  setDirection(-1);
-                  setStep("main");
-                }}
-                className="w-full"
-              >
-                Back
-              </SheetButton>
-            </StickyFooter>
+            {back}
+          </div>
+        ) : step === "emoji" ? (
+          <div className="flex flex-col gap-4">
+            <OptionEmojiPicker
+              emoji={form.options.find((option) => option.id === emojiFor)?.emoji}
+              color={form.color}
+              onPick={onPickEmoji}
+              autoFocus={wide}
+            />
+            {back}
           </div>
         ) : (
           <div className="flex flex-col gap-5">
@@ -194,6 +221,7 @@ export function EditHabitSheet({
                   icon={form.icon}
                   color={form.color}
                   onClick={() => {
+                    setEmojiFor(null);
                     setDirection(1);
                     setStep("icon");
                   }}
@@ -266,9 +294,12 @@ export function EditHabitSheet({
                   onLabel={(optionId, label) =>
                     changeOptions(updateOption(form.options, optionId, { label }), "typing")
                   }
-                  onEmoji={(optionId, emoji) =>
-                    changeOptions(updateOption(form.options, optionId, { emoji }), "now")
-                  }
+                  onPickEmoji={(optionId) => {
+                    commits.flush("options");
+                    setEmojiFor(optionId);
+                    setDirection(1);
+                    setStep("emoji");
+                  }}
                   onBlurField={() => commits.flush("options")}
                   onAdd={() => {
                     const options = addOption(form.options);

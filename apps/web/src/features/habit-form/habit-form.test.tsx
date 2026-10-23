@@ -117,9 +117,10 @@ describe("create", () => {
     type(await within(dialog).findByRole("textbox", { name: "Option 1 of 1" }), "Tea");
     fireEvent.click(within(dialog).getByRole("button", { name: "Add option" }));
     type(within(dialog).getByRole("textbox", { name: "Option 2 of 2" }), "Coffee");
-    type(within(dialog).getByRole("textbox", { name: "Emoji for Coffee" }), "☕");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Emoji for Coffee" }));
+    fireEvent.click(await within(dialog).findByRole("button", { name: "☕" }));
     // A row that was added and left empty is not an option.
-    fireEvent.click(within(dialog).getByRole("button", { name: "Add option" }));
+    fireEvent.click(await within(dialog).findByRole("button", { name: "Add option" }));
     fireEvent.click(within(dialog).getByRole("button", { name: "Add habit" }));
 
     const habit = app.named("Drink");
@@ -276,6 +277,25 @@ describe("edit", () => {
 
     fireEvent.click(within(dialog).getByRole("button", { name: "Restore Legs" }));
     expect(offeredLabels(gym())).toEqual(["Legs", "Push", "Pull", "Cardio"]);
+  });
+
+  test("an option's emoji comes from the emoji picker, and can be left out", async () => {
+    const app = renderApp(`/?edit=${demoHabitIds.gym}`);
+    const dialog = await sheet();
+    const push = () =>
+      (app.habit(demoHabitIds.gym) as Habit & { options: Option[] }).options.find(
+        (o) => o.label === "Push",
+      );
+
+    expect(push()?.emoji).toBeDefined();
+    fireEvent.click(within(dialog).getByRole("button", { name: /^Emoji for Push/ }));
+    fireEvent.click(await within(dialog).findByRole("button", { name: "No emoji" }));
+    await waitFor(() => expect(push()?.emoji).toBeUndefined());
+
+    fireEvent.click(await within(dialog).findByRole("button", { name: "Emoji for Push" }));
+    type(await within(dialog).findByRole("searchbox"), "run");
+    fireEvent.click(await within(dialog).findByRole("button", { name: "🏃" }));
+    await waitFor(() => expect(push()?.emoji).toBe("🏃"));
   });
 
   test("a stale link to a habit that does not exist closes the sheet", async () => {
