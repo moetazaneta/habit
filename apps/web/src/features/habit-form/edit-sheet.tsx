@@ -16,7 +16,7 @@ import { haptic } from "@/components/haptics";
 import { ResponsiveSheet } from "@/components/sheet";
 import { useIsWide } from "@/components/use-media-query";
 
-import { ColorSwatches, SectionLabel, SheetButton, StickyFooter } from "./controls";
+import { ColorSwatches, SheetButton, StickyFooter } from "./controls";
 import {
   addOption,
   cleanOptions,
@@ -188,17 +188,17 @@ export function EditHabitSheet({
           </div>
         ) : (
           <div className="flex flex-col gap-5">
-            <div className="flex justify-center pt-1">
-              <IconTile
-                icon={form.icon}
-                color={form.color}
-                onClick={() => {
-                  setDirection(1);
-                  setStep("icon");
-                }}
-              />
-            </div>
             <NameFields
+              icon={
+                <IconTile
+                  icon={form.icon}
+                  color={form.color}
+                  onClick={() => {
+                    setDirection(1);
+                    setStep("icon");
+                  }}
+                />
+              }
               name={form.name}
               description={form.description}
               onName={(name) => {
@@ -228,15 +228,12 @@ export function EditHabitSheet({
               }}
             />
             <div className="flex flex-col gap-4">
-              <div>
-                <SectionLabel>Kind</SectionLabel>
-                <div className="flex h-6 items-center gap-2 text-ink-2">
-                  <span aria-hidden className="grid text-ink-3 [&>svg]:size-[1.125rem]">
-                    {KIND_ICONS[form.kind]}
-                  </span>
-                  <span className="font-medium">{KIND_LABELS[form.kind]}</span>
-                  <span className="ml-auto text-[0.875rem] text-ink-3">Set when created</span>
-                </div>
+              <div className="flex h-6 items-center gap-2 text-ink-2">
+                <span aria-hidden className="grid text-ink-3 [&>svg]:size-[1.125rem]">
+                  {KIND_ICONS[form.kind]}
+                </span>
+                <span className="font-medium">{KIND_LABELS[form.kind]}</span>
+                <span className="ml-auto text-[0.875rem] text-ink-3">Set when created</span>
               </div>
               {form.kind === "number" ? (
                 <NumberFields
@@ -294,7 +291,7 @@ export function EditHabitSheet({
               ) : null}
             </div>
             <div className="pt-2">
-              <SheetButton variant="quiet" onClick={onDelete} className="w-full">
+              <SheetButton variant="destructive" onClick={onDelete} className="w-full">
                 <TrashIcon weight="bold" aria-hidden />
                 Delete habit
               </SheetButton>

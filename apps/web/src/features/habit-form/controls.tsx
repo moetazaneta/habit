@@ -18,7 +18,7 @@ import { FADE_IN, rowPresence } from "./presence";
 export const fieldClass =
   "h-12 w-full min-w-0 squircle-[0.625rem] bg-field px-3.5 text-ink outline-none transition-[box-shadow] duration-[120ms] placeholder:text-ink-3 focus-visible:shadow-[inset_0_0_0_0.09375rem_var(--ink-4)] focus-visible:outline-none";
 
-/** The label of a group of controls, such as "Color". Quiet, never an eyebrow above a heading. */
+/** The label of a group of controls, such as "Options". Quiet, never an eyebrow above a heading. */
 export function SectionLabel({
   id,
   hidden,
@@ -68,6 +68,8 @@ export interface SegmentOption<T extends string> {
   value: T;
   label: string;
   icon?: ReactNode;
+  /** A short line under the label, such as "Do less". */
+  hint?: string;
 }
 
 /**
@@ -89,11 +91,12 @@ export function Segmented<T extends string>({
   onChange: (value: T) => void;
   options: readonly SegmentOption<T>[];
   disabled?: boolean;
-  /** Icons over the labels. */
+  /** Two lines in a segment: the icon over the label, or the label over its hint. */
   tall?: boolean;
 }) {
   const labelId = useId();
   const pillId = useId();
+  const hintId = useId();
   const reduceMotion = useReducedMotion() === true;
   return (
     <div>
@@ -111,6 +114,7 @@ export function Segmented<T extends string>({
           <Radio.Root
             key={option.value}
             value={option.value}
+            aria-describedby={option.hint === undefined ? undefined : `${hintId}-${option.value}`}
             className={cn(
               "relative isolate flex min-w-0 touch-manipulation select-none items-center justify-center squircle-[0.625rem] text-ink-3 transition-[color,scale] duration-150 ease-out data-checked:text-ink active:scale-[0.97] data-disabled:active:scale-100",
               tall ? "h-14 flex-col gap-0.5" : "h-10 gap-1.5",
@@ -134,11 +138,22 @@ export function Segmented<T extends string>({
             <span
               className={cn(
                 "truncate font-medium",
-                tall ? "text-[0.8125rem] leading-4" : "text-[0.9375rem] leading-5",
+                tall && option.icon !== undefined
+                  ? "text-[0.8125rem] leading-4"
+                  : "text-[0.9375rem] leading-5",
               )}
             >
               {option.label}
             </span>
+            {option.hint === undefined ? null : (
+              <span
+                id={`${hintId}-${option.value}`}
+                aria-hidden
+                className="truncate text-[0.8125rem] leading-4 text-ink-3"
+              >
+                {option.hint}
+              </span>
+            )}
           </Radio.Root>
         ))}
       </RadioGroup>
@@ -161,7 +176,9 @@ export function ColorSwatches({
   const labelId = useId();
   return (
     <div>
-      <SectionLabel id={labelId}>Color</SectionLabel>
+      <SectionLabel id={labelId} hidden>
+        Color
+      </SectionLabel>
       <RadioGroup
         aria-labelledby={labelId}
         value={value}
@@ -176,7 +193,7 @@ export function ColorSwatches({
             className="group grid aspect-square min-h-10 touch-manipulation place-items-center"
             style={{ "--c": habitColorVar(color) } as CSSProperties}
           >
-            <span className="grid size-[72%] place-items-center squircle-[0.5rem] bg-habit text-ground shadow-[0_0_0_0_var(--surface),0_0_0_0_var(--c)] transition-[box-shadow,scale] duration-150 ease-out group-active:scale-[0.95] group-data-checked:shadow-[0_0_0_0.125rem_var(--surface),0_0_0_0.25rem_var(--c)]">
+            <span className="grid size-[72%] place-items-center squircle-[0.5rem] bg-habit text-ground shadow-[0_0_0_0_color-mix(in_oklab,var(--c)_50%,transparent)] transition-[box-shadow,scale] duration-150 ease-out group-active:scale-[0.95] group-data-checked:shadow-[0_0_0_0.25rem_color-mix(in_oklab,var(--c)_50%,transparent)]">
               <CheckIcon
                 weight="bold"
                 aria-hidden
@@ -192,14 +209,17 @@ export function ColorSwatches({
 
 /**
  * A button of the sheet (DESIGN.md, "Buttons"). The primary one, the single action that ends a
- * step, is solid `ink` on `ground`; the quiet one is the usual `surface-2` button.
+ * step, is solid `ink` on `ground`; the quiet one is the usual `surface-2` button; the destructive
+ * one is tinted with `destructive`, its text mixed with `ink` so it keeps its contrast.
  */
 export function SheetButton({
   variant = "primary",
   className,
   children,
   ...rest
-}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "quiet" }) {
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: "primary" | "quiet" | "destructive";
+}) {
   return (
     <button
       type="button"
@@ -208,7 +228,9 @@ export function SheetButton({
         "flex h-11 items-center justify-center gap-1.5 squircle-[0.625rem] px-4 text-[0.9375rem] font-semibold tracking-[-0.01em] transition-[scale,background-color,opacity] duration-[120ms] ease-out active:scale-[0.97] disabled:opacity-40 disabled:active:scale-100",
         variant === "primary"
           ? "bg-ink text-ground"
-          : "bg-surface-2 text-ink hover:bg-surface-3 active:bg-surface-3",
+          : variant === "destructive"
+            ? "bg-[color-mix(in_oklab,var(--destructive)_12%,var(--surface))] text-[color-mix(in_oklab,var(--destructive)_70%,var(--ink))] hover:bg-[color-mix(in_oklab,var(--destructive)_18%,var(--surface))] active:bg-[color-mix(in_oklab,var(--destructive)_18%,var(--surface))]"
+            : "bg-surface-2 text-ink hover:bg-surface-3 active:bg-surface-3",
         className,
       )}
     >
