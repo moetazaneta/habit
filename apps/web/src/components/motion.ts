@@ -46,8 +46,16 @@ export const cssSprings = {
   sheet: spring(springs.sheet.visualDuration, springs.sheet.bounce).toString(),
 };
 
-/** Puts the CSS springs on the document as custom properties (`--spring-fill`, `--spring-sheet`). */
+/**
+ * Puts the CSS springs on the document as custom properties (`--spring-fill`, `--spring-sheet`).
+ * The sheet spring also comes in its two parts, `--spring-sheet-duration` and
+ * `--spring-sheet-easing`, for an animation whose name is not the author's (a view transition's
+ * group).
+ */
 export function installCssSprings(root: HTMLElement = document.documentElement): void {
   root.style.setProperty("--spring-fill", cssSprings.fill);
   root.style.setProperty("--spring-sheet", cssSprings.sheet);
+  const [duration = "", ...easing] = cssSprings.sheet.split(" ");
+  root.style.setProperty("--spring-sheet-duration", duration);
+  root.style.setProperty("--spring-sheet-easing", easing.join(" "));
 }

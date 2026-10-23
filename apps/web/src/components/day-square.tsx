@@ -27,13 +27,22 @@ export interface DaySquareProps extends HTMLAttributes<HTMLSpanElement> {
    */
   variant?: "day" | "ghost" | "future";
   /**
+   * - `frame`: a frame in the habit color around the fill (the default).
+   * - `fill`: no frame; an empty Day is a quiet tile, and the gauge fills over a tint of the habit
+   *   color.
+   */
+  look?: "frame" | "fill";
+  /**
    * An Entry exists. With an intensity of 0 (a recorded zero, such as 0 cigarettes) the frame
    * takes the habit color, so a recorded zero differs from a Day with no data.
    */
   recorded?: boolean;
   /** Animate changes of the intensity. Turn it off for large static grids. Default: true. */
   animated?: boolean;
-  /** Content in the center, where space permits (for example the emoji of a choice). */
+  /**
+   * Content in the center, where space permits (for example the emoji of a choice). The part over
+   * the fill takes the ground color.
+   */
   label?: ReactNode;
 }
 
@@ -50,6 +59,7 @@ export const DaySquare = memo(function DaySquare({
   intensity,
   size,
   variant = "day",
+  look = "frame",
   recorded = false,
   animated = true,
   label,
@@ -73,7 +83,7 @@ export const DaySquare = memo(function DaySquare({
     const fill = fillRef.current;
     if (square === null || fill === null) return;
     // A value that rises springs up; one that falls drains faster, without a bounce.
-    fill.dataset.trend = p > before ? "up" : "down";
+    square.dataset.trend = p > before ? "up" : "down";
     if (reduceMotion) {
       fill.animate([{ opacity: 0.35 }, { opacity: 1 }], {
         duration: durations.fade,
@@ -95,17 +105,26 @@ export const DaySquare = memo(function DaySquare({
       className={cn("day-square", className)}
       data-state={state}
       data-variant={variant}
+      data-look={look}
       data-animated={animated}
       style={
         {
           "--c": habitColorVar(color),
+          "--p": p,
           ...(size === undefined ? {} : { "--ds-size": size }),
           ...style,
         } as CSSProperties
       }
     >
       <span ref={fillRef} className="day-square-fill" style={{ transform: `scaleY(${p})` }} />
-      {label === undefined ? null : <span className="day-square-label">{label}</span>}
+      {label === undefined ? null : (
+        <>
+          <span className="day-square-label">{label}</span>
+          <span className="day-square-label" data-on-fill="">
+            {label}
+          </span>
+        </>
+      )}
     </span>
   );
 });

@@ -2,17 +2,18 @@ import { toast, Toaster } from "sonner";
 
 /**
  * The one Toaster of the app, mounted in the root route. Toasts are headless (`toast.custom`) so
- * they wear the world's capsule; Sonner keeps the stacking, the timing and the swipe.
+ * they wear the world's capsule; Sonner keeps the stacking, the timing and the swipe. `lift` (a
+ * CSS length) raises them above buttons that float at the bottom of a screen.
  */
-export function AppToaster() {
+export function AppToaster({ lift = "0px" }: { lift?: string }) {
   return (
     <Toaster
       position="bottom-center"
       theme="system"
       gap={8}
       visibleToasts={3}
-      offset={{ bottom: "1.5rem" }}
-      mobileOffset={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)" }}
+      offset={{ bottom: `calc(1.5rem + ${lift})` }}
+      mobileOffset={{ bottom: `calc(env(safe-area-inset-bottom, 0px) + 1rem + ${lift})` }}
     />
   );
 }

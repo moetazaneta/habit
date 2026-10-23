@@ -1,14 +1,18 @@
 import { monthOf, type Habit, type HabitId, type Month } from "@habit/core";
 import { useEntries, useHabit, useHabits } from "@habit/data";
 import { CaretLeftIcon } from "@phosphor-icons/react/dist/csr/CaretLeft";
+import { PencilSimpleIcon } from "@phosphor-icons/react/dist/csr/PencilSimple";
 import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
-import { useRef, useState, type MouseEvent, type ReactNode } from "react";
+import { useReducedMotion } from "motion/react";
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 
 import { DaySquare } from "@/components/day-square";
 import { HabitIcon } from "@/components/habit-icon";
 import { habitColorStyle } from "@/components/palette";
 import { useOpenSheet } from "@/components/sheet-search";
+import { useIsWide } from "@/components/use-media-query";
 import { MonthCalendar } from "@/features/habit-page/month-calendar";
+import { markReturn } from "@/features/habit-page/plate-transition";
 import { useEditedDayInView } from "@/features/habit-page/use-edited-day-in-view";
 import { YearGrid } from "@/features/habit-page/year-grid";
 import { useToday } from "@/features/list/use-today";
@@ -17,7 +21,8 @@ import "@/features/habit-page/habit-page.css";
 
 /**
  * The page of a habit (`/habits/$habitId`): the icon and the name, a grid of the last 12 months,
- * and a calendar with one Month per page. A tap on a Month in the grid moves the calendar there.
+ * and a calendar with one Month per page, with Back and Edit floating at the bottom. A tap on a
+ * Month in the grid moves the calendar there.
  */
 export function HabitPage({ habitId }: { habitId: HabitId }) {
   const habit = useHabit(habitId);
@@ -35,14 +40,10 @@ function HabitDetail({ habit }: { habit: Habit }) {
   const [month, setMonth] = useState<Month>(() => monthOf(today));
   const page = useRef<HTMLElement>(null);
   useEditedDayInView(page, habit.id);
+  useBrowserBack(habit.id);
 
   return (
     <main ref={page} className="habit-page" style={habitColorStyle(habit.color)}>
-      <PageBar>
-        <button type="button" className="hp-bar-text" onClick={() => openSheet({ edit: habit.id })}>
-          Edit
-        </button>
-      </PageBar>
       <header className="hp-identity">
         <HabitIcon
           icon={habit.icon}
@@ -68,28 +69,53 @@ function HabitDetail({ habit }: { habit: Habit }) {
         onSelectMonth={setMonth}
       />
       <MonthCalendar habit={habit} today={today} month={month} onMonthChange={setMonth} />
+      <PageActions habitId={habit.id}>
+        <button
+          type="button"
+          className="hp-float hp-edit"
+          onClick={() => openSheet({ edit: habit.id })}
+        >
+          <PencilSimpleIcon weight="bold" aria-hidden />
+          Edit
+        </button>
+      </PageActions>
     </main>
   );
 }
 
 /**
- * The bar at the top: back to the list at the left, the page's own control at the right. Back
- * goes back in the history when the app came from the list, so the list keeps its scroll; after a
- * reload or from a link, it goes to `/`.
+ * The page's buttons, floating over its bottom edge, near the thumb: back to the list at the left,
+ * the page's own control at the right. Back goes back in the history when the app came from the
+ * list, so the list keeps its scroll; after a reload or from a link, it goes to `/`. With a
+ * `habitId`, the title of the page shrinks back into the habit's row on the way, on a phone; on a
+ * desktop the page slides away from beside the list.
  */
-function PageBar({ children }: { children?: ReactNode }) {
+function PageActions({ habitId, children }: { habitId?: HabitId; children?: ReactNode }) {
   const canGoBack = useCanGoBack();
   const router = useRouter();
+  const reduceMotion = useReducedMotion() === true;
+  const wide = useIsWide();
   const onBack = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (!canGoBack || event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
       return;
     }
+    // Enter on the link (`detail` 0) is the keyboard: the screens only crossfade.
+    if (habitId !== undefined) {
+      markReturn(router, habitId, { plate: !reduceMotion && !wide && event.detail !== 0 });
+    }
+    if (!canGoBack) return;
     event.preventDefault();
     router.history.back();
   };
   return (
-    <nav className="hp-bar" aria-label="Habit">
-      <Link to="/" className="hp-bar-back" aria-label="Back to habits" onClick={onBack}>
+    <nav className="hp-actions" aria-label="Habit">
+      <Link
+        to="/"
+        className="hp-float hp-back"
+        aria-label="Back to habits"
+        viewTransition={habitId !== undefined}
+        onClick={onBack}
+      >
         <CaretLeftIcon weight="bold" />
       </Link>
       {children}
@@ -97,11 +123,35 @@ function PageBar({ children }: { children?: ReactNode }) {
   );
 }
 
+/**
+ * The browser's own back to the list (its button, a key, a mouse button) also shrinks the title
+ * into the row, unless the browser animates the way back itself, as the back swipe on iOS does.
+ * It listens to the Navigation API's `navigate`, which comes before the router hears of the change
+ * on `popstate`; a browser without the API goes back without the animation.
+ */
+function useBrowserBack(habitId: HabitId) {
+  const router = useRouter();
+  const reduceMotion = useReducedMotion() === true;
+  const wide = useIsWide();
+  useEffect(() => {
+    if (!("navigation" in window)) return;
+    const onNavigate = (event: NavigateEvent) => {
+      if (event.navigationType !== "traverse" || event.hasUAVisualTransition) return;
+      // The Back button has prepared it already.
+      if (router.shouldViewTransition === true) return;
+      // A sheet that closes stays on this page.
+      if (new URL(event.destination.url).pathname !== "/") return;
+      markReturn(router, habitId, { plate: !reduceMotion && !wide });
+    };
+    navigation.addEventListener("navigate", onNavigate);
+    return () => navigation.removeEventListener("navigate", onNavigate);
+  }, [habitId, reduceMotion, router, wide]);
+}
+
 /** A deleted habit, or a link to one that never existed: a calm way back. */
 function MissingHabit() {
   return (
     <main className="habit-page">
-      <PageBar />
       <div className="hp-missing">
         <DaySquare color="stone" intensity={0} variant="ghost" size="2.5rem" animated={false} />
         <h1 className="hp-missing-title">This habit is not here</h1>
@@ -110,6 +160,7 @@ function MissingHabit() {
           Back to habits
         </Link>
       </div>
+      <PageActions />
     </main>
   );
 }
@@ -118,11 +169,11 @@ function MissingHabit() {
 function PageSkeleton() {
   return (
     <main className="habit-page hp-skeleton" aria-busy aria-label="Loading the habit">
-      <PageBar />
       <div className="hp-identity">
         <span className="hp-skeleton-icon" />
         <span className="hp-skeleton-name" />
       </div>
+      <PageActions />
     </main>
   );
 }

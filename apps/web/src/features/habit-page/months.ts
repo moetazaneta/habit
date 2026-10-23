@@ -50,8 +50,8 @@ export function yearGrid(today: Day, weeks = 52): YearGrid {
 }
 
 const monthLong = new Intl.DateTimeFormat("en", { month: "long", year: "numeric" });
+const monthName = new Intl.DateTimeFormat("en", { month: "long" });
 const monthShort = new Intl.DateTimeFormat("en", { month: "short" });
-const monthNarrow = new Intl.DateTimeFormat("en", { month: "narrow" });
 
 function monthDate(month: Month): Date {
   return new Date(Number(month.slice(0, 4)), Number(month.slice(5, 7)) - 1, 1);
@@ -62,12 +62,12 @@ export function formatMonth(month: Month): string {
   return monthLong.format(monthDate(month));
 }
 
+/** "October". */
+export function formatMonthName(month: Month): string {
+  return monthName.format(monthDate(month));
+}
+
 /** "Oct". */
 export function formatMonthShort(month: Month): string {
   return monthShort.format(monthDate(month));
-}
-
-/** "O". */
-export function formatMonthNarrow(month: Month): string {
-  return monthNarrow.format(monthDate(month));
 }

@@ -9,8 +9,8 @@
     --hp-icon: 1.75rem;
     max-width: 600px;
     margin: 0 auto;
-    /* Room under the calendar for the toast. */
-    padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+    /* Room under the calendar for the floating buttons and the toast above them. */
+    padding-bottom: calc(7.5rem + env(safe-area-inset-bottom, 0px));
   }
 
   /* While the input sheet edits a Day on a phone: room to scroll the Day above the sheet. */
@@ -18,52 +18,68 @@
     padding-bottom: 75dvh;
   }
 
-  /* ── The bar ── */
+  /* ── The floating buttons ── */
 
-  .hp-bar {
+  /* Over the bottom edge of the page, near the thumb. The bar lets taps through between them. */
+  .hp-actions {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 10;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: calc(2.75rem + env(safe-area-inset-top, 0px));
-    padding: env(safe-area-inset-top, 0px) calc(var(--gutter) - 0.75rem) 0;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 var(--gutter) calc(env(safe-area-inset-bottom, 0px) + 0.75rem);
+    pointer-events: none;
   }
 
-  .hp-bar-back {
-    display: grid;
-    place-items: center;
-    width: 2.75rem;
-    height: 2.75rem;
-    color: var(--ink-2);
-    font-size: 1.25rem;
-    border-radius: 999px;
-    transition:
-      color 120ms ease,
-      transform 120ms var(--ease-out);
-  }
-
-  .hp-bar-text {
-    height: 2.75rem;
-    padding: 0 0.75rem;
-    color: var(--ink-2);
-    font-size: 1rem;
-    font-weight: 500;
-    letter-spacing: -0.01em;
-    border-radius: 999px;
-    transition:
-      color 120ms ease,
-      transform 120ms var(--ease-out);
-  }
-
-  .hp-bar-back:active,
-  .hp-bar-text:active {
-    transform: scale(0.96);
+  .hp-float {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 3rem;
+    background: color-mix(in oklab, var(--surface) 82%, transparent);
     color: var(--ink);
+    border-radius: 999px;
+    box-shadow:
+      var(--elevation),
+      0 0 0 0.03125rem color-mix(in oklab, var(--ink) 10%, transparent);
+    backdrop-filter: blur(1rem) saturate(1.5);
+    -webkit-backdrop-filter: blur(1rem) saturate(1.5);
+    pointer-events: auto;
+    transition:
+      background-color 120ms ease,
+      transform 120ms var(--ease-out);
+  }
+
+  .hp-back {
+    width: 3rem;
+    font-size: 1.25rem;
+  }
+
+  .hp-edit {
+    gap: 0.4375rem;
+    padding: 0 1.25rem 0 1.0625rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .hp-edit svg {
+    font-size: 1.0625rem;
+  }
+
+  .hp-float:active {
+    transform: scale(0.96);
+    background: color-mix(in oklab, var(--surface-2) 88%, transparent);
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .hp-bar-back:hover,
-    .hp-bar-text:hover {
-      color: var(--ink);
+    .hp-float:hover {
+      background: color-mix(in oklab, var(--surface-2) 88%, transparent);
     }
   }
 
@@ -73,7 +89,7 @@
     display: flex;
     align-items: flex-start;
     gap: 0.75rem;
-    padding: 0.5rem var(--gutter) 0;
+    padding: calc(env(safe-area-inset-top, 0px) + 2rem) var(--gutter) 0;
   }
 
   .hp-identity > :first-child {
@@ -111,33 +127,47 @@
 
   /* ── The grid of the last 12 months ── */
 
+  /* A sideways scroller from edge to edge of the column, so the squares pass under its edges; at
+     rest the grid lines up with the gutter. The edges fade, which also tells that it scrolls. */
   .hp-year {
+    display: flex;
     margin-top: 2rem;
     padding: 0 var(--gutter);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      black var(--gutter),
+      black calc(100% - var(--gutter)),
+      transparent
+    );
   }
 
-  /* The container of the grid: the squares take their size from its width. */
+  .hp-year::-webkit-scrollbar {
+    display: none;
+  }
+
   .hp-year-inner {
-    --gap: 0.09375rem;
+    --cell: 0.875rem;
+    --gap: 0.1875rem;
+    --pitch: calc(var(--cell) + var(--gap));
     position: relative;
-    container-type: inline-size;
+    flex: none;
     padding-top: 1.375rem;
   }
 
   .hp-year-grid {
-    --cell: calc((100cqw - (var(--weeks) - 1) * var(--gap)) / var(--weeks));
     display: grid;
     grid-auto-columns: var(--cell);
     grid-auto-flow: column;
     grid-template-rows: repeat(7, var(--cell));
     gap: var(--gap);
-    /* A thinner frame: at this size the list's 1.5px frame would fill the square. */
-    --ds-frame: 0.0625rem;
   }
 
   /* A Month over its columns: a button over the label and the squares under it. */
   .hp-year-month {
-    --pitch: calc((100cqw + var(--gap)) / var(--weeks));
     position: absolute;
     top: 0;
     bottom: 0;
@@ -159,23 +189,6 @@
     line-height: 0.9375rem;
     white-space: nowrap;
     transition: color 120ms ease;
-  }
-
-  /* "Oct" needs about 2.2em of a 4-column Month, and a little air to the next name: a grid under
-     23rem leaves too little, so on most phones, and with large text, the Months take their first
-     letter. A wide phone and a desktop show the short names. */
-  .hp-year-month-narrow {
-    display: none;
-  }
-
-  @container (inline-size < 23rem) {
-    .hp-year-month-short {
-      display: none;
-    }
-
-    .hp-year-month-narrow {
-      display: inline;
-    }
   }
 
   .hp-year-month[aria-current] .hp-year-month-label {
@@ -207,22 +220,75 @@
     container-type: inline-size;
   }
 
-  .hp-cal-head {
+  /* Under the Days, near the thumb: the month and the year at the left, the paging at the right. */
+  .hp-cal-controls {
     display: flex;
     align-items: center;
     min-height: 2.75rem;
-    margin-right: -0.75rem;
+    margin: 0.25rem -0.75rem 0 0;
   }
 
-  .hp-cal-title {
+  .hp-pick {
+    display: flex;
     flex: 1;
+    gap: 0.375rem;
     min-width: 0;
+  }
+
+  /* A native select under its own picture: the phone opens its picker, the pill shows the value. */
+  .hp-select {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    height: 2.25rem;
+    padding: 0 0.625rem 0 0.8125rem;
+    background: var(--tile);
     color: var(--ink);
-    font-size: 1.0625rem;
+    font-size: 0.9375rem;
     font-weight: 600;
-    line-height: 1.375rem;
     letter-spacing: -0.01em;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    border-radius: calc(0.625rem * var(--squircle-k));
+    corner-shape: squircle;
+    transition:
+      background-color 120ms ease,
+      transform 120ms var(--ease-out);
+  }
+
+  .hp-select svg {
+    flex: none;
+    color: var(--ink-3);
+    font-size: 0.75rem;
+  }
+
+  .hp-select select {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    /* 16px or more, so iOS does not zoom the page when the picker opens. */
+    font-size: 1rem;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .hp-select:has(select:focus-visible) {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .hp-select:active {
+    transform: scale(0.97);
+    background: color-mix(in oklab, var(--ink) 6%, var(--tile));
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hp-select:hover {
+      background: color-mix(in oklab, var(--ink) 6%, var(--tile));
+    }
   }
 
   .hp-cal-today {
@@ -281,12 +347,12 @@
 
   /* The pages slide edge to edge of the column, so the clip is at its edges, not at the gutter. */
   .hp-cal-viewport {
-    /* A gauge under its date, in a row tall enough for a 44px touch target. */
-    --cal-square: min(2.375rem, 100cqw / 7 - 0.375rem);
-    --cal-row: calc(var(--cal-square) + 1.625rem);
+    /* The date inside its gauge; a cell is a 44px touch target or more. */
+    --cal-square: min(3rem, 100cqw / 7 - 0.5rem);
+    --cal-row: calc(var(--cal-square) + 0.5rem);
     position: relative;
     height: calc(var(--cal-row) * 6);
-    margin: 0.25rem calc(-1 * var(--gutter)) 0;
+    margin: 0.375rem calc(-1 * var(--gutter)) 0;
     overflow: hidden;
     /* The browser keeps the vertical scroll; the calendar takes the horizontal swipe. */
     touch-action: pan-y;
@@ -310,33 +376,60 @@
   }
 
   .hp-day {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.3125rem;
+    display: grid;
+    place-items: center;
     min-width: 0;
     border-radius: calc(0.625rem * var(--squircle-k));
     corner-shape: squircle;
     outline-offset: -0.125rem;
   }
 
-  .hp-day-number {
-    color: var(--ink-3);
-    font-size: 0.75rem;
-    font-weight: 500;
-    line-height: 0.875rem;
+  .hp-day:not([data-mark]) .day-square-label {
+    color: var(--ink-2);
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
     font-variant-numeric: tabular-nums;
   }
 
-  .hp-day[data-today] .hp-day-number {
-    color: var(--ink);
-    font-weight: 700;
+  .hp-day:not([data-mark]) .day-square-label[data-on-fill] {
+    color: var(--ground);
   }
 
-  .hp-day:disabled .hp-day-number {
-    color: var(--ink-4);
-    opacity: 0.6;
+  .hp-day[data-today] .day-square-label {
+    font-weight: 750;
+  }
+
+  .hp-day[data-today]:not([data-mark]) .day-square-label:not([data-on-fill]) {
+    color: var(--ink);
+  }
+
+  /* Today: a ring, a little off the square. */
+  .hp-day[data-today] .day-square:not([data-editing]) {
+    outline: 0.09375rem solid var(--ink-2);
+    outline-offset: 0.125rem;
+  }
+
+  .hp-day:disabled .day-square-label {
+    color: var(--ink-3);
+  }
+
+  .hp-day[data-mark] .day-square-label {
+    padding-top: 0.25rem;
+    font-size: calc(var(--ds-size) * 0.42);
+  }
+
+  /* The date of a choice Day whose emoji fills the square. */
+  .hp-day-corner {
+    position: absolute;
+    top: 0.1875rem;
+    left: 0.3125rem;
+    color: var(--ground);
+    font-size: 0.5625rem;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    pointer-events: none;
   }
 
   /* The press of a Day is the list's: 0.95 in 120ms. A hold adds its own shrink on top, on the
@@ -344,6 +437,7 @@
      Day) or the input (a number Day). On touch the press shows 60ms late, so the hold has the
      rest. A release returns both in 120ms. */
   .hp-day-press {
+    position: relative;
     display: block;
     transition:
       transform 120ms var(--ease-out),
@@ -385,11 +479,11 @@
 
   @media (hover: hover) and (pointer: fine) {
     .hp-day:hover:not(:disabled) .day-square[data-state="empty"] {
-      box-shadow: inset 0 0 0 var(--ds-frame, 0.09375rem) var(--line-strong);
+      background: color-mix(in oklab, var(--ink) 6%, var(--tile));
     }
   }
 
-  /* An older Month that is still loading: its frames, quieter, until the data comes. */
+  /* An older Month that is still loading: its tiles, quieter, until the data comes. */
   .hp-month[data-loading] .day-square {
     opacity: 0.5;
   }
@@ -479,10 +573,10 @@
 
   @media (prefers-reduced-motion: reduce) {
     .hp-day[data-pressed] .hp-day-press,
-    .hp-bar-back:active,
-    .hp-bar-text:active,
+    .hp-float:active,
     .hp-cal-today:active,
     .hp-cal-arrow:active:not(:disabled),
+    .hp-select:active,
     .hp-missing-link:active {
       transform: none;
     }
