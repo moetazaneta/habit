@@ -671,6 +671,25 @@
     padding: 0.75rem 1.25rem 1.25rem;
   }
 
+  /* The buttons that end the sheet: under the content, not in it, so the height changes above
+     them. They stick to the bottom while a long step scrolls, with a fade over what passes under. */
+  .sheet-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    padding: 0.5rem 1.25rem 1.25rem;
+    background: var(--surface);
+  }
+
+  .sheet-footer::before {
+    content: "";
+    position: absolute;
+    inset: -1rem 0 auto;
+    height: 1rem;
+    pointer-events: none;
+    background: linear-gradient(to bottom, transparent, var(--surface));
+  }
+
   @media (prefers-reduced-motion: reduce) {
     /* A fade replaces the slide and the scale; a swipe still follows the finger. */
     .sheet-popup,

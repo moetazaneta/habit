@@ -168,6 +168,17 @@ describe("create", () => {
 
     expect(app.named("Walk")!.order > last.order).toBe(true);
   });
+
+  test("the button under the icon picker goes back to the form, which keeps the name", async () => {
+    const app = renderApp("/?new=true");
+    const dialog = await startNew("Stretch");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Change icon" }));
+    fireEvent.click(await within(dialog).findByRole("button", { name: "Back" }));
+    await within(dialog).findByRole("button", { name: "Change icon" });
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Add habit" }));
+    expect(app.named("Stretch")).toBeDefined();
+  });
 });
 
 describe("validation", () => {

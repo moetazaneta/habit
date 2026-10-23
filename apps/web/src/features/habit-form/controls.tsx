@@ -2,14 +2,14 @@ import { Radio } from "@base-ui/react/radio";
 import { RadioGroup } from "@base-ui/react/radio-group";
 import { HABIT_COLORS, type HabitColor } from "@habit/core";
 import { CheckIcon } from "@phosphor-icons/react/dist/csr/Check";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion, type Variants } from "motion/react";
 import { useId, type ButtonHTMLAttributes, type CSSProperties, type ReactNode } from "react";
 
 import { springs } from "@/components/motion";
 import { habitColorVar } from "@/components/palette";
 import { cn } from "@/lib/utils";
 
-import { FADE_IN, rowPresence } from "./presence";
+import { EASE_OUT, FADE_IN, rowPresence } from "./presence";
 
 /**
  * A field on the sheet, as DESIGN.md has it: the `field` fill, a 0.625rem squircle, an inset ring
@@ -236,6 +236,83 @@ export function SheetButton({
     >
       {children}
     </button>
+  );
+}
+
+/** How far a label of the footer button travels as it changes, in px. */
+const LABEL_SHIFT = 12;
+
+const rolling: Variants = {
+  enter: (direction: 1 | -1) => ({
+    opacity: 0,
+    transform: `translateY(${direction * LABEL_SHIFT}px)`,
+    filter: "blur(2px)",
+  }),
+  center: {
+    opacity: 1,
+    transform: "translateY(0px)",
+    filter: "blur(0px)",
+    transition: {
+      transform: springs.morph,
+      opacity: { duration: 0.22, ease: EASE_OUT },
+      filter: { duration: 0.22, ease: EASE_OUT },
+    },
+  },
+  exit: (direction: 1 | -1) => ({
+    opacity: 0,
+    transform: `translateY(${-direction * LABEL_SHIFT}px)`,
+    filter: "blur(2px)",
+    transition: { duration: 0.14, ease: EASE_OUT },
+  }),
+};
+
+const crossfading: Variants = {
+  enter: { opacity: 0 },
+  center: { opacity: 1, transition: FADE_IN },
+  exit: { opacity: 0, transition: { duration: 0.12, ease: EASE_OUT } },
+};
+
+/**
+ * The one button of a sheet's footer, for every step: it stays in place while the steps change
+ * above it. Its fill turns into the new variant's, and its label rolls: the old one leaves upward
+ * and the new one comes from below, the other way round on the way back, as the steps move
+ * sideways. Under reduced motion the label crossfades.
+ */
+export function StepButton({
+  label,
+  variant,
+  direction,
+  onClick,
+}: {
+  label: string;
+  variant: "primary" | "quiet";
+  /** 1: the step went forward, -1: back. */
+  direction: 1 | -1;
+  onClick: () => void;
+}) {
+  const reduceMotion = useReducedMotion() === true;
+  return (
+    <SheetButton
+      variant={variant}
+      onClick={onClick}
+      aria-label={label}
+      className="relative w-full overflow-hidden transition-[scale,background-color,color] duration-[120ms,200ms,200ms]"
+    >
+      <AnimatePresence initial={false} mode="popLayout" custom={direction}>
+        <motion.span
+          key={label}
+          aria-hidden
+          custom={direction}
+          variants={reduceMotion ? crossfading : rolling}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          className="block whitespace-nowrap"
+        >
+          {label}
+        </motion.span>
+      </AnimatePresence>
+    </SheetButton>
   );
 }
 
