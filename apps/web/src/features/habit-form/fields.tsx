@@ -25,37 +25,29 @@ import { cn } from "@/lib/utils";
 
 import { FieldMessage, fieldClass, Segmented, type SegmentOption } from "./controls";
 import { parseDecimal, tapsToFill, type FormState } from "./draft";
-import { EASE_OUT, FADE_IN, FADE_OUT } from "./presence";
+import { FADE_IN, FADE_OUT } from "./presence";
 
 /**
- * The icon of the habit, large, on a tile tinted with its color: the one place in the form where
- * the habit already looks like itself. A tap opens the icon picker. The tint rises from the bottom
- * like the fill of a Day, with the same small pulse, when the create sheet opens and when the color
- * changes; a new icon crossfades. Under reduced motion both fade.
+ * The icon of the habit on a tile tinted with its color, before the name: the one place in the
+ * form where the habit already looks like itself. A tap opens the icon picker. The tint rises from
+ * the bottom like the fill of a Day, with the same small pulse, when the create sheet opens and
+ * when the color changes; a new icon crossfades. Under reduced motion both fade.
  */
 export function IconTile({
   icon,
   color,
   onClick,
-  size = "large",
   fillOnMount = false,
 }: {
   icon: HabitIconValue;
   color: HabitColor;
-  /** Without it, the tile is only a picture (inside another control). */
-  onClick?: () => void;
-  size?: "large" | "small";
+  onClick: () => void;
   /** Let the tint rise when the tile appears: the welcome of a new habit. */
   fillOnMount?: boolean;
 }) {
   const reduceMotion = useReducedMotion() === true;
-  const tile = useRef<HTMLElement>(null);
+  const tile = useRef<HTMLButtonElement>(null);
   const key = icon.type === "emoji" ? `e:${icon.emoji}` : `p:${icon.name}`;
-  const large = size === "large";
-  const className = cn(
-    "relative isolate grid flex-none place-items-center overflow-hidden transition-[scale] duration-150 ease-out",
-    large ? "size-[4.5rem] squircle-[1.25rem]" : "size-11 squircle-[0.75rem]",
-  );
 
   // The pulse of a rising fill, as DaySquare does it: a spring from rest, started with a velocity.
   const pulse = useCallback(() => {
@@ -64,8 +56,14 @@ export function IconTile({
     }
   }, [reduceMotion]);
 
-  const content = (
-    <>
+  return (
+    <button
+      ref={tile}
+      type="button"
+      onClick={onClick}
+      aria-label="Change icon"
+      className="relative isolate grid size-[3.25rem] flex-none place-items-center overflow-hidden squircle-[0.625rem] transition-[scale] duration-150 ease-out active:scale-[0.95]"
+    >
       <TileFill color={color} fillOnMount={fillOnMount} onRise={pulse} />
       <AnimatePresence initial={false} mode="popLayout">
         <motion.span
@@ -89,29 +87,9 @@ export function IconTile({
               : { opacity: 0, transform: "scale(0.9)", filter: "blur(2px)", transition: FADE_OUT }
           }
         >
-          <HabitIcon icon={icon} color={color} size={large ? "2.375rem" : "1.5rem"} />
+          <HabitIcon icon={icon} color={color} size="1.75rem" />
         </motion.span>
       </AnimatePresence>
-    </>
-  );
-  if (onClick === undefined) {
-    return (
-      <span ref={tile} aria-hidden className={className}>
-        {content}
-      </span>
-    );
-  }
-  return (
-    <button
-      ref={(element) => {
-        tile.current = element;
-      }}
-      type="button"
-      onClick={onClick}
-      aria-label="Change icon"
-      className={cn(className, "active:scale-[0.95]")}
-    >
-      {content}
     </button>
   );
 }
@@ -191,8 +169,9 @@ export function LabeledField({
   );
 }
 
-/** The name, large, and the description under it. */
+/** The icon tile and the name on one row, and the description under them. */
 export function NameFields({
+  icon,
   name,
   description,
   onName,
@@ -203,13 +182,15 @@ export function NameFields({
   message,
   nameRef,
 }: {
+  /** The IconTile, before the name. */
+  icon: ReactNode;
   name: string;
   description: string;
   onName: (name: string) => void;
   onDescription: (description: string) => void;
   onBlurName?: () => void;
   onBlurDescription?: () => void;
-  /** Return in the name field: the next step, or the create. */
+  /** Return in the name field: the first field of the Kind, or the create. */
   onEnter?: () => void;
   message: string | undefined;
   nameRef?: Ref<HTMLInputElement>;
@@ -217,31 +198,34 @@ export function NameFields({
   const messageId = useId();
   return (
     <div className="flex flex-col gap-2">
-      <div>
-        <input
-          ref={nameRef}
-          value={name}
-          onChange={(event) => onName(event.target.value)}
-          onBlur={onBlurName}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" && onEnter !== undefined) {
-              event.preventDefault();
-              onEnter();
-            }
-          }}
-          aria-label="Name"
-          placeholder="Name"
-          autoComplete="off"
-          autoCapitalize="sentences"
-          enterKeyHint={onEnter === undefined ? "done" : "next"}
-          aria-invalid={message === undefined ? undefined : true}
-          aria-describedby={message === undefined ? undefined : messageId}
-          className={cn(
-            fieldClass,
-            "h-[3.25rem] text-[1.0625rem] font-semibold tracking-[-0.01em]",
-          )}
-        />
-        <FieldMessage id={messageId} message={message} />
+      <div className="flex items-start gap-2">
+        {icon}
+        <div className="min-w-0 flex-1">
+          <input
+            ref={nameRef}
+            value={name}
+            onChange={(event) => onName(event.target.value)}
+            onBlur={onBlurName}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && onEnter !== undefined) {
+                event.preventDefault();
+                onEnter();
+              }
+            }}
+            aria-label="Name"
+            placeholder="Name"
+            autoComplete="off"
+            autoCapitalize="sentences"
+            enterKeyHint={onEnter === undefined ? "done" : "next"}
+            aria-invalid={message === undefined ? undefined : true}
+            aria-describedby={message === undefined ? undefined : messageId}
+            className={cn(
+              fieldClass,
+              "h-[3.25rem] text-[1.0625rem] font-semibold tracking-[-0.01em]",
+            )}
+          />
+          <FieldMessage id={messageId} message={message} />
+        </div>
       </div>
       <input
         value={description}
@@ -266,15 +250,6 @@ export const KIND_ICONS: Record<Kind, ReactNode> = {
   text: <TextAaIcon weight="bold" />,
 };
 
-/** What each Kind records, with an example, in the words of the glossary. */
-export const KIND_HINTS: Record<Kind, string> = {
-  check: "Done or not done. A tap fills the day.",
-  number: "A quantity, such as glasses of water.",
-  choice: "One option from a list, such as the type of workout.",
-  scale: "One step of an ordered list, such as mood from low to great.",
-  text: "A short note for the day.",
-};
-
 export const KIND_LABELS: Record<Kind, string> = {
   check: "Check",
   number: "Number",
@@ -289,22 +264,21 @@ const KIND_OPTIONS: readonly SegmentOption<Kind>[] = (Object.keys(KIND_LABELS) a
 
 export function KindField({ value, onChange }: { value: Kind; onChange: (kind: Kind) => void }) {
   return (
-    <div>
-      <Segmented label="Kind" value={value} onChange={onChange} options={KIND_OPTIONS} tall />
-      <Hint id={value}>{KIND_HINTS[value]}</Hint>
-    </div>
+    <Segmented
+      label="Kind"
+      hideLabel
+      value={value}
+      onChange={onChange}
+      options={KIND_OPTIONS}
+      tall
+    />
   );
 }
 
 const DIRECTION_OPTIONS: readonly SegmentOption<Direction>[] = [
-  { value: "build", label: "Build" },
-  { value: "quit", label: "Quit" },
+  { value: "build", label: "Build", hint: "Do more" },
+  { value: "quit", label: "Quit", hint: "Do less" },
 ];
-
-const DIRECTION_HINTS: Record<Direction, string> = {
-  build: "To do it, or more of it.",
-  quit: "To stop it, or do less of it.",
-};
 
 export function DirectionField({
   value,
@@ -314,30 +288,14 @@ export function DirectionField({
   onChange: (direction: Direction) => void;
 }) {
   return (
-    <div>
-      <Segmented label="Direction" value={value} onChange={onChange} options={DIRECTION_OPTIONS} />
-      <Hint id={value}>{DIRECTION_HINTS[value]}</Hint>
-    </div>
-  );
-}
-
-/** A quiet line under a control that changes with it: the old line fades out, the new fades in. */
-function Hint({ id, children }: { id: string; children: ReactNode }) {
-  const reduceMotion = useReducedMotion() === true;
-  return (
-    <div className="relative mt-2 min-h-5 text-[0.875rem] leading-5 text-ink-3">
-      <AnimatePresence initial={false} mode="popLayout">
-        <motion.p
-          key={id}
-          initial={{ opacity: 0, filter: reduceMotion ? "blur(0px)" : "blur(2px)" }}
-          animate={{ opacity: 1, filter: "blur(0px)" }}
-          exit={{ opacity: 0, filter: reduceMotion ? "blur(0px)" : "blur(2px)" }}
-          transition={{ duration: 0.16, ease: EASE_OUT }}
-        >
-          {children}
-        </motion.p>
-      </AnimatePresence>
-    </div>
+    <Segmented
+      label="Direction"
+      hideLabel
+      value={value}
+      onChange={onChange}
+      options={DIRECTION_OPTIONS}
+      tall
+    />
   );
 }
 

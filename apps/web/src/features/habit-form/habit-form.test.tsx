@@ -54,7 +54,7 @@ async function startNew(name: string, kind?: string) {
 }
 
 describe("create", () => {
-  test("a check habit is added from the first step, and the sheet closes", async () => {
+  test("a check habit is added, and the sheet closes", async () => {
     const app = renderApp("/?new=true");
     const dialog = await startNew("Stretch");
     fireEvent.click(within(dialog).getByRole("button", { name: "Add habit" }));
@@ -79,10 +79,9 @@ describe("create", () => {
     });
   });
 
-  test("a number habit gets its unit, target and step on the second step", async () => {
+  test("a number habit gets its unit, target and step", async () => {
     const app = renderApp("/?new=true");
     const dialog = await startNew("Sleep more", "Number");
-    fireEvent.click(within(dialog).getByRole("button", { name: "Next" }));
 
     type(await within(dialog).findByLabelText("Unit"), "h");
     type(within(dialog).getByLabelText("Target"), "7,5");
@@ -102,7 +101,6 @@ describe("create", () => {
     const app = renderApp("/?new=true");
     const dialog = await startNew("Sugar", "Number");
     fireEvent.click(within(dialog).getByRole("radio", { name: "Quit" }));
-    fireEvent.click(within(dialog).getByRole("button", { name: "Next" }));
 
     expect(await within(dialog).findByLabelText("Limit")).toBeTruthy();
     fireEvent.click(within(dialog).getByRole("button", { name: "Add habit" }));
@@ -115,7 +113,6 @@ describe("create", () => {
   test("a choice habit gets the options that have a label", async () => {
     const app = renderApp("/?new=true");
     const dialog = await startNew("Drink", "Choice");
-    fireEvent.click(within(dialog).getByRole("button", { name: "Next" }));
 
     type(await within(dialog).findByRole("textbox", { name: "Option 1 of 1" }), "Tea");
     fireEvent.click(within(dialog).getByRole("button", { name: "Add option" }));
@@ -134,7 +131,6 @@ describe("create", () => {
   test("a scale habit keeps the order of its options, also after a move", async () => {
     const app = renderApp("/?new=true");
     const dialog = await startNew("Energy", "Scale");
-    fireEvent.click(within(dialog).getByRole("button", { name: "Next" }));
 
     type(await within(dialog).findByRole("textbox", { name: "Option 1 of 2" }), "Low");
     type(within(dialog).getByRole("textbox", { name: "Option 2 of 2" }), "High");
@@ -148,6 +144,17 @@ describe("create", () => {
     const habit = app.named("Energy");
     expect(habit?.kind).toBe("scale");
     expect(offeredLabels(habit)).toEqual(["Low", "Okay", "High"]);
+  });
+
+  test("Return in the name adds a check habit, and goes on to the fields of a number", async () => {
+    const app = renderApp("/?new=true");
+    const dialog = await startNew("Pages", "Number");
+    fireEvent.keyDown(within(dialog).getByRole("textbox", { name: "Name" }), { key: "Enter" });
+    expect(document.activeElement).toBe(within(dialog).getByLabelText("Unit"));
+
+    fireEvent.click(within(dialog).getByRole("radio", { name: "Check" }));
+    fireEvent.keyDown(within(dialog).getByRole("textbox", { name: "Name" }), { key: "Enter" });
+    expect(app.named("Pages")?.kind).toBe("check");
   });
 
   test("a new habit goes after the last one, also after a deleted one", async () => {
@@ -182,7 +189,6 @@ describe("validation", () => {
   test("a step of 0 and a target that is not a number are refused", async () => {
     const app = renderApp("/?new=true");
     const dialog = await startNew("Pages", "Number");
-    fireEvent.click(within(dialog).getByRole("button", { name: "Next" }));
     type(await within(dialog).findByLabelText("Step"), "0");
     type(within(dialog).getByLabelText("Target"), "ten");
     fireEvent.click(within(dialog).getByRole("button", { name: "Add habit" }));
@@ -195,7 +201,6 @@ describe("validation", () => {
   test("a scale needs two options with different labels", async () => {
     const app = renderApp("/?new=true");
     const dialog = await startNew("Focus", "Scale");
-    fireEvent.click(within(dialog).getByRole("button", { name: "Next" }));
     type(await within(dialog).findByRole("textbox", { name: "Option 1 of 2" }), "Deep");
     fireEvent.click(within(dialog).getByRole("button", { name: "Add habit" }));
     expect(await within(dialog).findByText("A scale needs at least 2 options.")).toBeTruthy();
