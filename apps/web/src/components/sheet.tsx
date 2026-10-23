@@ -31,6 +31,11 @@ export interface ResponsiveSheetProps {
    * Default: the first focusable element.
    */
   initialFocus?: InitialFocus;
+  /**
+   * The buttons that end the sheet. They stay at the bottom while the content above changes its
+   * height or scrolls, so the main action never moves.
+   */
+  footer?: ReactNode;
   className?: string;
   children: ReactNode;
 }
@@ -64,6 +69,7 @@ function BottomSheet({
   description,
   onExitComplete,
   initialFocus,
+  footer,
   className,
   children,
 }: ResponsiveSheetProps) {
@@ -103,6 +109,7 @@ function BottomSheet({
                   />
                   <div className="sheet-body">{children}</div>
                 </MorphHeight>
+                <SheetFooter footer={footer} />
               </Drawer.Content>
             </Drawer.Popup>
           </Drawer.VirtualKeyboardProvider>
@@ -120,6 +127,7 @@ function CenteredDialog({
   description,
   onExitComplete,
   initialFocus,
+  footer,
   className,
   children,
 }: ResponsiveSheetProps) {
@@ -156,6 +164,7 @@ function CenteredDialog({
               />
               <div className="sheet-body">{children}</div>
             </MorphHeight>
+            <SheetFooter footer={footer} />
           </Dialog.Popup>
         </Dialog.Viewport>
       </Dialog.Portal>
@@ -172,6 +181,7 @@ function AnchoredPopover({
   anchor,
   onExitComplete,
   initialFocus,
+  footer,
   className,
   children,
 }: ResponsiveSheetProps) {
@@ -214,6 +224,7 @@ function AnchoredPopover({
               />
               <div className="sheet-body">{children}</div>
             </MorphHeight>
+            <SheetFooter footer={footer} />
           </Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>
@@ -239,6 +250,12 @@ function SheetHeader({
       {close}
     </div>
   );
+}
+
+/** Outside the MorphHeight, so the height changes above it. */
+function SheetFooter({ footer }: { footer: ReactNode }) {
+  if (footer === undefined || footer === null) return null;
+  return <div className="sheet-footer">{footer}</div>;
 }
 
 function titleClass(hidden: boolean | undefined): string {

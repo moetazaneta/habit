@@ -14,7 +14,7 @@ import { haptic } from "@/components/haptics";
 import { ResponsiveSheet } from "@/components/sheet";
 import { useIsWide } from "@/components/use-media-query";
 
-import { ColorSwatches, SheetButton, StickyFooter } from "./controls";
+import { ColorSwatches, StepButton } from "./controls";
 import {
   addOption,
   DEFAULT_ICON,
@@ -205,6 +205,13 @@ export function CreateHabitSheet({
       }
       className="sm:w-[min(25rem,100%)]"
       {...(wide ? { initialFocus: nameRef } : {})}
+      footer={
+        step === "form" ? (
+          <StepButton label="Add habit" variant="primary" direction={-1} onClick={create} />
+        ) : (
+          <StepButton label="Back" variant="quiet" direction={1} onClick={() => setStep("form")} />
+        )
+      }
     >
       <Steps
         step={step}
@@ -269,35 +276,16 @@ export function CreateHabitSheet({
                 </motion.div>
               )}
             </AnimatePresence>
-            <StickyFooter>
-              <SheetButton onClick={create} className="w-full">
-                Add habit
-              </SheetButton>
-            </StickyFooter>
           </div>
         ) : step === "emoji" ? (
-          <div className="flex flex-col gap-4">
-            <OptionEmojiPicker
-              emoji={form.options.find((option) => option.id === emojiFor)?.emoji}
-              color={form.color}
-              onPick={onPickEmoji}
-              autoFocus={wide}
-            />
-            <StickyFooter>
-              <SheetButton variant="quiet" onClick={() => setStep("form")} className="w-full">
-                Back
-              </SheetButton>
-            </StickyFooter>
-          </div>
+          <OptionEmojiPicker
+            emoji={form.options.find((option) => option.id === emojiFor)?.emoji}
+            color={form.color}
+            onPick={onPickEmoji}
+            autoFocus={wide}
+          />
         ) : (
-          <div className="flex flex-col gap-4">
-            <IconPicker value={form.icon} color={form.color} onPick={onPick} autoFocus={wide} />
-            <StickyFooter>
-              <SheetButton variant="quiet" onClick={() => setStep("form")} className="w-full">
-                Back
-              </SheetButton>
-            </StickyFooter>
-          </div>
+          <IconPicker value={form.icon} color={form.color} onPick={onPick} autoFocus={wide} />
         )}
       </Steps>
     </ResponsiveSheet>
