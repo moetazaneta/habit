@@ -21,7 +21,7 @@ function label(day: Day, entry: string): string {
   return `${formatDayLong(day)}: ${entry}`;
 }
 
-test("the list shows each habit, the last five Days, and the ghost row", async () => {
+test("the list shows each habit, the last five Days, and the New habit button", async () => {
   renderApp("/");
 
   const today = todayOf();
@@ -111,7 +111,7 @@ test("a failed write rolls back and offers Retry", async () => {
   expect(square.getAttribute("aria-pressed")).toBe("false");
 });
 
-test("the ghost row opens the create sheet", async () => {
+test("the New habit button opens the create sheet", async () => {
   const { router } = renderApp("/");
 
   fireEvent.click(await screen.findByRole("button", { name: "New habit" }));

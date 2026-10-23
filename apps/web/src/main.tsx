@@ -1,7 +1,7 @@
 import { today } from "@habit/core";
 import { HabitDataProvider } from "@habit/data";
 import { RouterProvider } from "@tanstack/react-router";
-import { StrictMode, type ReactNode } from "react";
+import { lazy, StrictMode, Suspense, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 
 import { installCssSprings } from "@/components/motion";
@@ -58,6 +58,9 @@ window.addEventListener("vite:preloadError", () => {
   window.location.reload();
 });
 
+// Dev only: the panel that switches the lab's variants (components/lab).
+const LabPanel = import.meta.env.DEV ? lazy(() => import("@/components/lab/panel")) : null;
+
 const Data = await loadDataProvider();
 const router = createAppRouter();
 
@@ -68,6 +71,11 @@ createRoot(container).render(
   <StrictMode>
     <Data>
       <RouterProvider router={router} />
+      {LabPanel === null ? null : (
+        <Suspense>
+          <LabPanel />
+        </Suspense>
+      )}
     </Data>
   </StrictMode>,
 );
