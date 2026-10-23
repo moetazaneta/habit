@@ -111,6 +111,27 @@ A Vite+ workspace on pnpm.
 - **Don't test the implementation:** don't render components to static markup to assert props or
   attributes, and don't add tests that merely assert callback wiring or mirror the implementation.
 
+# Pull requests
+
+Every feature goes to `main` through a pull request on GitHub (`moetazaneta/habit`), never by a
+direct push. A ruleset on `main` enforces this: it takes no direct pushes and no force pushes,
+merges only by squash, and needs two checks to pass: `Check, test and build` (`ci.yml`, the
+`ready` task) and `PR title` (`pr-title.yml`, the commit format below).
+
+1. **Branch and push.** Work on a branch, run `vp run ready`, push, and open the PR with
+   `gh pr create`. The title follows the commit format below.
+2. **Screenshots for a UI change.** The description shows the screen before and after the change.
+   If several variants were tried (for example in the lab, docs/lab.md), it shows a screenshot of
+   each one and names the one that was picked. Take them on the fake provider
+   (`VITE_HABIT_DATA=fake`), on a phone viewport at 2x or 3x, in the light and the dark theme.
+   GitHub's API cannot upload images, so commit them to `.github/pr-assets/<branch>/` in one
+   commit, remove them in the next, and link them by the first commit's SHA:
+   `https://raw.githubusercontent.com/moetazaneta/habit/<sha>/.github/pr-assets/<branch>/<file>.png`.
+   The squash keeps them off `main`, and the PR's history keeps the links working.
+3. **Wait for CI.** Merge only after both checks pass: `gh pr checks <n> --watch`. A red or
+   pending check means no merge; GitHub refuses it anyway.
+4. **Merge** with the squash command below, then delete the branch.
+
 # Commits
 
 Every commit message and every PR title is `<type>(<scope>): <summary>`, per

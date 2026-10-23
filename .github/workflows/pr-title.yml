@@ -1,0 +1,31 @@
+name: PR title
+
+# The squash merge makes the PR title the commit on main, so the title follows the commit format of
+# AGENTS.md: `<type>(<scope>): <summary>`.
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions: {}
+
+jobs:
+  title:
+    name: PR title
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Check the format
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          types='feat|fix|perf|refactor|docs|test|build|ci|chore|revert|style'
+          pattern="^(${types})(\([a-z0-9-]+\))?!?: [a-z0-9\`\"].*[^.]$"
+          if [[ ! "$TITLE" =~ $pattern ]]; then
+            echo "::error::\"$TITLE\" is not '<type>(<scope>): <summary>' with a lowercase start and no trailing period. Types: ${types//|/, }."
+            exit 1
+          fi
+          if (( ${#TITLE} > 100 )); then
+            echo "::error::The title is ${#TITLE} characters; keep the summary under about 72."
+            exit 1
+          fi
+          echo "OK: $TITLE"
