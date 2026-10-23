@@ -24,4 +24,10 @@ if (typeof window !== "undefined" && typeof window.matchMedia !== "function") {
   });
 }
 
+// jsdom has no Web Animations: an animation there ends at once.
+if (typeof Element !== "undefined" && typeof Element.prototype.animate !== "function") {
+  Element.prototype.animate = () =>
+    ({ finished: Promise.resolve(), cancel: () => {}, finish: () => {} }) as unknown as Animation;
+}
+
 afterEach(cleanup);

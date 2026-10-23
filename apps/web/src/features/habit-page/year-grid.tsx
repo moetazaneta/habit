@@ -33,10 +33,11 @@ export interface YearGridProps {
 
 /**
  * The last 12 months as a GitHub-like grid: a column for each week, Monday at the top, small
- * gauges in the habit color. The squares keep their size, so a phone shows the last months and
- * scrolls sideways to the older ones; it opens at today. It takes no input, but each Month over
- * its columns is a button that moves the calendar to that Month, and the Month of the calendar
- * scrolls into view. The Months are one Tab stop: the arrows move between them.
+ * squares in the habit color, the stronger the fuller the Day. The squares keep their size, so a
+ * phone shows the last months and scrolls sideways to the older ones; it opens at today. It takes
+ * no input, but each Month over its columns is a button that moves the calendar to that Month, and
+ * the Month of the calendar scrolls into view. The Months are one Tab stop: the arrows move between
+ * them.
  */
 export function YearGrid({ habit, today, entries, month, onSelectMonth }: YearGridProps) {
   const grid = useMemo(() => yearGrid(today), [today]);
@@ -101,7 +102,7 @@ export function YearGrid({ habit, today, entries, month, onSelectMonth }: YearGr
                   intensity={intensity(habit, value)}
                   recorded={value !== undefined}
                   size="var(--cell)"
-                  look="fill"
+                  look="flat"
                   animated={false}
                 />
               );

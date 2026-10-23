@@ -1,6 +1,6 @@
 import { addMonths, type Month } from "@habit/core";
 import { animate, type AnimationPlaybackControls } from "motion";
-import { useMotionValue } from "motion/react";
+import { useMotionValue, type MotionValue } from "motion/react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 
@@ -22,10 +22,14 @@ export interface MonthPager {
   slots: PagerSlot[];
   /** The Month at slot 0. */
   shown: Month;
+  /** The offset of the track in pixels: 0 at rest, -width when the page at slot 1 is in view. */
+  x: MotionValue<number>;
   viewportRef: React.RefObject<HTMLDivElement | null>;
   trackRef: React.RefObject<HTMLDivElement | null>;
   /** Slides to a Month (a neighbour or any older Month). */
   goTo: (month: Month) => void;
+  /** Shows a Month at once, without a slide or a fade (the calendar zooms into it). */
+  jump: (month: Month) => void;
   /** A finger lands: stops a slide. True when the pages were moving. */
   grab: () => boolean;
   /** The finger moved `dx` pixels since it started to swipe. */
@@ -179,6 +183,26 @@ export function useMonthPager({
     [newest, settle],
   );
 
+  const jump = useCallback(
+    (destination: Month) => {
+      if (destination > newest) return;
+      animation.current?.stop();
+      animation.current = null;
+      generation.current += 1;
+      fadeIn.current = false;
+      if (destination !== target.current) {
+        target.current = destination;
+        latest.current.onMonthChange(destination);
+      }
+      flushSync(() => {
+        setIncoming(null);
+        setShown(destination);
+      });
+      x.jump(0);
+    },
+    [newest, x],
+  );
+
   // A Month from outside (the grid, the Today button of the parent): slide to it.
   useEffect(() => {
     if (month !== target.current) goTo(month);
@@ -225,7 +249,7 @@ export function useMonthPager({
 
   useEffect(() => () => animation.current?.stop(), []);
 
-  return { slots, shown, viewportRef, trackRef, goTo, grab, drag, release };
+  return { slots, shown, x, viewportRef, trackRef, goTo, jump, grab, drag, release };
 }
 
 /** The pages around the shown Month: its neighbours, or the Month it slides to. */

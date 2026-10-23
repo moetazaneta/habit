@@ -23,15 +23,15 @@ export interface DaySquareProps extends HTMLAttributes<HTMLSpanElement> {
   /**
    * - `day`: a Day of a habit (the default).
    * - `ghost`: dashed and empty, for a habit that does not exist yet (the page of a missing habit).
-   * - `future`: a locked Day after today.
    */
-  variant?: "day" | "ghost" | "future";
+  variant?: "day" | "ghost";
   /**
    * - `frame`: a frame in the habit color around the fill (the default).
    * - `fill`: no frame; an empty Day is a quiet tile, and the gauge fills over a tint of the habit
    *   color.
+   * - `flat`: no fill; the whole square takes the habit color, the stronger the fuller the Day.
    */
-  look?: "frame" | "fill";
+  look?: "frame" | "fill" | "flat";
   /**
    * An Entry exists. With an intensity of 0 (a recorded zero, such as 0 cigarettes) the frame
    * takes the habit color, so a recorded zero differs from a Day with no data.

@@ -6,6 +6,7 @@ import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { use, type ReactNode } from "react";
 import { afterEach, beforeEach, expect, test, vi } from "vite-plus/test";
 
+import { resetAll, setValue } from "@/components/lab/store";
 import { createAppRouter } from "@/router";
 
 const TODAY = "2026-10-22" as Day;
@@ -25,6 +26,8 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers();
+  act(resetAll);
+  localStorage.clear();
 });
 
 function renderPage(
@@ -184,18 +187,67 @@ test("a Month in the grid moves the calendar there; the arrows and Today page", 
   expect(screen.queryByRole("button", { name: "Today" })).toBeNull();
 });
 
-test("the month and the year selects move the calendar, never past this month", async () => {
+test("the picker moves the calendar to a month of any year, never past this month", async () => {
+  const router = renderPage(demoHabitIds.water);
+
+  await screen.findByRole("heading", { name: "October 2026" });
+  fireEvent.click(screen.getByRole("button", { name: "October 2026, choose a month" }));
+  const picker = await screen.findByRole("dialog");
+  expect(router.state.location.search).toMatchObject({ monthPicker: true });
+  // November 2026 has not come yet.
+  expect(
+    (within(picker).getByRole("button", { name: "November 2026" }) as HTMLButtonElement).disabled,
+  ).toBe(true);
+
+  // A year shows its months and keeps the picker open.
+  fireEvent.click(within(picker).getByRole("button", { name: "2025" }));
+  expect(within(picker).getByRole("button", { name: "2025" }).getAttribute("aria-pressed")).toBe(
+    "true",
+  );
+  const november = within(picker).getByRole("button", { name: "November 2025" });
+  expect((november as HTMLButtonElement).disabled).toBe(false);
+  expect(router.state.location.search).toMatchObject({ monthPicker: true });
+
+  // A month moves the calendar there and closes the picker.
+  fireEvent.click(november);
+  expect(await screen.findByRole("heading", { name: "November 2025" })).toBeTruthy();
+  await vi.waitFor(() => expect(router.state.location.search.monthPicker).toBeUndefined());
+});
+
+test("the calendar zooms out to the months of its year, and into any of them", async () => {
+  act(() => setValue("month-picker", "Zoom out"));
   renderPage(demoHabitIds.water);
 
   await screen.findByRole("heading", { name: "October 2026" });
-  fireEvent.change(screen.getByRole("combobox", { name: "Year" }), { target: { value: "2025" } });
-  expect(await screen.findByRole("heading", { name: "October 2025" })).toBeTruthy();
-  fireEvent.change(screen.getByRole("combobox", { name: "Month" }), { target: { value: "12" } });
-  expect(await screen.findByRole("heading", { name: "December 2025" })).toBeTruthy();
+  fireEvent.click(
+    screen.getByRole("button", { name: "October 2026, show the months of the year" }),
+  );
+  const thisYear = await screen.findByRole("group", { name: "2026" });
+  expect(
+    within(thisYear).getByRole("button", { name: "October 2026" }).getAttribute("aria-current"),
+  ).toBe("true");
+  // November 2026 has not come yet, and neither has 2027.
+  expect(
+    (within(thisYear).getByRole("button", { name: "November 2026" }) as HTMLButtonElement).disabled,
+  ).toBe(true);
+  expect((screen.getByRole("button", { name: "Next year" }) as HTMLButtonElement).disabled).toBe(
+    true,
+  );
 
-  // December 2026 has not come yet: the calendar stops at this month.
-  fireEvent.change(screen.getByRole("combobox", { name: "Year" }), { target: { value: "2026" } });
-  expect(await screen.findByRole("heading", { name: "October 2026" })).toBeTruthy();
+  // The arrows flip the year; a month shows its Days.
+  fireEvent.click(screen.getByRole("button", { name: "Previous year" }));
+  const lastYear = await screen.findByRole("group", { name: "2025" });
+  fireEvent.click(within(lastYear).getByRole("button", { name: "March 2025" }));
+  expect(await screen.findByRole("heading", { name: "March 2025" })).toBeTruthy();
+  expect(await day("March 5")).toBeTruthy();
+  expect(screen.queryByRole("group", { name: "2025" })).toBeNull();
+
+  // Escape goes back into the open Month.
+  fireEvent.click(screen.getByRole("button", { name: "March 2025, show the months of the year" }));
+  const again = await screen.findByRole("group", { name: "2025" });
+  fireEvent.keyDown(within(again).getByRole("button", { name: "March 2025" }), { key: "Escape" });
+  expect(await screen.findByRole("heading", { name: "March 2025" })).toBeTruthy();
+  await vi.waitFor(() => expect(screen.queryByRole("group", { name: "2025" })).toBeNull());
 });
 
 test("the keyboard moves between Days and Months at once", async () => {

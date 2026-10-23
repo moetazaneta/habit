@@ -234,7 +234,7 @@
     container-type: inline-size;
   }
 
-  /* Under the Days, near the thumb: the month and the year at the left, the paging at the right. */
+  /* Under the Days, near the thumb: the name of the Month at the left, the paging at the right. */
   .hp-cal-controls {
     display: flex;
     align-items: center;
@@ -242,22 +242,15 @@
     margin: 0.25rem -0.75rem 0 0;
   }
 
-  .hp-pick {
-    display: flex;
-    flex: 1;
-    gap: 0.375rem;
-    min-width: 0;
-  }
-
-  /* A native select under its own picture: the phone opens its picker, the pill shows the value. */
-  .hp-select {
-    position: relative;
+  /* The name of the Month, as plain text: a tap opens the picker. Its touch target reaches past
+     the text, so the text lines up with the gutter. */
+  .hp-cal-month {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
-    height: 2.25rem;
-    padding: 0 0.625rem 0 0.8125rem;
-    background: var(--tile);
+    height: 2.75rem;
+    margin: 0 auto 0 -0.5rem;
+    padding: 0 0.5rem;
     color: var(--ink);
     font-size: 0.9375rem;
     font-weight: 600;
@@ -271,37 +264,34 @@
       transform 120ms var(--ease-out);
   }
 
-  .hp-select svg {
+  .hp-cal-month svg {
     flex: none;
     color: var(--ink-3);
     font-size: 0.75rem;
   }
 
-  .hp-select select {
+  /* While a zoom crossfades the label, the one before it fades over it, out of the flow, so the
+     caret takes its new place at once. */
+  .hp-cal-month-text {
+    position: relative;
+    text-align: start;
+  }
+
+  .hp-cal-month-text > [data-previous] {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    /* 16px or more, so iOS does not zoom the page when the picker opens. */
-    font-size: 1rem;
-    cursor: pointer;
-    appearance: none;
+    top: 0;
+    left: 0;
+    white-space: nowrap;
   }
 
-  .hp-select:has(select:focus-visible) {
-    outline: 2px solid var(--ring);
-    outline-offset: 2px;
-  }
-
-  .hp-select:active {
+  .hp-cal-month:active {
     transform: scale(0.97);
-    background: color-mix(in oklab, var(--ink) 6%, var(--tile));
+    background: color-mix(in oklch, var(--ink) 6%, transparent);
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .hp-select:hover {
-      background: color-mix(in oklab, var(--ink) 6%, var(--tile));
+    .hp-cal-month:hover {
+      background: color-mix(in oklch, var(--ink) 6%, transparent);
     }
   }
 
@@ -359,13 +349,16 @@
     text-align: center;
   }
 
-  /* The pages slide edge to edge of the column, so the clip is at its edges, not at the gutter. */
+  /* The pages slide edge to edge of the column, so the clip is at its edges, not at the gutter. Its
+     height is the weeks of the Month (`--rows`, set by the calendar as the pages move). */
   .hp-cal-viewport {
-    /* The date inside its gauge; a cell is a 44px touch target or more. */
+    /* A cell is a 44px touch target or more. */
     --cal-square: min(3rem, 100cqw / 7 - 0.5rem);
     --cal-row: calc(var(--cal-square) + 0.5rem);
+    /* The notch at the top left of a Day, for its date: the gauge's square without that corner. */
+    --hp-notch: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M22.5 0H27C36.36 0 40 3.64 40 13V27C40 36.36 36.36 40 27 40H13C3.64 40 0 36.36 0 27V18.5A3.5 3.5 0 0 1 3.5 15H14A5 5 0 0 0 19 10V3.5A3.5 3.5 0 0 1 22.5 0Z'/%3E%3C/svg%3E");
     position: relative;
-    height: calc(var(--cal-row) * 6);
+    height: calc(var(--cal-row) * var(--rows, 5));
     margin: 0.375rem calc(-1 * var(--gutter)) 0;
     overflow: hidden;
     /* The browser keeps the vertical scroll; the calendar takes the horizontal swipe. */
@@ -382,10 +375,10 @@
 
   .hp-month {
     position: absolute;
-    inset: 0;
+    inset: 0 0 auto;
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    grid-template-rows: repeat(6, var(--cal-row));
+    grid-auto-rows: var(--cal-row);
     padding: 0 var(--gutter);
   }
 
@@ -398,52 +391,66 @@
     outline-offset: -0.125rem;
   }
 
-  .hp-day:not([data-mark]) .day-square-label {
+  .hp-day-box {
+    position: relative;
+    display: block;
+    width: var(--cal-square);
+    height: var(--cal-square);
+    border-radius: calc(var(--cal-square) * 0.19 * var(--squircle-k));
+    corner-shape: squircle;
+  }
+
+  /* The notch's mask draws the corners of the square. */
+  .hp-day .day-square {
+    border-radius: 0;
+    -webkit-mask: var(--hp-notch) 0 0 / 100% 100% no-repeat;
+    mask: var(--hp-notch) 0 0 / 100% 100% no-repeat;
+  }
+
+  .hp-day-date {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: grid;
+    place-items: center;
+    width: 47.5%;
+    height: 37.5%;
+    padding: 0 0.0625rem 0.0625rem 0;
     color: var(--ink-2);
-    font-size: 0.875rem;
+    font-size: calc(var(--cal-square) * 0.27);
     font-weight: 600;
-    letter-spacing: -0.01em;
+    line-height: 1;
+    letter-spacing: -0.02em;
     font-variant-numeric: tabular-nums;
+    pointer-events: none;
   }
 
-  .hp-day:not([data-mark]) .day-square-label[data-on-fill] {
-    color: var(--ground);
-  }
-
-  .hp-day[data-today] .day-square-label {
+  .hp-day[data-today] .hp-day-date {
+    color: var(--ink);
     font-weight: 750;
   }
 
-  .hp-day[data-today]:not([data-mark]) .day-square-label:not([data-on-fill]) {
-    color: var(--ink);
-  }
-
-  /* Today: a ring, a little off the square. */
-  .hp-day[data-today] .day-square:not([data-editing]) {
-    outline: 0.09375rem solid var(--ink-2);
-    outline-offset: 0.125rem;
-  }
-
-  .hp-day:disabled .day-square-label {
+  .hp-day:disabled .hp-day-date {
     color: var(--ink-3);
   }
 
-  .hp-day[data-mark] .day-square-label {
-    padding-top: 0.25rem;
-    font-size: calc(var(--ds-size) * 0.42);
+  /* A future Day has no square: its date alone, faint. */
+  .hp-day[data-future] .hp-day-date {
+    color: var(--ink-4);
+    opacity: 0.5;
   }
 
-  /* The date of a choice Day whose emoji fills the square. */
-  .hp-day-corner {
-    position: absolute;
-    top: 0.1875rem;
-    left: 0.3125rem;
-    color: var(--ground);
-    font-size: 0.5625rem;
-    font-weight: 700;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-    pointer-events: none;
+  /* The emoji of a choice, in the middle of what the notch leaves. */
+  .hp-day .day-square-label {
+    padding: 25% 0 0 22.5%;
+    font-size: calc(var(--ds-size) * 0.4);
+  }
+
+  /* The Day that the input sheet edits: above the scrim, with a ring in the habit color. */
+  .hp-day-box[data-editing] {
+    z-index: 51;
+    outline: 0.125rem solid var(--c);
+    outline-offset: 0.1875rem;
   }
 
   /* The press of a Day is the list's: 0.95 in 120ms. A hold adds its own shrink on top, on the
@@ -500,6 +507,207 @@
   /* An older Month that is still loading: its tiles, quieter, until the data comes. */
   .hp-month[data-loading] .day-square {
     opacity: 0.5;
+  }
+
+  /* ── The zoom: the Days of the Month, or the months of its year in their place ── */
+
+  .hp-cal-stage {
+    position: relative;
+  }
+
+  /* Scaled from its top left onto the open Month's small calendar. */
+  .hp-cal-days {
+    transform-origin: 0 0;
+  }
+
+  /* At the months level the Days lie over the months: during the zoom only, then hidden. */
+  .hp-cal-stage[data-level="months"] > .hp-cal-days {
+    position: absolute;
+    inset: 0 0 auto;
+  }
+
+  .hp-cal-stage[data-level="months"]:not([data-zoom]) > .hp-cal-days {
+    visibility: hidden;
+  }
+
+  .hp-cal-stage[data-zoom="in"] > .hp-months {
+    position: absolute;
+    inset: 0 0 auto;
+  }
+
+  .hp-cal-stage[data-zoom] > .hp-cal-days {
+    z-index: 1;
+  }
+
+  /* The open Month's shape, which grows from the calendar into its cell, or back. */
+  .hp-cal-ghost {
+    position: absolute;
+    display: none;
+    border-radius: calc(0.75rem * var(--squircle-k));
+    corner-shape: squircle;
+    pointer-events: none;
+  }
+
+  .hp-cal-stage[data-zoom] > .hp-cal-ghost {
+    display: block;
+  }
+
+  .hp-months {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.25rem 0.375rem;
+    margin-top: 0.25rem;
+    /* The page keeps the vertical scroll; a horizontal swipe flips the year. */
+    touch-action: pan-y;
+  }
+
+  .hp-months-cell {
+    position: relative;
+    display: block;
+    border-radius: calc(0.75rem * var(--squircle-k));
+    corner-shape: squircle;
+    outline-offset: -0.125rem;
+    transition: transform 120ms var(--ease-out);
+  }
+
+  .hp-months-bg {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    corner-shape: squircle;
+    transition: background-color 120ms ease;
+  }
+
+  .hp-months-cell[aria-current] .hp-months-bg {
+    background: var(--surface-2);
+  }
+
+  /* The ghost stands in for the fill of the month that the zoom goes to or comes from. */
+  .hp-months-cell[data-zoom-target] .hp-months-bg {
+    visibility: hidden;
+  }
+
+  .hp-months-in {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 0.4375rem;
+    padding: 0.5rem 0 0.625rem;
+  }
+
+  .hp-months-name {
+    color: var(--ink-2);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1rem;
+    letter-spacing: -0.01em;
+  }
+
+  .hp-months-cell[aria-current] .hp-months-name {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .hp-months-cell:disabled .hp-months-name {
+    color: var(--ink-4);
+    opacity: 0.5;
+  }
+
+  .hp-months-mini {
+    display: grid;
+    grid-template-columns: repeat(7, 0.5rem);
+    grid-auto-rows: 0.5rem;
+    align-content: start;
+    gap: 0.125rem;
+    height: calc(6 * 0.5rem + 5 * 0.125rem);
+  }
+
+  .hp-months-cell:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hp-months-cell:hover:not(:disabled, [aria-current]) .hp-months-bg {
+      background: color-mix(in oklch, var(--ink) 6%, transparent);
+    }
+  }
+
+  /* ── The picker of the Month: the months of a year in two columns, the years beside them ── */
+
+  .month-picker {
+    --mp-cell: 2.75rem;
+    --mp-gap: 0.375rem;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .month-picker-months {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--mp-gap);
+  }
+
+  /* As tall as the six rows of months; the newest year sits level with the last row. */
+  .month-picker-years {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: var(--mp-gap);
+    height: calc(6 * var(--mp-cell) + 5 * var(--mp-gap));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+  }
+
+  .month-picker-years::-webkit-scrollbar {
+    display: none;
+  }
+
+  .month-picker-years[data-more] {
+    mask-image: linear-gradient(to bottom, transparent, black 2.5rem);
+  }
+
+  .month-picker-cell {
+    display: grid;
+    flex: none;
+    place-items: center;
+    height: var(--mp-cell);
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+    border-radius: calc(0.625rem * var(--squircle-k));
+    corner-shape: squircle;
+    outline-offset: -0.125rem;
+    transition:
+      background-color 120ms ease,
+      color 120ms ease,
+      transform 120ms var(--ease-out);
+  }
+
+  .month-picker-cell:is([aria-current], [aria-pressed="true"]) {
+    background: var(--surface-2);
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .month-picker-cell:disabled {
+    color: var(--ink-4);
+    opacity: 0.45;
+  }
+
+  .month-picker-cell:active:not(:disabled) {
+    transform: scale(0.97);
+    background: var(--surface-3);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .month-picker-cell:hover:not(:disabled) {
+      background: var(--surface-3);
+      color: var(--ink);
+    }
   }
 
   /* ── A habit that is not here ── */
@@ -590,7 +798,9 @@
     .hp-action:active,
     .hp-cal-today:active,
     .hp-cal-arrow:active:not(:disabled),
-    .hp-select:active,
+    .hp-cal-month:active,
+    .hp-months-cell:active:not(:disabled),
+    .month-picker-cell:active:not(:disabled),
     .hp-missing-link:active {
       transform: none;
     }
