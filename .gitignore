@@ -27,3 +27,6 @@ apps/web/.impeccable/mocks/decision/*
 
 # The impeccable finish review's captures: evidence for one review, not source.
 apps/web/.impeccable/review/
+
+# Local screenshots and scratch pages of design work, not source.
+.shots/
