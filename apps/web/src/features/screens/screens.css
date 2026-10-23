@@ -79,7 +79,7 @@
       margin: 0;
     }
 
-    /* The floating buttons stay over the bottom edge of the page's column. */
+    /* The buttons stay over the bottom edge of the page's column. */
     .screens[data-split] .hp-actions {
       right: auto;
       left: calc((100vw + var(--split-list) + var(--split-gap) - var(--split-page)) / 2);

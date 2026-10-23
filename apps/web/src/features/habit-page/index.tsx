@@ -21,8 +21,8 @@ import "@/features/habit-page/habit-page.css";
 
 /**
  * The page of a habit (`/habits/$habitId`): the icon and the name, a grid of the last 12 months,
- * and a calendar with one Month per page, with Back and Edit floating at the bottom. A tap on a
- * Month in the grid moves the calendar there.
+ * and a calendar with one Month per page, with Back and Edit at the bottom. A tap on a Month in
+ * the grid moves the calendar there.
  */
 export function HabitPage({ habitId }: { habitId: HabitId }) {
   const habit = useHabit(habitId);
@@ -72,7 +72,7 @@ function HabitDetail({ habit }: { habit: Habit }) {
       <PageActions habitId={habit.id}>
         <button
           type="button"
-          className="hp-float hp-edit"
+          className="hp-action hp-edit"
           onClick={() => openSheet({ edit: habit.id })}
         >
           <PencilSimpleIcon weight="bold" aria-hidden />
@@ -84,11 +84,11 @@ function HabitDetail({ habit }: { habit: Habit }) {
 }
 
 /**
- * The page's buttons, floating over its bottom edge, near the thumb: back to the list at the left,
- * the page's own control at the right. Back goes back in the history when the app came from the
- * list, so the list keeps its scroll; after a reload or from a link, it goes to `/`. With a
- * `habitId`, the title of the page shrinks back into the habit's row on the way, on a phone; on a
- * desktop the page slides away from beside the list.
+ * The page's buttons, side by side over its bottom edge, near the thumb: back to the list, then
+ * the page's own control. Back goes back in the history when the app came from the list, so the
+ * list keeps its scroll; after a reload or from a link, it goes to `/`. With a `habitId`, the title
+ * of the page shrinks back into the habit's row on the way, on a phone; on a desktop the page
+ * slides away from beside the list.
  */
 function PageActions({ habitId, children }: { habitId?: HabitId; children?: ReactNode }) {
   const canGoBack = useCanGoBack();
@@ -111,7 +111,7 @@ function PageActions({ habitId, children }: { habitId?: HabitId; children?: Reac
     <nav className="hp-actions" aria-label="Habit">
       <Link
         to="/"
-        className="hp-float hp-back"
+        className="hp-action hp-back"
         aria-label="Back to habits"
         viewTransition={habitId !== undefined}
         onClick={onBack}
