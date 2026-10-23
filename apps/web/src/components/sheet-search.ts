@@ -8,11 +8,13 @@ import { useCallback } from "react";
  * - `?new=true`: create a habit.
  * - `?edit=<habitId>`: edit a habit.
  * - `?entry=<habitId>:<day>`: the input of a value.
+ * - `?monthPicker=true`: the picker of the calendar's Month, on the habit page.
  */
 export interface SheetSearch {
   new?: true;
   edit?: HabitId;
   entry?: string;
+  monthPicker?: true;
 }
 
 /** The root route's `validateSearch`: keeps the sheet params that are well formed, drops the rest. */
@@ -23,6 +25,7 @@ export function validateSheetSearch(search: Record<string, unknown>): SheetSearc
   if (typeof search.entry === "string" && parseEntryRef(search.entry) !== null) {
     result.entry = search.entry;
   }
+  if (search.monthPicker === true || search.monthPicker === "true") result.monthPicker = true;
   return result;
 }
 
@@ -49,7 +52,12 @@ declare module "@tanstack/react-router" {
   }
 }
 
-const NO_SHEET = { new: undefined, edit: undefined, entry: undefined } as const;
+const NO_SHEET = {
+  new: undefined,
+  edit: undefined,
+  entry: undefined,
+  monthPicker: undefined,
+} as const;
 
 /** The sheet params of the current location. */
 export function useSheetSearch(): SheetSearch {

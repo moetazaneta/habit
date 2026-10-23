@@ -44,7 +44,19 @@ export const durations = {
 export const cssSprings = {
   fill: spring(springs.fill.visualDuration, springs.fill.bounce).toString(),
   sheet: spring(springs.sheet.visualDuration, springs.sheet.bounce).toString(),
+  morph: spring(springs.morph.visualDuration, springs.morph.bounce).toString(),
 };
+
+/**
+ * The morph spring as the timing of a Web Animation (`element.animate`): its duration in
+ * milliseconds and its `linear()` easing, for a motion of several elements that must stay in step.
+ */
+export const morphTiming = timingOf(cssSprings.morph);
+
+function timingOf(css: string): { duration: number; easing: string } {
+  const [duration = "", ...easing] = css.split(" ");
+  return { duration: Number.parseFloat(duration), easing: easing.join(" ") };
+}
 
 /**
  * Puts the CSS springs on the document as custom properties (`--spring-fill`, `--spring-sheet`).

@@ -383,16 +383,6 @@
     display: none;
   }
 
-  /* A future Day is locked: a faint frame, no fill. */
-  .day-square[data-variant="future"] {
-    box-shadow: inset 0 0 0 var(--ds-frame, 0.09375rem) var(--line);
-    opacity: 0.45;
-  }
-
-  .day-square[data-variant="future"] .day-square-fill {
-    display: none;
-  }
-
   /* The filled look: no frame. An empty Day is a quiet tile, and the gauge fills over a tint of the
      habit color, so a partial Day, or a recorded zero, still reads as this habit's. */
   .day-square[data-look="fill"] {
@@ -400,9 +390,31 @@
     box-shadow: none;
   }
 
-  .day-square[data-look="fill"]:is([data-state="empty"], [data-variant="future"]) {
+  .day-square[data-look="fill"][data-state="empty"] {
     background: var(--tile);
     box-shadow: none;
+  }
+
+  /* The flat look, for a grid of many small Days: no fill. The square takes the habit color, mixed
+     into the tile from 25% for the lightest Day to solid for a full one. A recorded zero keeps the
+     tile and gets a thin ring in the habit color, so it still differs from a Day without data. */
+  .day-square[data-look="flat"] {
+    background: color-mix(in oklab, var(--c) calc(25% + var(--p) * 75%), var(--tile));
+    box-shadow: none;
+  }
+
+  .day-square[data-look="flat"] .day-square-fill {
+    display: none;
+  }
+
+  .day-square[data-look="flat"][data-state="empty"] {
+    background: var(--tile);
+  }
+
+  .day-square[data-look="flat"][data-state="zero"] {
+    background: var(--tile);
+    box-shadow: inset 0 0 0 var(--ds-frame, 0.0625rem)
+      color-mix(in oklch, var(--c) var(--frame-mix), transparent);
   }
 
   @media (prefers-reduced-motion: reduce) {

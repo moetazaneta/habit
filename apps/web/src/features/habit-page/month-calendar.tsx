@@ -14,6 +14,7 @@ import {
   type Month,
 } from "@habit/core";
 import { useEntries, useMonth } from "@habit/data";
+import { CaretDownIcon } from "@phosphor-icons/react/dist/csr/CaretDown";
 import { CaretLeftIcon } from "@phosphor-icons/react/dist/csr/CaretLeft";
 import { CaretRightIcon } from "@phosphor-icons/react/dist/csr/CaretRight";
 import { useReducedMotion } from "motion/react";
@@ -33,9 +34,11 @@ import { useAct } from "@/components/act";
 import { DaySquare } from "@/components/day-square";
 import { dayOfMonth, describeEntry, formatDayLong } from "@/components/format";
 import { haptic } from "@/components/haptics";
-import { entryRef, useOpenSheet, useSheetSearch } from "@/components/sheet-search";
-import { MonthSelect } from "@/features/habit-page/month-select";
-import { CALENDAR_ROWS, formatMonth, monthWeeks } from "@/features/habit-page/months";
+import { useVariant } from "@/components/lab";
+import { entryRef, useCloseSheet, useOpenSheet, useSheetSearch } from "@/components/sheet-search";
+import { MonthPicker } from "@/features/habit-page/month-picker";
+import { formatMonth, monthWeeks } from "@/features/habit-page/months";
+import { MonthsOfYear, useMonthZoom } from "@/features/habit-page/month-zoom";
 import { useMonthPager } from "@/features/habit-page/use-month-pager";
 import { LONG_PRESS_MS } from "@/features/list/day-cells";
 
@@ -113,8 +116,8 @@ export interface MonthCalendarProps {
 /**
  * The calendar of a habit: one Month per page. A swipe moves between Months (the current Month
  * first, older Months with a swipe to the right, no future Months), and so does a trackpad swipe.
- * Under the Days, near the thumb: the month and the year to pick, Today, and the arrows; Page Up
- * and Page Down page too.
+ * The calendar is as tall as the weeks of its Month. Under the Days, near the thumb: the name of
+ * the Month, which opens the picker, Today, and the arrows; Page Up and Page Down page too.
  *
  * Input, as in the list (docs/v1.md, "Input"):
  * - check: a tap toggles the Day; a hold of PAINT_HOLD_MS, then a drag, paints the Days (the first
@@ -134,10 +137,27 @@ export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalen
   const entries = useEntries();
   const act = useAct();
   const openSheet = useOpenSheet();
+  const closeSheet = useCloseSheet();
   // The Day whose value the input sheet edits: it stays visible above the sheet's scrim.
-  const { entry: editing } = useSheetSearch();
+  const { entry: editing, monthPicker } = useSheetSearch();
+  const pickerAnchor = useRef<HTMLButtonElement>(null);
   const reduceMotion = useReducedMotion() === true;
   const pager = useMonthPager({ month, newest, onMonthChange, reduceMotion });
+  // Two ways to another Month, to compare in the lab: the picker in a sheet, and the calendar that
+  // zooms out to the months of its year.
+  const picker = useVariant("month-picker", {
+    label: "Month picker",
+    options: ["Sheet", "Zoom out"],
+  });
+  const zoom = useMonthZoom({
+    month,
+    newest,
+    oldestYear,
+    reduceMotion,
+    jump: pager.jump,
+    triggerRef: pickerAnchor,
+  });
+  const atMonths = zoom.level === "months";
   const gesture = useRef<Gesture>({ type: "idle" });
   const [pressed, setPressed] = useState<Pressed | null>(null);
   const [paint, setPaint] = useState<Paint | null>(null);
@@ -429,6 +449,24 @@ export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalen
     };
   }, []);
 
+  // The height of the calendar follows the slide between two Months with different counts of weeks,
+  // so it moves with the finger and settles with the same spring.
+  const slotsRef = useRef(pager.slots);
+  slotsRef.current = pager.slots;
+  useLayoutEffect(() => {
+    const viewport = pager.viewportRef.current;
+    if (viewport === null) return;
+    const update = (x: number) => {
+      const from = monthWeeks(pager.shown).length;
+      const neighbour = slotsRef.current.find((page) => page.slot === (x < 0 ? 1 : -1));
+      const to = neighbour === undefined ? from : monthWeeks(neighbour.month).length;
+      const progress = Math.min(Math.abs(x) / (viewport.clientWidth || 1), 1);
+      viewport.style.setProperty("--rows", String(from + (to - from) * progress));
+    };
+    update(pager.x.get());
+    return pager.x.on("change", update);
+  }, [pager.shown, pager.x, pager.viewportRef]);
+
   // ── Keyboard ──────────────────────────────────────────────────────────────────────────────────
 
   // One Day of the shown Month takes the Tab stop; the arrows move it (a roving tab index).
@@ -484,66 +522,131 @@ export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalen
     if (!isFuture(next, today)) focusOn(next);
   };
 
+  const label = atMonths ? String(zoom.year) : formatMonth(month);
+  const zooming = zoom.phase !== null;
+  const showsMonths = atMonths || zoom.phase === "in";
+
   return (
-    <section className="hp-cal" aria-labelledby="hp-cal-title">
+    <section
+      className="hp-cal"
+      aria-labelledby="hp-cal-title"
+      onKeyDown={(event) => {
+        if (event.key !== "Escape" || !atMonths || zooming) return;
+        event.preventDefault();
+        zoom.zoomBack();
+      }}
+    >
       <h2 id="hp-cal-title" className="sr-only" aria-live="polite">
-        {formatMonth(month)}
+        {label}
       </h2>
-      <div className="hp-cal-weekdays" aria-hidden>
-        {WEEKDAYS.map((letter, index) => (
-          <span key={index}>{letter}</span>
-        ))}
-      </div>
       <div
-        ref={pager.viewportRef}
-        className="hp-cal-viewport"
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerCancel}
-        onKeyDown={onKeyDown}
-        onClick={(event) => {
-          // Pointer taps are handled on pointerup; a click with no pointer (`detail` 0) is Enter or
-          // Space on the focused Day.
-          if (event.detail !== 0) return;
-          const day = enabledDayAt(event.target);
-          if (day !== null) tap(day);
-        }}
-        onContextMenu={(event) => {
-          const day = dayOfElement(event.target);
-          if (day === null) return;
-          event.preventDefault();
-          if (gesture.current.type === "held" || habit.kind !== "number") return;
-          if (enabledDayAt(event.target) === null) return;
-          endPress();
-          openInput(day);
-        }}
+        ref={zoom.stageRef}
+        className="hp-cal-stage"
+        data-level={zoom.level}
+        data-zoom={zoom.phase ?? undefined}
+        inert={zooming}
       >
-        <div ref={pager.trackRef} className="hp-cal-track">
-          {pager.slots.map(({ month: pageMonth, slot }) => (
-            <MonthPage
-              key={pageMonth}
-              habit={habit}
-              month={pageMonth}
-              slot={slot}
-              today={today}
-              entries={entries}
-              pressed={slot === 0 ? pressed : null}
-              paint={slot === 0 ? paint : null}
-              tabDay={slot === 0 ? tabDay : null}
-              editing={slot === 0 ? editing : undefined}
-            />
-          ))}
+        <span ref={zoom.ghostRef} className="hp-cal-ghost" aria-hidden />
+        <div ref={zoom.daysRef} className="hp-cal-days" inert={atMonths}>
+          <div className="hp-cal-weekdays" aria-hidden>
+            {WEEKDAYS.map((letter, index) => (
+              <span key={index}>{letter}</span>
+            ))}
+          </div>
+          <div
+            ref={pager.viewportRef}
+            className="hp-cal-viewport"
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerCancel}
+            onKeyDown={onKeyDown}
+            onClick={(event) => {
+              // Pointer taps are handled on pointerup; a click with no pointer (`detail` 0) is
+              // Enter or Space on the focused Day.
+              if (event.detail !== 0) return;
+              const day = enabledDayAt(event.target);
+              if (day !== null) tap(day);
+            }}
+            onContextMenu={(event) => {
+              const day = dayOfElement(event.target);
+              if (day === null) return;
+              event.preventDefault();
+              if (gesture.current.type === "held" || habit.kind !== "number") return;
+              if (enabledDayAt(event.target) === null) return;
+              endPress();
+              openInput(day);
+            }}
+          >
+            <div ref={pager.trackRef} className="hp-cal-track">
+              {pager.slots.map(({ month: pageMonth, slot }) => (
+                <MonthPage
+                  key={pageMonth}
+                  habit={habit}
+                  month={pageMonth}
+                  slot={slot}
+                  today={today}
+                  entries={entries}
+                  pressed={slot === 0 ? pressed : null}
+                  paint={slot === 0 ? paint : null}
+                  tabDay={slot === 0 ? tabDay : null}
+                  editing={slot === 0 ? editing : undefined}
+                />
+              ))}
+            </div>
+          </div>
         </div>
+        {showsMonths ? (
+          <div
+            ref={zoom.monthsRef}
+            className="hp-months"
+            role="group"
+            aria-label={String(zoom.year)}
+            {...zoom.monthsGestures}
+          >
+            <MonthsOfYear
+              habit={habit}
+              today={today}
+              year={zoom.year}
+              month={month}
+              newest={newest}
+              entries={entries}
+              onPick={zoom.zoomIn}
+            />
+          </div>
+        ) : null}
       </div>
       <div className="hp-cal-controls">
-        <MonthSelect
-          month={month}
-          newest={newest}
-          oldestYear={oldestYear}
-          onChange={(destination) => pager.goTo(destination)}
-        />
-        {month === newest ? null : (
+        <button
+          ref={pickerAnchor}
+          type="button"
+          className="hp-cal-month"
+          aria-label={
+            picker === "Sheet"
+              ? `${label}, choose a month`
+              : atMonths
+                ? `${label}, back to ${formatMonth(zoom.backTo)}`
+                : `${label}, show the months of the year`
+          }
+          aria-haspopup={picker === "Sheet" ? "dialog" : undefined}
+          aria-expanded={picker === "Sheet" ? undefined : atMonths}
+          onClick={() => {
+            if (picker === "Sheet") openSheet({ monthPicker: true });
+            else if (atMonths) zoom.zoomBack();
+            else zoom.zoomOut();
+          }}
+        >
+          <span className="hp-cal-month-text">
+            <span data-current="">{label}</span>
+            {zoom.previousLabel === null ? null : (
+              <span data-previous="" aria-hidden>
+                {zoom.previousLabel}
+              </span>
+            )}
+          </span>
+          <CaretDownIcon weight="bold" aria-hidden />
+        </button>
+        {month === newest || atMonths ? null : (
           <button type="button" className="hp-cal-today" onClick={() => pager.goTo(newest)}>
             Today
           </button>
@@ -551,21 +654,36 @@ export function MonthCalendar({ habit, today, month, onMonthChange }: MonthCalen
         <button
           type="button"
           className="hp-cal-arrow"
-          aria-label="Previous month"
-          onClick={() => page(-1)}
+          aria-label={atMonths ? "Previous year" : "Previous month"}
+          disabled={atMonths && zoom.year <= zoom.oldestYear}
+          onClick={() => (atMonths ? zoom.stepYear(-1) : page(-1))}
         >
           <CaretLeftIcon weight="bold" />
         </button>
         <button
           type="button"
           className="hp-cal-arrow"
-          aria-label="Next month"
-          disabled={month >= newest}
-          onClick={() => page(1)}
+          aria-label={atMonths ? "Next year" : "Next month"}
+          disabled={atMonths ? zoom.year >= zoom.newestYear : month >= newest}
+          onClick={() => (atMonths ? zoom.stepYear(1) : page(1))}
         >
           <CaretRightIcon weight="bold" />
         </button>
       </div>
+      {picker === "Sheet" ? (
+        <MonthPicker
+          open={monthPicker === true}
+          month={month}
+          newest={newest}
+          oldestYear={oldestYear}
+          anchor={pickerAnchor.current}
+          onPick={(destination) => {
+            pager.goTo(destination);
+            closeSheet();
+          }}
+          onClose={closeSheet}
+        />
+      ) : null}
     </section>
   );
 }
@@ -591,8 +709,8 @@ interface MonthPageProps {
 }
 
 /**
- * One Month: weeks are rows, Monday first, always 6 rows high so the page does not jump. A Month
- * older than the live window loads while its page exists; until then its Days take no input.
+ * One Month: weeks are rows, Monday first. A Month older than the live window loads while its page
+ * exists; until then its Days take no input.
  */
 const MonthPage = memo(function MonthPage({
   habit,
@@ -641,9 +759,6 @@ const MonthPage = memo(function MonthPage({
             />
           ),
         )}
-      {Array.from({ length: (CALENDAR_ROWS - weeks.length) * 7 }, (_, index) => (
-        <span key={`fill-${index}`} className="hp-day-blank" />
-      ))}
     </div>
   );
 });
@@ -680,7 +795,7 @@ function CalendarDay({
       className="hp-day"
       data-day={day}
       data-today={day === today ? "" : undefined}
-      data-mark={mark === undefined ? undefined : ""}
+      data-future={future ? "" : undefined}
       data-pressed={pressed ?? undefined}
       data-late={pressedLate ? "" : undefined}
       tabIndex={tabbable ? 0 : -1}
@@ -695,24 +810,30 @@ function CalendarDay({
       disabled={future || loading}
     >
       <span className="hp-day-press">
-        <DaySquare
-          // Loaded data is not a value that rose: the square mounts at its value, without a pulse.
-          key={loading ? "loading" : "ready"}
-          color={habit.color}
-          intensity={loading ? 0 : level}
-          recorded={!loading && (painted === null ? value !== undefined : painted === "set")}
-          size="var(--cal-square)"
-          variant={future ? "future" : "day"}
-          look="fill"
-          label={mark ?? dayOfMonth(day)}
+        {/* The notch's mask would cut a ring drawn on the square: the ring of the Day under edit
+            is on this box. */}
+        <span
+          className="hp-day-box"
           data-entry={entryRef(habit.id, day)}
           data-editing={editing ? "" : undefined}
-        />
-        {mark === undefined ? null : (
-          <span className="hp-day-corner" aria-hidden>
+        >
+          {future ? null : (
+            <DaySquare
+              // Loaded data is not a value that rose: the square mounts at its value, without a
+              // pulse.
+              key={loading ? "loading" : "ready"}
+              color={habit.color}
+              intensity={loading ? 0 : level}
+              recorded={!loading && (painted === null ? value !== undefined : painted === "set")}
+              size="var(--cal-square)"
+              look="fill"
+              label={mark}
+            />
+          )}
+          <span className="hp-day-date" aria-hidden>
             {dayOfMonth(day)}
           </span>
-        )}
+        </span>
       </span>
     </button>
   );

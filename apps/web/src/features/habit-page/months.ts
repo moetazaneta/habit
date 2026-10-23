@@ -1,8 +1,5 @@
 import { daysOfMonth, gridWeeks, monthOf, weekday, type Day, type Month } from "@habit/core";
 
-/** The rows of the calendar: weeks are rows, Monday first. */
-export const CALENDAR_ROWS = 6;
-
 /**
  * The cells of a Month in the calendar: rows of 7 cells from Monday to Sunday. A cell outside the
  * Month is null. A Month has 4 to 6 rows.
@@ -50,7 +47,6 @@ export function yearGrid(today: Day, weeks = 52): YearGrid {
 }
 
 const monthLong = new Intl.DateTimeFormat("en", { month: "long", year: "numeric" });
-const monthName = new Intl.DateTimeFormat("en", { month: "long" });
 const monthShort = new Intl.DateTimeFormat("en", { month: "short" });
 
 function monthDate(month: Month): Date {
@@ -60,11 +56,6 @@ function monthDate(month: Month): Date {
 /** "October 2026". */
 export function formatMonth(month: Month): string {
   return monthLong.format(monthDate(month));
-}
-
-/** "October". */
-export function formatMonthName(month: Month): string {
-  return monthName.format(monthDate(month));
 }
 
 /** "Oct". */

@@ -40,8 +40,8 @@ export interface ResponsiveSheetProps {
  * desktop a centered dialog or a popover at an element. The content changes its height with a
  * spring instead of a cut, so a sheet can move between steps (as in Family).
  *
- * The URL owns `open` (`?new`, `?edit`, `?entry`): pass `open` from the search params and close
- * with `useCloseSheet()`, so the back gesture closes the sheet too.
+ * The URL owns `open` (`?new`, `?edit`, `?entry`, `?monthPicker`): pass `open` from the search
+ * params and close with `useCloseSheet()`, so the back gesture closes the sheet too.
  */
 export function ResponsiveSheet(props: ResponsiveSheetProps) {
   const wide = useIsWide();
