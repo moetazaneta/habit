@@ -52,6 +52,9 @@ declare module "@tanstack/react-router" {
   }
 }
 
+/** The morph source (`morphSource`) of the "New habit" button: the create sheet grows out of it. */
+export const NEW_HABIT_BUTTON = "new-habit";
+
 const NO_SHEET = {
   new: undefined,
   edit: undefined,

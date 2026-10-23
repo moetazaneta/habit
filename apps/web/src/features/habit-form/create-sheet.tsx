@@ -12,6 +12,7 @@ import { useRef, useState } from "react";
 import { useAct } from "@/components/act";
 import { haptic } from "@/components/haptics";
 import { ResponsiveSheet } from "@/components/sheet";
+import { NEW_HABIT_BUTTON } from "@/components/sheet-search";
 import { useIsWide } from "@/components/use-media-query";
 
 import { ColorSwatches, StepButton } from "./controls";
@@ -45,7 +46,8 @@ const ICON_TILE = 'button[aria-label="Change icon"]';
  * The create sheet (`?new=true`). One step: the icon and the name, the description, the color, the
  * Kind and the Direction, and under them the fields of a number, a choice or a scale habit. The
  * icon picker and the emoji picker of an Option are steps of their own, and come back to the
- * form. "Add habit" creates the habit after the last one and closes the sheet.
+ * form. "Add habit" creates the habit after the last one and closes the sheet. The sheet grows
+ * out of the "New habit" button and shrinks back into it.
  */
 export function CreateHabitSheet({
   open,
@@ -205,6 +207,7 @@ export function CreateHabitSheet({
       }
       className="sm:w-[min(25rem,100%)]"
       {...(wide ? { initialFocus: nameRef } : {})}
+      morphFrom={NEW_HABIT_BUTTON}
       footer={
         step === "form" ? (
           <StepButton label="Add habit" variant="primary" direction={-1} onClick={create} />

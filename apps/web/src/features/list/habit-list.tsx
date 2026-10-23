@@ -26,7 +26,13 @@ import { DaySquare } from "@/components/day-square";
 import { dayOfMonth, weekdayLetter } from "@/components/format";
 import { preloadHabitIcons } from "@/components/habit-icon";
 import { haptic } from "@/components/haptics";
-import { entryRef, useOpenSheet, useSheetSearch } from "@/components/sheet-search";
+import { morphSource } from "@/components/sheet-morph";
+import {
+  entryRef,
+  NEW_HABIT_BUTTON,
+  useOpenSheet,
+  useSheetSearch,
+} from "@/components/sheet-search";
 import { useIsWide } from "@/components/use-media-query";
 import { HabitRow } from "@/features/list/habit-row";
 import { useToday } from "@/features/list/use-today";
@@ -176,10 +182,15 @@ function DayHeader({ days, today }: { days: Day[]; today: Day }) {
   );
 }
 
-/** The way into the create sheet, under the last row. */
+/** The way into the create sheet, under the last row. The sheet grows out of it. */
 function NewHabitButton({ onClick }: { onClick: () => void }) {
   return (
-    <button type="button" className="new-habit" onClick={onClick}>
+    <button
+      type="button"
+      className="new-habit"
+      onClick={onClick}
+      {...morphSource(NEW_HABIT_BUTTON)}
+    >
       <PlusIcon weight="bold" aria-hidden />
       <span className="new-habit-label">New habit</span>
     </button>
