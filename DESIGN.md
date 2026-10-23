@@ -155,10 +155,15 @@ components:
   habit-row-lifted:
     backgroundColor: "{colors.surface}"
     rounded: "{rounded.row}"
-  ghost-row-name:
-    textColor: "{colors.ink-4}"
-  ghost-row-name-hover:
+  new-habit-button:
+    backgroundColor: "{colors.surface-2}"
     textColor: "{colors.ink-2}"
+    typography: "{typography.control}"
+    rounded: "{rounded.row}"
+    height: "3rem"
+  new-habit-button-hover:
+    backgroundColor: "{colors.surface-3}"
+    textColor: "{colors.ink}"
   day-header:
     textColor: "{colors.ink-3}"
     typography: "{typography.label}"
@@ -254,7 +259,7 @@ Each Day is a gauge: a squircle that fills from the bottom. An empty Day is a fr
 The care goes into motion and touch, not into decoration. A value that rises springs up, and the square pulses to about 1.04. A value that falls drains without a bounce. On a phone, forms open as bottom sheets. On a desktop, they open as dialogs and popovers. The theme follows the system setting, and there is no switch. The desktop is the phone layout in a 600px column with a 20px base.
 
 **Key Characteristics:**
-- A bare ground: white or pure black, with no surfaces at rest.
+- A bare ground: white or pure black, with no surfaces at rest except the "New habit" button.
 - Color only where it is data: the habit icon and the Day gauges.
 - The Day gauge (DaySquare) is the one signature shape.
 - Squircle corners everywhere, with a plain radius as the fallback.
@@ -278,11 +283,11 @@ Every color is OKLCH. The light theme is the default in CSS. The dark theme repl
 - **Ink** (`ink`): primary text, sheet titles, today in the day header, a habit name under the pointer, the caret, and the light theme's toast capsule.
 - **Dimmed Ink** (`ink-2`): habit names at rest and option labels at rest. Slightly dimmed, so the gauges lead.
 - **Quiet Ink** (`ink-3`): the day header, sheet descriptions, captions, placeholders, the close icon, and the focus ring.
-- **Faint Ink** (`ink-4`): the ghost row, disabled controls, and the focus ring of a text field. All four inks meet WCAG AA on the ground.
+- **Faint Ink** (`ink-4`): disabled controls, and the focus ring of a text field. All four inks meet WCAG AA on the ground.
 - **Line** (`line`): the frame of an empty Day, the dashed ghost gauge, and the frame of a future Day. Never a divider.
-- **Strong Line** (`line-strong`): an empty frame under the pointer, the dashed ghost icon, the sheet handle, and the scrollbar thumb.
+- **Strong Line** (`line-strong`): an empty frame under the pointer, the sheet handle, and the scrollbar thumb.
 - **Surface** (`surface`): sheets, dialogs, popovers, and a row lifted for a reorder. In the light theme it is white like the ground and a shadow lifts it; in the dark theme it is a lighter grey, and the lightness is the elevation.
-- **Surface 2** (`surface-2`): the rest fill of a control inside a sheet, a checked option, the close button's disc, and skeleton shapes.
+- **Surface 2** (`surface-2`): the rest fill of a control inside a sheet and of the "New habit" button, a checked option, the close button's disc, and skeleton shapes.
 - **Surface 3** (`surface-3`): the hover and press fill of a control inside a sheet.
 - **Field** (`field`): a text field inside a sheet. In the light theme it equals `surface-2`. In the dark theme it is a well of pure black, so the placeholder keeps its contrast.
 - **Backdrop** (`backdrop`): the scrim under a sheet or a dialog. 20% black in the light theme, 60% in the dark theme.
@@ -369,13 +374,13 @@ Pills (the toast and its action) use an infinite radius with `corner-shape: supe
 
 The radius scale, as fallback values: the gauge is 19% of its side, an icon tile 18% of its side, a control 0.625rem, a lifted row 0.75rem, a stepper and a popover 0.875rem, a dialog 1rem, a bottom sheet 1.25rem. Larger containers get larger radii.
 
-There are no structural borders. A frame is an inset ring: 1.5px (0.09375rem) by default, thinner for small gauges through `--ds-frame` (the habit page's year grid uses 0.0625rem). A dashed 1px border marks something that does not exist yet: the ghost gauge (in `line`) and the ghost icon (in `line-strong`).
+There are no structural borders. A frame is an inset ring: 1.5px (0.09375rem) by default, thinner for small gauges through `--ds-frame` (the habit page's year grid uses 0.0625rem). A dashed 1px border marks something that does not exist yet: the ghost gauge, in `line`.
 
 ### Named Rules
 
 **The Squircle Rule.** No rounded corner without `corner-shape: squircle` and the 1.75 multiplier where it is supported. A hard-coded radius alone looks too tight in a browser that draws superellipses.
 
-**The Dashed Means Not Yet Rule.** A dashed outline means "this does not exist yet", as in the ghost "New habit" row. Nothing else is dashed.
+**The Dashed Means Not Yet Rule.** A dashed outline means "this does not exist yet", as in the ghost gauge on the page of a missing habit. Nothing else is dashed.
 
 ## Components
 
@@ -426,7 +431,7 @@ Empty and zero are both "frame only", but they differ: a recorded zero is data a
 - **Structure:** the head (icon, then the name 0.75rem after it) at the left, the Day cells at the right. No background, no border, no divider.
 - **Name:** Title type in `ink-2`; `ink` under a fine pointer (120ms).
 - **Lifted for a reorder:** the row scales to 1.02, takes a `surface` background with a 0.75rem squircle radius and `var(--elevation)`, and the name turns `ink`. The neighbors move aside in 200ms with `--ease-out`. Under reduced motion the lift has no scale and the neighbors move at once.
-- **Ghost row ("New habit"):** the last row. A dashed squircle icon tile in `line-strong` with a bold Phosphor plus in `ink-4`, the name in `ink-4`, and five ghost gauges. Under a fine pointer the name and the icon turn `ink-2`. A press scales it to 0.99.
+- **"New habit" button:** under the last row, as wide as the rows between the gutters and 3rem high. A `surface-2` fill with a 0.75rem squircle radius, a bold Phosphor plus and "New habit" centered in Control type, in `ink-2`. Under a fine pointer the fill turns `surface-3` and the text `ink`. A press scales it to 0.98. It is the one control with a fill on the bare ground, so the way to a first habit is never missed.
 - **Skeleton:** the shape of the list in `surface-2` (an icon tile and a pill for the name) next to empty gauges. It waits 300ms before it shows, then fades in over 240ms, so a fast start never flashes it.
 
 ### Day header
@@ -530,7 +535,7 @@ All motion comes from the presets in `@/components/motion`, after Family: spring
 - **Springs (Motion):** fill (visual duration 0.38s, bounce 0.24), sheet (0.42s, bounce 0.1), morph (0.34s, bounce 0.12), and pulse (stiffness 600, damping 18, mass 1, start velocity 1.6, a peak of about 1.04). `installCssSprings()` puts the fill and sheet springs on the document as `--spring-fill` and `--spring-sheet` (`linear()` easings), so CSS and JS motion match.
 - **Curves:** `--ease-out` (`cubic-bezier(0.23, 1, 0.32, 1)`) for every plain transition; `--ease-drawer` (`cubic-bezier(0.32, 0.72, 0, 1)`) for the bottom sheet and its scrim.
 - **Durations:** a press 120ms; a color change 120ms; a check mark or a frame 160ms; a popover 180ms; a dialog, a drain and a reorder 200ms; the sheet scrim 400ms.
-- **Presses:** larger elements press less. A Day and a stepper press to 0.95, the close button and the toast action to 0.96, a button to 0.97, an option to 0.985, the ghost row to 0.99.
+- **Presses:** larger elements press less. A Day and a stepper press to 0.95, the close button and the toast action to 0.96, a button to 0.97, the "New habit" button to 0.98, an option to 0.985.
 - **Reduced motion:** a fade replaces each movement (180ms with `--ease-out`). Components read `useReducedMotion()` and drop transforms. A swipe still follows the finger.
 
 ### Named Rules
@@ -546,7 +551,7 @@ All motion comes from the presets in `@/components/motion`, after Family: spring
 - **Do** use `DaySquare` for every Day on every screen, in your own button with a touch target of about 44px. Set `animated={false}` for a large static grid and a thinner `--ds-frame` (0.0625rem) for a small square.
 - **Do** round every corner with `corner-shape: squircle` and the 1.75 multiplier: the `squircle-*` utility, or `calc(<radius> * var(--squircle-k))`.
 - **Do** write measures in rem, so the desktop's 20px base scales them, and keep the content in the 600px column.
-- **Do** set text in the four inks: `ink` for primary text, `ink-2` for habit names, `ink-3` for secondary text and the day header, `ink-4` for the ghost row and disabled controls.
+- **Do** set text in the four inks: `ink` for primary text, `ink-2` for habit names, `ink-3` for secondary text and the day header, `ink-4` for disabled controls.
 - **Do** open every form and input with `ResponsiveSheet`: a bottom sheet on a phone, a dialog or a popover at 640px and more.
 - **Do** give every movement a reduced-motion fade of 180ms, and keep a swipe under the finger.
 - **Do** use tabular figures for dates, steppers and number fields.

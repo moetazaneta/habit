@@ -22,7 +22,7 @@ export interface DaySquareProps extends HTMLAttributes<HTMLSpanElement> {
   size?: string;
   /**
    * - `day`: a Day of a habit (the default).
-   * - `ghost`: dashed and empty, for a habit that does not exist yet (the "New habit" row).
+   * - `ghost`: dashed and empty, for a habit that does not exist yet (the page of a missing habit).
    * - `future`: a locked Day after today.
    */
   variant?: "day" | "ghost" | "future";

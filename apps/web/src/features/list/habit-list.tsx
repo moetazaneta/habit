@@ -36,7 +36,7 @@ const LIFT_DELAY_MS = 300;
 
 /**
  * The habit list, the main screen: a sticky header of the last Days, a row per habit, and the
- * ghost "New habit" row at the end. No title, no cards, no lines: space separates the rows.
+ * "New habit" button at the end. No title, no cards, no lines: space separates the rows.
  */
 export function HabitList() {
   const { source, habits } = useHabits();
@@ -151,7 +151,7 @@ export function HabitList() {
           </SortableContext>
         </DndContext>
       )}
-      {source === "none" ? null : <GhostRow days={days} onClick={() => openSheet({ new: true })} />}
+      {source === "none" ? null : <NewHabitButton onClick={() => openSheet({ new: true })} />}
     </main>
   );
 }
@@ -172,25 +172,12 @@ function DayHeader({ days, today }: { days: Day[]; today: Day }) {
   );
 }
 
-/** A habit that does not exist yet: a tap starts the create sheet. */
-function GhostRow({ days, onClick }: { days: Day[]; onClick: () => void }) {
+/** The way into the create sheet, under the last row. */
+function NewHabitButton({ onClick }: { onClick: () => void }) {
   return (
-    <button type="button" className="habit-row ghost-row" onClick={onClick}>
-      <span className="habit-row-inner">
-        <span className="habit-row-head">
-          <span className="ghost-icon" aria-hidden>
-            <PlusIcon weight="bold" />
-          </span>
-          <span className="habit-row-name">New habit</span>
-        </span>
-        <span className="day-columns" aria-hidden>
-          {days.map((day) => (
-            <span key={day} className="day-cell">
-              <DaySquare color="stone" intensity={0} variant="ghost" animated={false} />
-            </span>
-          ))}
-        </span>
-      </span>
+    <button type="button" className="new-habit" onClick={onClick}>
+      <PlusIcon weight="bold" aria-hidden />
+      New habit
     </button>
   );
 }
